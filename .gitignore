@@ -1,0 +1,20 @@
+# Pycharm
+.idea/
+
+# Python
+__pycache__/
+/dist/
+/build/
+/*.egg-info/
+
+# Sphinx documentation
+docs/_build/
+
+# gdsHelpers
+*.gds
+*.desc
+*.dlw
+
+# files corresponds to Blender
+*.blend
+*.tmp

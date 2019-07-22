@@ -1,0 +1,6 @@
+numpy
+matplotlib
+shapely
+scipy
+qrcode
+descartes
