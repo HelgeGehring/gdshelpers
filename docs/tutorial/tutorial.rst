@@ -75,29 +75,10 @@ an enormous help if you try to find an error in your program.
 A first device
 """"""""""""""
 
-Our first device is going to be two grating couplers connected via a waveguide. This will be really simple::
-
-    from math import pi
-    from gdshelpers.geometry.chip import Cell
-    from gdshelpers.parts.waveguide import Waveguide
-    from gdshelpers.parts.coupler import GratingCoupler
-
-
-    left_coupler = GratingCoupler.make_traditional_coupler_from_database([0, 0], 1, 'sn330', 1550)
-    wg = Waveguide.make_at_port(left_coupler.port)
-    wg.add_straight_segment(length=10)
-    wg.add_bend(-pi/2, radius=50)
-    wg.add_straight_segment(length=150)
-    wg.add_bend(-pi/2, radius=50)
-    wg.add_straight_segment(length=10)
-    right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg.current_port, 'sn330', 1550)
-
-    cell = Cell('SIMPLE_DEVICE')
-    cell.add_to_layer(1, left_coupler, wg, right_coupler)
-    cell.show()
-    # cell.save('chip.gds')
+Our first device is going to be two grating couplers connected via a waveguide. This will be really simple
 
 .. plot::
+    :include-source:
 
     from math import pi
     from gdshelpers.geometry.chip import Cell
