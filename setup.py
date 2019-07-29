@@ -1,20 +1,33 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
+from os import path
 
 import gdshelpers
+
+with open(path.join(path.abspath(path.dirname(__file__)), 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name='gdsHelpers',
     version=gdshelpers.__version__,
     author='Helge Gehring, Matthias Blaicher, Wladick Hartmann, Wolfram Pernice',
-    author_email='helge.gehring@uni-muenster.de, matthias@blaicher.com, wladick.hartmann@uni-muenster.de, wolfram.pernice@uni-muenster.de',
+    author_email='helge.gehring@uni-muenster.de',
+    url='https://github.com/HelgeGehring/gdshelpers',
     packages=find_packages(),
     platforms='All',
+    python_requires='>=3',
     license='LGPLv3',
     description='A simple Python package for creating or reading GDSII/OASIS layout files.',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     requires=['matplotlib', 'numpy', 'shapely', 'scipy'],
-    extras_require={'gdspy_export': ['gdspy(>=1.3.1)'], 'gdscad_export': ['gdscad'], 'oasis_export': ['fatamorgana'],
-                    'image_export': ['descartes'], 'mesh_export': ['trimesh']},
+    extras_require={
+        'gdspy_export': ['gdspy(>=1.3.1)'],
+        'gdscad_export': ['gdscad'],
+        'oasis_export': ['fatamorgana'],
+        'image_export': ['descartes'],
+        'mesh_export': ['trimesh']
+    },
     test_suite='gdshelpers.tests.test_suite',
     classifiers=[
         'Development Status :: 5 - Production/Stable',

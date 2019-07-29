@@ -1,10 +1,10 @@
 GDSHelpers
 ==========
 
-![](index-1.png)
+![](https://raw.githubusercontent.com/HelgeGehring/gdshelpers/master/index-1.png)
 
-GDShelpers in an open-source package for automatized pattern generation for nano-structuring.
-It allows exporting the pattern in the gdsII-format and OASIS-format, which are currently mainly used for describing 2D-masks.
+GDSHelpers in an open-source package for automatized pattern generation for nano-structuring.
+It allows exporting the pattern in the GDSII-format and OASIS-format, which are currently mainly used for describing 2D-masks.
 Currently the focus is mainly on photonic and superconducting circuitry.
 The library consists of growing list of parts, which can be composed into larger circuits.
 Currently the following parts are implemented:
