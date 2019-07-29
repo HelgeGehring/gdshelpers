@@ -1,0 +1,9 @@
+numpy
+matplotlib
+shapely
+scipy
+qrcode
+descartes
+gdspy
+fatamorgana
+trimesh
