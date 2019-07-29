@@ -16,6 +16,8 @@ So far, the following parts are implemented:
 * A waveguide part, allowing easy chaing of bends and straight waveguides.
   - Includes parameterized paths and Bézier curves.
   - Automatic smooth connection to a target point/port
+  - The size of the waveguide can be tapered (linear or by a user defined function), 
+    which can e.g. be used for optical edge coupling or electronic contact pads 
 * Different types of splitters:
   - Y-splitter
   - MMI-splitters
@@ -44,6 +46,8 @@ The structures are organized in cells, which allow:
 * Adding structures on multiple layers
 * Adding cells into other cells, the cells can be added with an offset with respect to the parent cell and can be rotated
 * Storing additional information, which can be used for saving design parameters
+* Automatized generation of region layers
+* Parallelized export
 
 Finally, there are also different formats in which the pattern can be exported:
 
