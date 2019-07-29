@@ -8,9 +8,10 @@ GDSHelpers
 
 GDSHelpers in an open-source package for automatized pattern generation for nano-structuring.
 It allows exporting the pattern in the GDSII-format and OASIS-format, which are currently mainly used for describing 2D-masks.
-Currently the focus is mainly on photonic and superconducting circuitry.
+Currently, the focus is mainly on photonic and superconducting circuitry.
 The library consists of growing list of parts, which can be composed into larger circuits.
-Currently the following parts are implemented:
+
+So far, the following parts are implemented:
 
 * A waveguide part, allowing easy chaing of bends and straight waveguides.
   - Includes parameterized paths and Bézier curves.
@@ -20,10 +21,10 @@ Currently the following parts are implemented:
   - MMI-splitters
   - Directional splitter
 * Couplers
-  - Grating couplers
+  - Grating couplers (allowing apodized gratings)
   - Tapers for hybrid 3D-integration
 * Ring and racetrack resonators
-* Mach-Zehnder interferometer
+* Mach-Zehnder interferometers
 * Spirals
 * Superconducting nanowire single photon detectors (SNSPDs)
 * Superconducting nanoscale Transistors (NTRONs)
@@ -36,6 +37,13 @@ Besides this it also allows to perform conveniently operations on the design, li
 
 * Convert the pattern for usage of positive resist
 * Create holes around the circuitry, which is e.g. necessary for under-etching
+* Shapely-operations can also be applied on the generated structures, e.g. shrinking or inflating of the geometry
+
+The structures are organized in cells, which allow:
+
+* Adding structures on multiple layers
+* Adding cells into other cells, the cells can be added with an offset with respect to the parent cell and can be rotated
+* Storing additional information, which can be used for saving design parameters
 
 Finally, there are also different formats in which the pattern can be exported:
 
@@ -47,3 +55,10 @@ Finally, there are also different formats in which the pattern can be exported:
 
 ## Documentation
 You can find the [documentation on readthedocs](https://gdshelpers.readthedocs.io)
+
+## Installation
+The GDSHelpers can be installed via pip using
+(more details in the [installation documentation](https://gdshelpers.readthedocs.io/en/latest/install_guide/guide.html))
+```sh
+pip install gdshelpers
+```
