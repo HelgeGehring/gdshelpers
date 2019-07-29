@@ -56,7 +56,7 @@ Installing the gdshelpers and optional dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Even under Windows, the command line is sometimes useful. In our case we use `pip`, which is the Python package
-managment. First install gdshelpers by executing (will be possible soon)::
+managment. First install gdshelpers by executing::
 
     pip install gdshelpers
 
