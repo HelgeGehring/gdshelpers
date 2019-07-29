@@ -1,6 +1,9 @@
 GDSHelpers
 ==========
 
+[![Build Status](https://travis-ci.org/HelgeGehring/gdshelpers.svg?branch=master)](https://travis-ci.org/HelgeGehring/gdshelpers)
+[![Documentation Status](https://readthedocs.org/projects/gdshelpers/badge/?version=latest)](https://gdshelpers.readthedocs.io/en/latest/?badge=latest)
+
 ![](https://raw.githubusercontent.com/HelgeGehring/gdshelpers/master/index-1.png)
 
 GDSHelpers in an open-source package for automatized pattern generation for nano-structuring.
