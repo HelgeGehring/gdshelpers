@@ -24,7 +24,7 @@ setup(
     description='A simple Python package for creating or reading GDSII/OASIS layout files.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    requires=['matplotlib', 'numpy', 'shapely', 'scipy'],
+    install_requires=['matplotlib', 'numpy', 'shapely', 'scipy'],
     extras_require={
         'gdspy_export': ['gdspy(>=1.3.1)'],
         'gdscad_export': ['gdscad'],
