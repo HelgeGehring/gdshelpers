@@ -223,12 +223,13 @@ class Cell:
                 self.cell_gdspy.add(
                     gdspy.CellReference(sub_cell['cell'].get_gdspy_cell(executor), origin=sub_cell['origin'],
                                         rotation=angle))
-            for layer, geometry in self.layer_dict.items():
-                if executor:
-                    executor.submit(convert_to_layout_objs, geometry, layer, library='gdspy') \
-                        .add_done_callback(lambda future: self.cell_gdspy.add(future.result()))
-                else:
-                    self.cell_gdspy.add(convert_to_layout_objs(geometry, layer, library='gdspy'))
+            for layer, geometries in self.layer_dict.items():
+                for geometry in geometries:
+                    if executor:
+                        executor.submit(convert_to_layout_objs, geometry, layer, library='gdspy') \
+                            .add_done_callback(lambda future: self.cell_gdspy.add(future.result()))
+                    else:
+                        self.cell_gdspy.add(convert_to_layout_objs(geometry, layer, library='gdspy'))
         return self.cell_gdspy
 
     def get_gdscad_cell(self, executor=None):
@@ -239,12 +240,13 @@ class Cell:
                 self.cell_gdscad.add(
                     gdsCAD.core.CellReference(sub_cell['cell'].get_gdscad_cell(executor), origin=sub_cell['origin'],
                                               rotation=angle))
-            for layer, geometry in self.layer_dict.items():
-                if executor:
-                    executor.submit(convert_to_layout_objs, geometry, layer, library='gdscad') \
-                        .add_done_callback(lambda future: self.cell_gdscad.add(future.result()))
-                else:
-                    self.cell_gdscad.add(convert_to_layout_objs(geometry, layer, library='gdscad'))
+            for layer, geometries in self.layer_dict.items():
+                for geometry in geometries:
+                    if executor:
+                        executor.submit(convert_to_layout_objs, geometry, layer, library='gdscad') \
+                            .add_done_callback(lambda future: self.cell_gdscad.add(future.result()))
+                    else:
+                        self.cell_gdscad.add(convert_to_layout_objs(geometry, layer, library='gdscad'))
         return self.cell_gdscad
 
     def get_oasis_cells(self, grid_steps_per_micron=1000, executor=None):
@@ -257,16 +259,18 @@ class Cell:
                 self.cell_oasis.placements.append(
                     fatamorgana.records.Placement(False, name=fatamorgana.NString(sub_cell['cell'].name), x=x, y=y,
                                                   angle=angle))
-            for layer, geometry in self.layer_dict.items():
-                if executor:
-                    executor.submit(convert_to_layout_objs, geometry, layer, library='oasis',
-                                    grid_steps_per_micron=grid_steps_per_micron, max_points=np.inf,
-                                    max_points_line=np.inf) \
-                        .add_done_callback(lambda future: self.cell_oasis.geometry.extend(future.result()))
-                else:
-                    self.cell_oasis.geometry.extend(convert_to_layout_objs(geometry, layer, library='oasis',
-                                                                           grid_steps_per_micron=grid_steps_per_micron,
-                                                                           max_points=np.inf, max_points_line=np.inf))
+            for layer, geometries in self.layer_dict.items():
+                for geometry in geometries:
+                    if executor:
+                        executor.submit(convert_to_layout_objs, geometry, layer, library='oasis',
+                                        grid_steps_per_micron=grid_steps_per_micron, max_points=np.inf,
+                                        max_points_line=np.inf) \
+                            .add_done_callback(lambda future: self.cell_oasis.geometry.extend(future.result()))
+                    else:
+                        self.cell_oasis.geometry.extend(
+                            convert_to_layout_objs(geometry, layer, library='oasis',
+                                                   grid_steps_per_micron=grid_steps_per_micron,
+                                                   max_points=np.inf, max_points_line=np.inf))
         return [self.cell_oasis] + [oasis_cell for sub_cell in self.cells for oasis_cell in
                                     sub_cell['cell'].get_oasis_cells(grid_steps_per_micron, executor)]
 
@@ -391,7 +395,8 @@ class Cell:
 
         own_patches = [
             PolygonPatch(
-                translate(rotate(geometric_union(geometry), angle_sum, use_radians=True, origin=(0, 0)), *origin), color=['red', 'green', 'blue', 'teal', 'pink'][(layer-1)%5], linewidth=0)
+                translate(rotate(geometric_union(geometry), angle_sum, use_radians=True, origin=(0, 0)), *origin),
+                color=['red', 'green', 'blue', 'teal', 'pink'][(layer - 1) % 5], linewidth=0)
             for layer, geometry in self.layer_dict.items() if (layers is None or layer in layers)]
         sub_cells_patches = [p for cell_dict in self.cells for p in
                              cell_dict['cell']._get_patches(

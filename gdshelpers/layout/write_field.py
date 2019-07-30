@@ -2,7 +2,6 @@ import numpy as np
 
 import shapely.geometry
 from gdshelpers.helpers import StandardLayers
-from gdshelpers.geometry import convert_to_gdscad
 
 
 def annotate_write_fields(cell, origin='left-top', end='right-bottom', size=100, layer=StandardLayers.wflayer):
@@ -15,10 +14,6 @@ def annotate_write_fields(cell, origin='left-top', end='right-bottom', size=100,
     Alignment options are given as ``-`` separated tuple, allowing for combinations of ``left``, ``right``
     with ``bottom``, ``top``.
 
-    For reasons of backward compatibility, the keyword strings ``upperleft``, ``upperright``, ``bottomleft``,
-    ``bottomright`` are valid parameters for origin and end as well.
-
-
     :param cell: The cell in which the lines will be added.
     :param origin: Origin of the write field markers.
     :param end: End of the write field markes. Must not be aligned to the write field, however.
@@ -26,17 +21,10 @@ def annotate_write_fields(cell, origin='left-top', end='right-bottom', size=100,
     :param layer: Layer on which the write field lines are added.
     """
     corner_labels = {
-        # Old alignment names
-        'upperleft': lambda c: (c.bounding_box[0][0], c.bounding_box[1][1]),
-        'upperright': lambda c: (c.bounding_box[1][0], c.bounding_box[1][1]),
-        'bottomleft': lambda c: (c.bounding_box[0][0], c.bounding_box[0][1]),
-        'bottomright': lambda c: (c.bounding_box[1][0], c.bounding_box[0][1]),
-
-        # New alignment names
-        'left-top': lambda c: (c.bounding_box[0][0], c.bounding_box[1][1]),
-        'right-to': lambda c: (c.bounding_box[1][0], c.bounding_box[1][1]),
-        'left-bottom': lambda c: (c.bounding_box[0][0], c.bounding_box[0][1]),
-        'right-bottom': lambda c: (c.bounding_box[1][0], c.bounding_box[0][1])
+        'left-top': lambda c: (c.bounds[0], c.bounds[3]),
+        'right-to': lambda c: (c.bounds[2], c.bounds[3]),
+        'left-bottom': lambda c: (c.bounds[0], c.bounds[1]),
+        'right-bottom': lambda c: (c.bounds[2], c.bounds[1])
     }
 
     assert type(origin) in [list, tuple] or origin in corner_labels.keys(), \
@@ -66,4 +54,4 @@ def annotate_write_fields(cell, origin='left-top', end='right-bottom', size=100,
     y_size = size * (1 if y_increasing else -1)
     for x in x_pos:
         for y in y_pos:
-            cell.add(convert_to_gdscad(shapely.geometry.box(x, y, x + x_size, y + y_size), layer=layer))
+            cell.add_to_layer(layer, shapely.geometry.box(x, y, x + x_size, y + y_size))
