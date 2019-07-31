@@ -3,6 +3,8 @@ GDSHelpers
 
 [![Build Status](https://travis-ci.org/HelgeGehring/gdshelpers.svg?branch=master)](https://travis-ci.org/HelgeGehring/gdshelpers)
 [![Documentation Status](https://readthedocs.org/projects/gdshelpers/badge/?version=latest)](https://gdshelpers.readthedocs.io/en/latest/?badge=latest)
+[![GitHub release](https://img.shields.io/github/release/helgegehring/gdshelpers)](https://github.com/HelgeGehring/gdshelpers/releases)
+[![PyPI](https://img.shields.io/pypi/v/gdshelpers)](https://pypi.org/project/gdsHelpers/)
 
 ![](https://raw.githubusercontent.com/HelgeGehring/gdshelpers/master/index-1.png)
 
