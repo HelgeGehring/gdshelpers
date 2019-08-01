@@ -60,13 +60,13 @@ class MultiPortSwitch(object):
 
         if do_out_wgs:
             # Do the output side
-            out_origin_port = Port(self._origin, self._angle, 1.).longitudinal_offset(-self._displacement/2)
+            out_origin_port = Port(self._origin, self._angle, 1.).longitudinal_offset(-self._displacement / 2)
             out_fanout_wgs = [Waveguide.make_at_port(out_origin_port.rotated(angle).longitudinal_offset(self._radius))
-                              for angle in (np.arange(self._out_ports) - (self._out_ports-1)/2.) * angular_spacing]
+                              for angle in (np.arange(self._out_ports) - (self._out_ports - 1) / 2.) * angular_spacing]
 
             for wg in out_fanout_wgs:
-                wg.add_parameterized_path(path=lambda t: [t*self._taper_length, np.zeros_like(t)],
-                                          path_derivative=lambda t: [np.ones_like(t)*self._taper_length,
+                wg.add_parameterized_path(path=lambda t: [t * self._taper_length, np.zeros_like(t)],
+                                          path_derivative=lambda t: [np.ones_like(t) * self._taper_length,
                                                                      np.zeros_like(t)],
                                           path_function_supports_numpy=True,
                                           width=self._taper_function, **self._taper_options)
@@ -76,7 +76,7 @@ class MultiPortSwitch(object):
                     wg.add_bend(normalize_phase(-wg.angle + self._angle), self._wg_bend_radius)
 
             else:
-                offsets = (np.arange(self._out_ports) - (self._out_ports-1)/2.) * self._minimal_final_spacing
+                offsets = (np.arange(self._out_ports) - (self._out_ports - 1) / 2.) * self._minimal_final_spacing
                 final_port_heights = [out_origin_port.parallel_offset(offset) for offset in offsets]
 
                 for wg, final_port_height, offset in zip(out_fanout_wgs, final_port_heights, offsets):
@@ -96,13 +96,13 @@ class MultiPortSwitch(object):
 
         if do_in_wgs:
             # Do the input side
-            in_origin_port = Port(self._origin, self._angle + np.pi, 1.).longitudinal_offset(-self._displacement/2)
+            in_origin_port = Port(self._origin, self._angle + np.pi, 1.).longitudinal_offset(-self._displacement / 2)
             in_fanout_wgs = [Waveguide.make_at_port(in_origin_port.rotated(angle).longitudinal_offset(self._radius))
-                             for angle in (np.arange(self._in_ports) - (self._in_ports-1)/2.) * angular_spacing]
+                             for angle in (np.arange(self._in_ports) - (self._in_ports - 1) / 2.) * angular_spacing]
 
             for wg in in_fanout_wgs:
-                wg.add_parameterized_path(path=lambda t: [t*self._taper_length, np.zeros_like(t)],
-                                          path_derivative=lambda t: [np.ones_like(t)*self._taper_length,
+                wg.add_parameterized_path(path=lambda t: [t * self._taper_length, np.zeros_like(t)],
+                                          path_derivative=lambda t: [np.ones_like(t) * self._taper_length,
                                                                      np.zeros_like(t)],
                                           path_function_supports_numpy=True,
                                           width=self._taper_function, **self._taper_options)
@@ -112,14 +112,14 @@ class MultiPortSwitch(object):
                     wg.add_bend(normalize_phase(-wg.angle + self._angle - np.pi), self._wg_bend_radius)
 
             else:
-                offsets = (np.arange(self._in_ports) - (self._in_ports-1)/2.) * self._minimal_final_spacing
+                offsets = (np.arange(self._in_ports) - (self._in_ports - 1) / 2.) * self._minimal_final_spacing
                 final_port_heights = [in_origin_port.parallel_offset(offset) for offset in offsets]
 
                 for wg, final_port_height, offset in zip(in_fanout_wgs, final_port_heights, offsets):
                     if np.isclose(offset, 0):
                         continue
 
-                    #wg.add_route_single_circle_to_port(final_port_height.inverted_direction, on_line_only=True)
+                    # wg.add_route_single_circle_to_port(final_port_height.inverted_direction, on_line_only=True)
 
                     try:
                         wg.add_route_single_circle_to_port(final_port_height.inverted_direction, on_line_only=True)
@@ -181,7 +181,7 @@ class MultiPortSwitch(object):
     def marker_positions(self):
         center_port = Port(self._origin, self._angle, 1.)
 
-        angle = max((2 + max(self._in_ports, self._out_ports)) / 2. * self._angular_spacing, np.pi/4)
+        angle = max((2 + max(self._in_ports, self._out_ports)) / 2. * self._angular_spacing, np.pi / 4)
         radius = max(self._radius, 40)
         return [center_port.rotated(angle).longitudinal_offset(radius).origin,
                 center_port.rotated(angle).longitudinal_offset(-radius).origin,
@@ -210,7 +210,7 @@ def _example():
                             radius=50., displacement=0.,
                             wg_bend_radius=40., minimal_final_spacing=20)
 
-    wg = Waveguide([100, 100], np.pi/4, 1)
+    wg = Waveguide([100, 100], np.pi / 4, 1)
     wg.add_straight_segment(100)
 
     # mpsv2_2 = MultiPortSwitch.make_at_out_port(wg.current_port, 3,
@@ -223,6 +223,7 @@ def _example():
     cell = gdsCAD.core.Cell('TEST')
     cell.add(convert_to_gdscad([mpsv2, wg, ]))
     cell.show()
+
 
 if __name__ == '__main__':
     _example()

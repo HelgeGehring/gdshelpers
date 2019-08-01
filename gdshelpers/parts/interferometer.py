@@ -30,6 +30,7 @@ class MachZehnderInterferometer(object):
     :param horizontal_length: Straight horizontal length for both branches.
     :type horizontal_length: float
     """
+
     def __init__(self, origin, angle, width, splitter_length, splitter_separation, bend_radius,
                  upper_vertical_length, lower_vertical_length, horizontal_length):
         self.origin = origin
@@ -52,7 +53,7 @@ class MachZehnderInterferometer(object):
     @property
     def port(self):
         port = Port(self.origin, self.angle, self.width)
-        return port.longitudinal_offset(2*self.splitter_length+4*self.bend_radius+self.horizontal_length)
+        return port.longitudinal_offset(2 * self.splitter_length + 4 * self.bend_radius + self.horizontal_length)
 
     def get_shapely_object(self):
         splitter1 = Splitter(self.origin, self.angle, self.splitter_length, self.width, self.splitter_separation)

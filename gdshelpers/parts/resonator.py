@@ -35,6 +35,7 @@ class RingResonator(object):
     :param straight_feeding: Add straight connections on both sides of the resonator.
     :param vertical_race_length: Length of a vertical race track section. Defaults to zero.
     """
+
     def __init__(self, origin, angle, width, gap, radius, race_length=0, draw_opposite_side_wg=False,
                  res_wg_width=None, n_points=None, straight_feeding=False, vertical_race_length=0):
         assert race_length >= 0, 'The race track length must not be negative'
@@ -106,7 +107,7 @@ class RingResonator(object):
     # interested in.
     @property
     def port(self):
-        offset = self.race_length +  2*self.radius if self.straight_feeding else 0
+        offset = self.race_length + 2 * self.radius if self.straight_feeding else 0
         return self._origin_port.longitudinal_offset(offset)
 
     out_port = port
@@ -118,8 +119,9 @@ class RingResonator(object):
 
     @property
     def opposite_side_port_in(self):
-        return self._origin_port.parallel_offset(np.copysign(2 * self.radius + self.vertical_race_length, self.opposite_gap)
-                                                 + self._offset + self._offset_opposite).inverted_direction
+        return self._origin_port.parallel_offset(
+            np.copysign(2 * self.radius + self.vertical_race_length, self.opposite_gap)
+            + self._offset + self._offset_opposite).inverted_direction
 
     # Conventional naming of ports
     @property
@@ -141,7 +143,7 @@ class RingResonator(object):
     @property
     def center_coordinates(self):
         return self._origin_port.longitudinal_offset(self.race_length / 2.).parallel_offset(
-            self._offset + np.copysign(self.radius + 0.5*self.vertical_race_length, self.gap)).origin
+            self._offset + np.copysign(self.radius + 0.5 * self.vertical_race_length, self.gap)).origin
 
     @property
     def _offset(self):
@@ -153,7 +155,7 @@ class RingResonator(object):
 
     @property
     def circumference(self):
-        return 2*np.pi*self.radius + 2*self.race_length
+        return 2 * np.pi * self.radius + 2 * self.race_length
 
     def get_shapely_object(self):
         wg = Waveguide.make_at_port(self._origin_port)
@@ -178,7 +180,6 @@ class RingResonator(object):
             wg.add_straight_segment(self.radius)
             if self.draw_opposite_side_wg:
                 opposite_wg.add_straight_segment(self.radius)
-
 
         # Build the ring
         bend_angle = math.copysign(0.5 * np.pi, self.gap)
@@ -210,16 +211,18 @@ def example():
 
     wg1 = Waveguide.make_at_port(Port((0, 0), 0, 1.))
     wg1.add_straight_segment(100)
-    ring1 = RingResonator.make_at_port(wg1.current_port, 1., 50., race_length=30, straight_feeding=True, draw_opposite_side_wg=True)
+    ring1 = RingResonator.make_at_port(wg1.current_port, 1., 50., race_length=30, straight_feeding=True,
+                                       draw_opposite_side_wg=True)
 
     wg2 = Waveguide.make_at_port(ring1.port)
     wg2.add_straight_segment(100)
-    ring2 = RingResonator.make_at_port(wg2.current_port, 1., 50., vertical_race_length=30, straight_feeding=True, draw_opposite_side_wg=True)
+    ring2 = RingResonator.make_at_port(wg2.current_port, 1., 50., vertical_race_length=30, straight_feeding=True,
+                                       draw_opposite_side_wg=True)
 
     wg3 = Waveguide.make_at_port(ring2.port)
     wg3.add_straight_segment(100)
-    ring3 = RingResonator.make_at_port(wg3.current_port, -1., 50., vertical_race_length=30, straight_feeding=True, draw_opposite_side_wg=True)
-
+    ring3 = RingResonator.make_at_port(wg3.current_port, -1., 50., vertical_race_length=30, straight_feeding=True,
+                                       draw_opposite_side_wg=True)
 
     cell.add(convert_to_gdscad([wg1, ring1, wg2, ring2, wg3, ring3], layer=1))
     cell.show()

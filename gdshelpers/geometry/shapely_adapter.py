@@ -396,10 +396,10 @@ def transform_bounds(bounds, origin, rotation=0, scale=1.):
     """
     bounds = scale * np.array(bounds).reshape(2, 2) + origin
     if rotation != 0:
-        center = 0.5 * (bounds[0,:] + bounds[1,:])
-        size = np.abs(bounds[1,:] - bounds[0,:])
+        center = 0.5 * (bounds[0, :] + bounds[1, :])
+        size = np.abs(bounds[1, :] - bounds[0, :])
         c, s = np.cos(rotation), np.sin(rotation)
-        rot_matrix = np.array([[c, -s], [s, c]])   # rotation matrix
+        rot_matrix = np.array([[c, -s], [s, c]])  # rotation matrix
         new_half_size = 0.5 * np.abs(rot_matrix).dot(size)
         new_center = rot_matrix.dot(center)
         bounds = np.array([new_center - new_half_size, new_center + new_half_size])

@@ -19,7 +19,7 @@ def convert_to_positive_resist(parts, buffer_radius, outer_resolution=None):
     assert buffer_radius > 0, 'The buffer radius must be positive.'
     assert outer_resolution >= 0, 'Resolution must be positive or zero.'
 
-    parts = (parts, ) if not isinstance(parts, (tuple, list)) else parts
+    parts = (parts,) if not isinstance(parts, (tuple, list)) else parts
 
     # First merge all parts into one big shapely object
     union = geometric_union(parts)

@@ -8,6 +8,7 @@ from gdshelpers.parts import Port
 from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.geometry.chip import Cell
 
+
 class SNSPD(object):
     def __init__(self, origin, angle, width, nw_width, nw_gap, nw_length, wing_span, wing_height, electrodes_pitch,
                  electrodes_gap, electrodes_height, waveguide_tapering, n_points=128):

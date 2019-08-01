@@ -2,6 +2,7 @@ import math
 import numpy as np
 from gdshelpers.helpers import normalize_phase
 
+
 class Port(object):
     """
     Abstraction of a waveguide port.
@@ -107,7 +108,7 @@ class Port(object):
     # noinspection PyAttributeOutsideInit
     @angle.setter
     def angle(self, angle):
-        self._angle = angle % (2*math.pi)
+        self._angle = angle % (2 * math.pi)
 
     @property
     def width(self):
@@ -134,7 +135,7 @@ class Port(object):
         :rtype: Port
         """
         port = self.copy()
-        offset = [offset * np.cos(self.angle + np.pi/2), offset * np.sin(self.angle + np.pi/2)]
+        offset = [offset * np.cos(self.angle + np.pi / 2), offset * np.sin(self.angle + np.pi / 2)]
         port.origin = port.origin + offset
         return port
 
@@ -170,11 +171,11 @@ class Port(object):
     @property
     def debug_shape(self):
         from gdshelpers.parts.waveguide import Waveguide
-        d = self.width/5
-        wg = Waveguide.make_at_port(self.longitudinal_offset(-d), width=self.width*10)
+        d = self.width / 5
+        wg = Waveguide.make_at_port(self.longitudinal_offset(-d), width=self.width * 10)
         wg.add_straight_segment(d)
         wg.width = self.width
-        wg.add_straight_segment(4*self.width)
-        wg.width = self.width*5
-        wg.add_straight_segment(self.width*5, final_width=self.width*0.1)
+        wg.add_straight_segment(4 * self.width)
+        wg.width = self.width * 5
+        wg.add_straight_segment(self.width * 5, final_width=self.width * 0.1)
         return wg.get_shapely_object()

@@ -16,7 +16,7 @@ REFERENCES = {
     'aln660': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength + 575.9965)/2772.187,
+            'grating_period': lambda wavelength: (wavelength + 575.9965) / 2772.187,
             'grating_ff': 0.72,
             'n_gratings': 20,
         },
@@ -29,7 +29,7 @@ REFERENCES = {
     'aln780': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-363.214)/826.55,
+            'grating_period': lambda wavelength: (wavelength - 363.214) / 826.55,
             'grating_ff': 0.8,
             'n_gratings': 30,
         },
@@ -42,7 +42,7 @@ REFERENCES = {
     'aln780_ox': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-450.02925)/662.87,
+            'grating_period': lambda wavelength: (wavelength - 450.02925) / 662.87,
             'grating_ff': 0.76,
             'n_gratings': 30,
         },
@@ -55,7 +55,7 @@ REFERENCES = {
     'aln1230': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-280.060566)/1223.47208,
+            'grating_period': lambda wavelength: (wavelength - 280.060566) / 1223.47208,
             'grating_ff': 0.8,
             'n_gratings': 20,
         },
@@ -68,8 +68,8 @@ REFERENCES = {
     'aln1550': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength - 112.258)/1220.68,
-            #NOTE: Before changed by Matthias Stegmaier, this was (wavelength - 796.566)/690.4757
+            'grating_period': lambda wavelength: (wavelength - 112.258) / 1220.68,
+            # NOTE: Before changed by Matthias Stegmaier, this was (wavelength - 796.566)/690.4757
             #      As corrected Mar-03-2011 by Wolfram Pernice, chip R29.
             'grating_ff': 0.85,
             'n_gratings': 20,
@@ -85,7 +85,7 @@ REFERENCES = {
     'aln1550_thick': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength - 1045.0715)/454.29771,
+            'grating_period': lambda wavelength: (wavelength - 1045.0715) / 454.29771,
             'grating_ff': 0.65,
             'n_gratings': 20,
             'taper_length': 30,
@@ -102,7 +102,7 @@ REFERENCES = {
     'gan780': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-438.75)/750,
+            'grating_period': lambda wavelength: (wavelength - 438.75) / 750,
             'grating_ff': 0.72,
             'n_gratings': 20,
         },
@@ -115,7 +115,7 @@ REFERENCES = {
     'gan1550': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-1197.31738)/343.49,
+            'grating_period': lambda wavelength: (wavelength - 1197.31738) / 343.49,
             'grating_ff': 0.8,
             'n_gratings': 20,
         },
@@ -130,7 +130,7 @@ REFERENCES = {
     'hs110': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-336.4172)/1710.5,
+            'grating_period': lambda wavelength: (wavelength - 336.4172) / 1710.5,
             'grating_ff': 0.525,
             'n_gratings': 20,
         },
@@ -143,7 +143,7 @@ REFERENCES = {
     'hs110_ox': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-317.1553)/1760.4,
+            'grating_period': lambda wavelength: (wavelength - 317.1553) / 1760.4,
             'grating_ff': 0.5,
             'n_gratings': 20,
         },
@@ -159,7 +159,7 @@ REFERENCES = {
     'si110': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-728.6)/917.0,
+            'grating_period': lambda wavelength: (wavelength - 728.6) / 917.0,
             'grating_ff': 0.8,
             'n_gratings': 20,
         },
@@ -172,7 +172,7 @@ REFERENCES = {
     'si110_ox': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-898.22)/784.3,
+            'grating_period': lambda wavelength: (wavelength - 898.22) / 784.3,
             'grating_ff': 0.8,
             'n_gratings': 20,
         },
@@ -185,7 +185,7 @@ REFERENCES = {
     'si110_nb': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-942.8254)/663.2421,
+            'grating_period': lambda wavelength: (wavelength - 942.8254) / 663.2421,
             'grating_ff': 0.8,
             'n_gratings': 20,
         },
@@ -198,7 +198,7 @@ REFERENCES = {
     'si110_ap': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-728.6)/917.0,
+            'grating_period': lambda wavelength: (wavelength - 728.6) / 917.0,
             'grating_ff': 0.8,
             'n_gratings': 20,
             'n_ap_gratings': 10,
@@ -212,7 +212,7 @@ REFERENCES = {
     'si110_nb_ap': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-942.8254)/663.2421,
+            'grating_period': lambda wavelength: (wavelength - 942.8254) / 663.2421,
             'grating_ff': 0.8,
             'n_gratings': 20,
             'n_ap_gratings': 10,
@@ -226,7 +226,7 @@ REFERENCES = {
     'si220': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength*0.715-389.74)/1000.0,
+            'grating_period': lambda wavelength: (wavelength * 0.715 - 389.74) / 1000.0,
             'grating_ff': 0.8,
             'n_gratings': 20,
         },
@@ -239,7 +239,7 @@ REFERENCES = {
     'sin500': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-198.4740)/1353.5,
+            'grating_period': lambda wavelength: (wavelength - 198.4740) / 1353.5,
             'grating_ff': 0.4,
             'n_gratings': 20,
         },
@@ -252,7 +252,7 @@ REFERENCES = {
     'sn200_va': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-201.34)/955.1,
+            'grating_period': lambda wavelength: (wavelength - 201.34) / 955.1,
             'grating_ff': 0.8,
             'n_gratings': 30,
         },
@@ -265,7 +265,7 @@ REFERENCES = {
     'sn200_vw': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-235.6)/879.1,
+            'grating_period': lambda wavelength: (wavelength - 235.6) / 879.1,
             'grating_ff': 0.65,
             'n_gratings': 30,
         },
@@ -278,7 +278,7 @@ REFERENCES = {
     'sn330': {
         'parameters': {
             'full_opening_angle': np.deg2rad(40.0),
-            'grating_period': lambda wavelength: (wavelength-620.012)/816.57,
+            'grating_period': lambda wavelength: (wavelength - 620.012) / 816.57,
             'grating_ff': 0.85,
             'n_gratings': 20,
         },

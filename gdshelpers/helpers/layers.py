@@ -43,5 +43,5 @@ masklayer1 = 14
 #: Mask window layer 2. (opening windows for subsequent etching e.g. freestanding devices)
 masklayer2 = 15
 
-#!: List of unassigned layers for general purpose use.
+# !: List of unassigned layers for general purpose use.
 gplayers = tuple(range(16, 70))

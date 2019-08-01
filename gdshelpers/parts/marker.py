@@ -125,20 +125,20 @@ class AutoStigmationMarker(object):
         self.resolution = resolution
 
     def get_shapely_object(self):
-        radius = self.minimum_feature_size/2
+        radius = self.minimum_feature_size / 2
         feature_size = self.minimum_feature_size
 
         center_point = shapely.geometry.Point(self.origin[0], self.origin[1])
         objs = list()
 
         # The inner object is a circle
-        objs.append(center_point.buffer(self.minimum_feature_size/2., resolution=self.resolution))
+        objs.append(center_point.buffer(self.minimum_feature_size / 2., resolution=self.resolution))
 
         while feature_size < self.maximum_feature_size:
             feature_size *= self.reduction_factor
-            radius += feature_size*2
+            radius += feature_size * 2
 
-            ring = center_point.buffer(radius+feature_size, self.resolution).difference(
+            ring = center_point.buffer(radius + feature_size, self.resolution).difference(
                 center_point.buffer(radius, self.resolution))
             objs.append(ring)
 

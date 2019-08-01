@@ -4,6 +4,7 @@ import matplotlib.text
 
 import numpy as np
 
+
 def save_as_image(obj, file_path, resolution=1., antialiased=True, include_text=False,
                   ylim=(None, None), xlim=(None, None)):
     """
@@ -23,19 +24,19 @@ def save_as_image(obj, file_path, resolution=1., antialiased=True, include_text=
 
     # For vector graphics, map 1um to {resolution} mm instead of inch.
     is_vector = file_path.split('.')[-1] in ('svg', 'svgz', 'eps', 'ps', 'emf', 'pdf')
-    scale = 5/127. if is_vector else 1.
+    scale = 5 / 127. if is_vector else 1.
 
-    dpi = 1./resolution
+    dpi = 1. / resolution
 
     fig = plt.figure(frameon=False)
     fig.patch.set_visible(False)
 
     ax = fig.add_subplot(1, 1, 1)
     ax.set_aspect('equal')
-    #ax.margins(0.1)
+    # ax.margins(0.1)
     ax.axis('off')
 
-    artists=obj.artist()
+    artists = obj.artist()
     for a in artists:
         if not include_text and isinstance(a, matplotlib.text.Text):
             continue
@@ -59,8 +60,7 @@ def save_as_image(obj, file_path, resolution=1., antialiased=True, include_text=
     ax.set_ylim(*ylim)
     actual_ylim, actual_xlim = ax.get_ylim(), ax.get_xlim()
 
-
-    fig.set_size_inches(np.asarray((actual_xlim[1]-actual_xlim[0], actual_ylim[1]-actual_ylim[0]))*scale)
+    fig.set_size_inches(np.asarray((actual_xlim[1] - actual_xlim[0], actual_ylim[1] - actual_ylim[0])) * scale)
     fig.set_dpi(dpi)
     fig.savefig(file_path, transparent=True, dpi=dpi)
     plt.close(fig)
@@ -72,8 +72,10 @@ def add_jeol_helpers(cell):
             'cells': [extract_special(ref.ref_cell) for ref in cell.references],
             'elements': [e for e in cell.elements if (hasattr(e, 'is_special') and e.is_special)]
         }
+
     from pprint import pprint
     pprint(extract_special(cell))
+
 
 def _example():
     import gdsCAD.core
@@ -82,13 +84,12 @@ def _example():
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.coupler import GratingCoupler
 
-
     left_coupler = GratingCoupler.make_traditional_coupler_from_database([0, 0], 1, 'sn330', 1550)
     wg = Waveguide.make_at_port(left_coupler.port)
     wg.add_straight_segment(length=10)
-    wg.add_bend(-pi/2, radius=50)
+    wg.add_bend(-pi / 2, radius=50)
     wg.add_straight_segment(length=150)
-    wg.add_bend(-pi/2, radius=50)
+    wg.add_bend(-pi / 2, radius=50)
     wg.add_straight_segment(length=10)
     right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg.current_port, 'sn330', 1550)
 
@@ -100,6 +101,7 @@ def _example():
     save_as_image(cell, '/tmp/test.png', resolution=1)
     save_as_image(cell, '/tmp/test.pdf')
     save_as_image(cell, '/tmp/test.svg')
+
 
 if __name__ == '__main__':
     _example()

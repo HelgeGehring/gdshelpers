@@ -94,7 +94,6 @@ class PhotonicCrystalCavity:
             self.invertmarker = True
             self.generate_marker()
 
-
     def _generate(self):
         if not self.tapermode:
             width_func = lambda x: self.width
@@ -193,7 +192,7 @@ class PhotonicCrystalCavity:
         cavityparameter.__delitem__('origin')
 
         devlen = cavityparameter['lengthofcavity'] + 2 * (
-            (cavityparameter['numberofholes'] - 1) * np.mean(cavityparameter['holedistances'])) + (
+                (cavityparameter['numberofholes'] - 1) * np.mean(cavityparameter['holedistances'])) + (
                      cavityparameter['holediameters']) + (cavityparameter['holediameters'])
         return cls(
             origin=[port.origin[0] + devlen / 2 * np.cos(port.angle), port.origin[1] + devlen / 2 * np.sin(port.angle)],
@@ -227,7 +226,7 @@ def main():
     bandgap = PhotonicCrystalCavity(**bandgapparameter)
 
     port1 = Port(origin=[10, 10], angle=np.pi / 2, width=1)
-    #cav2 = PhotonicCrystalCavity.make_at_port(port=port1, **cavitiyparameter_tap_width)
+    # cav2 = PhotonicCrystalCavity.make_at_port(port=port1, **cavitiyparameter_tap_width)
     pccav3 = PhotonicCrystalCavity(**cavitiyparameter_tap_width)
     wg = Waveguide.make_at_port(port1.inverted_direction)
     wg.add_straight_segment(length=5)
@@ -242,14 +241,14 @@ def main():
     cell.add(convert_to_gdscad(bandgap.layer_underetch, layer=StandardLayers.masklayer1))
     cell.add(convert_to_gdscad(bandgap.layer_photonic_cavity, layer=StandardLayers.nanolayer))
 
-
-    #cell.add(convert_to_gdscad(pccav2.layer_photonic_cavity, layer=1))
+    # cell.add(convert_to_gdscad(pccav2.layer_photonic_cavity, layer=1))
     # cell.add(convert_to_gdscad(pccav3.get_holes_list()))
     holes = pccav3.get_holes_list()
 
     layout = gdsCAD.core.Layout()
     layout.add(cell=cell)
     layout.show()
+
 
 if __name__ == '__main__':
     main()

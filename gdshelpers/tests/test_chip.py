@@ -85,15 +85,15 @@ class DeviceTestCase(unittest.TestCase):
         np_testing.assert_almost_equal(cell1.bounds, (10, 10, 30, 20))
 
         cell2 = Cell('root_cell')
-        cell2.add_cell(cell1, angle=0.5*np.pi)
+        cell2.add_cell(cell1, angle=0.5 * np.pi)
         np_testing.assert_almost_equal(cell2.bounds, (-20, 10, -10, 30))
 
         cell3 = Cell('root_cell')
-        cell3.add_cell(cell1, angle=1.5*np.pi)
+        cell3.add_cell(cell1, angle=1.5 * np.pi)
         np_testing.assert_almost_equal(cell3.bounds, (10, -30, 20, -10))
 
         cell4 = Cell('root_cell')
-        cell4.add_cell(cell1, angle=1*np.pi)
+        cell4.add_cell(cell1, angle=1 * np.pi)
         np_testing.assert_almost_equal(cell4.bounds, (-30, -20, -10, -10))
 
         # For manually testing the bounds rotation, uncomment the following code and look at the resulting GDS

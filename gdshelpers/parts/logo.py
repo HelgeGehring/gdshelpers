@@ -198,7 +198,7 @@ def _example():
 
     cell = gdsCAD.core.Cell('LOGOS')
     cell.add(convert_to_gdscad(kit_logo))
-    cell.add(convert_to_gdscad(translate(wwu_logo.get_shapely_object(),2.5)))
+    cell.add(convert_to_gdscad(translate(wwu_logo.get_shapely_object(), 2.5)))
     cell.show()
 
 

@@ -13,7 +13,7 @@ def raith_eline_dosefactor_to_datatype(dose_factor):
     :rtype: int
     """
     assert dose_factor >= 0
-    return int(dose_factor*1000)
+    return int(dose_factor * 1000)
 
 
 def int_to_alphabet(num):
@@ -58,9 +58,9 @@ def normalize_phase(phase, zero_to_two_pi=False):
     """
 
     if not zero_to_two_pi:
-        return (phase + np.pi) % (2*np.pi)-np.pi
+        return (phase + np.pi) % (2 * np.pi) - np.pi
     else:
-        return (phase + 2*np.pi) % (2*np.pi)
+        return (phase + 2 * np.pi) % (2 * np.pi)
 
 
 def find_line_intersection(r1, angle1, r2, angle2):
@@ -82,4 +82,4 @@ def find_line_intersection(r1, angle1, r2, angle2):
 
     # noinspection PyTypeChecker
     x = linalg.solve(a, b)
-    return r1+u1*x[0], x
+    return r1 + u1 * x[0], x
