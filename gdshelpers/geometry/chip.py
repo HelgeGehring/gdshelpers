@@ -12,17 +12,17 @@ from gdshelpers.parts.text import Text
 from gdshelpers.geometry import geometric_union
 import gdshelpers.helpers.layers as std_layers
 
-automatic_library = None
+gds_library = None
 try:
     import gdspy
 
-    automatic_library = 'gdspy'
+    gds_library = 'gdspy'
 except ImportError:
     pass  # Error will come when trying to use get_gdspy_cell
 try:
     import gdsCAD
 
-    automatic_library = 'gdscad'
+    gds_library = 'gdscad'
 except ImportError:
     pass  # Error will come when trying to use get_gdscad_cell
 
@@ -281,7 +281,7 @@ class Cell:
     def start_viewer(self):
         gdspy.LayoutViewer(library=self.get_gdspy_lib(), depth=10)
 
-    def save(self, name=None, library=automatic_library, grid_steps_per_micron=1000, parallel=False):
+    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False):
         """
         Exports the layout and creates an DLW-file, if DLW-features are used.
 
@@ -296,6 +296,14 @@ class Cell:
 
         if not name:
             name = self.name
+        elif name.endswith('.gds'):
+            name = name[:-4]
+            library = library or gds_library
+        elif name.endswith('.oasis'):
+            name = name[:-6]
+            library = library or 'fatamorgana'
+
+        library = library or gds_library
 
         if library == 'gdspy':
             if parallel:
