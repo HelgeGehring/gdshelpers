@@ -7,6 +7,16 @@ from gdshelpers.parts.waveguide import Waveguide
 
 class Spiral:
     def __init__(self, origin, angle, width, num, gap, inner_gap):
+        """
+        Creates a Spiral around the given origin
+
+        :param origin: position of the center of the spiral
+        :param angle: angle of the outer two waveguides
+        :param width: width of the waveguide
+        :param num: number of turns
+        :param gap: gap between two waveguides
+        :param inner_gap: inner radius of the spiral
+        """
         self._origin_port = Port(origin, angle, width)
         self.gap = gap
         self.inner_gap = inner_gap
@@ -70,17 +80,16 @@ class Spiral:
         return self.wg_in.length + self.wg_out.length
 
     def _generate(self):
-        self.wg_in = Waveguide.make_at_port(self._origin_port)
-
         def path(a):
             return (self.num * (self.width + self.gap) * np.abs(1 - a) + self.inner_gap) * np.array(
                 (np.sin(np.pi * a * self.num), np.cos(np.pi * a * self.num)))
 
+        self.wg_in = Waveguide.make_at_port(self._origin_port)
         self.wg_in.add_parameterized_path(path)
 
         self.wg_out = Waveguide.make_at_port(self._origin_port.inverted_direction)
-
         self.wg_out.add_parameterized_path(path)
+
         self.wg_in.add_route_single_circle_to_port(self._origin_port.rotated(-np.pi * (self.num % 2)))
         self.wg_in.add_route_single_circle_to_port(self.wg_out.port)
 
@@ -91,19 +100,18 @@ class Spiral:
 
 
 def _example():
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
     wg = Waveguide((0, 0), 1, 1)
     wg.add_straight_segment(30)
-    spiral = Spiral.make_at_port(wg.port, 3, 5, 50)
+    spiral = Spiral.make_at_port(wg.current_port, 2, 5, 50)
     wg2 = Waveguide.make_at_port(spiral.out_port)
     wg2.add_straight_segment(100)
 
     print(spiral.length)
 
-    cell = gdsCAD.core.Cell('Spiral')
-    cell.add(convert_to_gdscad(geometric_union([wg, spiral, wg2])))
+    cell = Cell('Spiral')
+    cell.add_to_layer(1, wg, spiral, wg2)
     cell.show()
 
 
