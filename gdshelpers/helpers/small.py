@@ -53,6 +53,8 @@ def normalize_phase(phase, zero_to_two_pi=False):
 
     :param phase: Phase to normalize.
     :type phase: float
+    :param zero_to_two_pi: True ->  0 to 2*pi, False -> +/- pi
+    :type zero_to_two_pi: bool
     :return: Normalized phase within +/- pi or 0 to 2*pi
     :rtype: float
     """

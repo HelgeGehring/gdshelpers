@@ -257,6 +257,8 @@ def convert_to_gdscad(objs, layer=1, datatype=None, path_width=1.0, path_pathtyp
     :type path_pathtype: int
     :param max_points: Maximum number of points. Defaults to module wide settings.
     :type max_points: int, None
+    :param max_points_line: Maximum number of points for lines. Defaults to module wide settings.
+    :type max_points_line: int, None
     :param over_fracture_factor: Break polygons in *over_fracture_factor* times smaller objects first. Then merge them
                                  again. May result in better fracturing but high numbers increase conversion time.
 
@@ -294,13 +296,17 @@ def convert_to_layout_objs(objs, layer=1, datatype=None, path_width=1.0, path_pa
     :type path_pathtype: int
     :param max_points: Maximum number of points. Defaults to module wide settings.
     :type max_points: int, None
+    :param max_points_line: Maximum number of points for lines. Defaults to module wide settings.
+    :type max_points_line: int, None
     :param over_fracture_factor: Break polygons in *over_fracture_factor* times smaller objects first. Then merge them
                                  again. May result in better fracturing but high numbers increase conversion time.
 
                                  When *over_fracture_factor* is set to 0, no additional healing is done.
     :type over_fracture_factor: int
-    :param library: Defines the used library, either gdsCAD or gdspy
+    :param library: Defines the used library, either gdscad or gdspy
     :type library: str
+    :param grid_steps_per_micron: Number of steps of the grid per micron, defaults to 1000 steps per micron
+    :type grid_steps_per_micron: int
     """
     if library == 'gdscad':
         import gdsCAD

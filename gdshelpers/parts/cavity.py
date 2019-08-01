@@ -7,14 +7,13 @@ from gdshelpers.helpers import StandardLayers
 
 
 class PhotonicCrystalCavity:
-    '''
+    """
     class to implement standard Photonic Crystal Cavity devices with GDS helpers
     see below for examples how to implement cavities with
     1. constant hole diameters/distances
     2. varying hole diameters/distances
     3. tapered waveguide width (set cavity length to - holediameter)
-
-    '''
+    """
 
     def __init__(self, origin, angle, width, lengthofcavity, numberofholes=14, holediameters=.5, holedistances=0.5,
                  tapermode=None, finalwidth=None, taperlength=None,
