@@ -94,8 +94,8 @@ class Waveguide(object):
 
         if not np.isclose(length, 0):
             assert length >= 0, 'Length of straight segment must not be negative'
-            polygon = shapely.geometry.Polygon(([0, self.width/2], [length, final_width/2],
-                                                [length, -final_width/2], [0, -self.width/2]))
+            polygon = shapely.geometry.Polygon(([0, self.width / 2], [length, final_width / 2],
+                                                [length, -final_width / 2], [0, -self.width / 2]))
             polygon = shapely.affinity.rotate(polygon, self.angle, origin=[0, 0], use_radians=True)
             polygon = shapely.affinity.translate(polygon, self.x, self.y)
             self._segments.append((self._current_port.copy(), polygon, length))
@@ -108,7 +108,7 @@ class Waveguide(object):
         return self
 
     def add_arc(self, final_angle, radius, final_width=None, n_points=128, shortest=True, **kwargs):
-        delta = final_angle-self.angle
+        delta = final_angle - self.angle
         if not np.isclose(normalize_phase(delta), 0):
             if shortest:
                 delta = normalize_phase(delta)
@@ -122,32 +122,32 @@ class Waveguide(object):
         self._current_port.set_port_properties(**kargs)
         final_width = final_width or self.width
 
-        angle = normalize_phase(angle, zero_to_two_pi=True) - (0 if angle > 0 else 2*np.pi)
+        angle = normalize_phase(angle, zero_to_two_pi=True) - (0 if angle > 0 else 2 * np.pi)
 
         if not np.isclose(radius, 0) and not np.isclose(angle, 0) and radius > 0:
             if angle > 0:
-                circle_center = (-np.sin(self.angle)*radius, np.cos(self.angle)*radius) + self.current_port.origin
-                start_angle = -np.pi/2 + self.angle
+                circle_center = (-np.sin(self.angle) * radius, np.cos(self.angle) * radius) + self.current_port.origin
+                start_angle = -np.pi / 2 + self.angle
             else:
-                circle_center = (np.sin(self.angle)*radius, -np.cos(self.angle)*radius) + self.current_port.origin
-                start_angle = np.pi/2 + self.angle
+                circle_center = (np.sin(self.angle) * radius, -np.cos(self.angle) * radius) + self.current_port.origin
+                start_angle = np.pi / 2 + self.angle
 
             end_angle = start_angle + angle
 
             # Calculate the points needed for this angle
-            points = max(abs(end_angle - start_angle)/(np.pi/2) * n_points, 2)
+            points = max(abs(end_angle - start_angle) / (np.pi / 2) * n_points, 2)
 
             phi = np.linspace(start_angle, end_angle, points)
-            upper_radius_points = np.linspace(radius - self.width/2, radius-final_width/2, points)
-            upper_line_points = np.array([upper_radius_points*np.cos(phi),
-                                          upper_radius_points*np.sin(phi)]).T + circle_center
+            upper_radius_points = np.linspace(radius - self.width / 2, radius - final_width / 2, points)
+            upper_line_points = np.array([upper_radius_points * np.cos(phi),
+                                          upper_radius_points * np.sin(phi)]).T + circle_center
 
-            lower_radius_points = np.linspace(radius + self.width/2, radius+final_width/2, points)
-            lower_line_points = np.array([lower_radius_points*np.cos(phi),
-                                          lower_radius_points*np.sin(phi)]).T + circle_center
+            lower_radius_points = np.linspace(radius + self.width / 2, radius + final_width / 2, points)
+            lower_line_points = np.array([lower_radius_points * np.cos(phi),
+                                          lower_radius_points * np.sin(phi)]).T + circle_center
 
             polygon = shapely.geometry.Polygon(np.concatenate([upper_line_points, lower_line_points[::-1, :]]))
-            self._segments.append((self._current_port.copy(), polygon, abs(angle)*radius))
+            self._segments.append((self._current_port.copy(), polygon, abs(angle) * radius))
 
             endpoint = shapely.geometry.Point(radius * np.cos(end_angle) + circle_center[0],
                                               radius * np.sin(end_angle) + circle_center[1])
@@ -224,7 +224,7 @@ class Waveguide(object):
 
                 lengths = np.linspace(presample_coordinates_d1__cum_norm[0],
                                       presample_coordinates_d1__cum_norm[-1],
-                                      presample_coordinates_d1__cum_norm[-1]//sample_distance)
+                                      presample_coordinates_d1__cum_norm[-1] // sample_distance)
 
                 # First get the spline representation. This is needed since we manipulate these directly for roots
                 # finding.
@@ -276,8 +276,8 @@ class Waveguide(object):
             sample_width = np.array([(width if width else self.current_port.width), ])
 
         # Now we have everything to calculate the polygon
-        poly_path_1 = sample_coordinates + sample_width[:, None]/2 * sample_coordinates_d1_normed_ortho
-        poly_path_2 = sample_coordinates - sample_width[:, None]/2 * sample_coordinates_d1_normed_ortho
+        poly_path_1 = sample_coordinates + sample_width[:, None] / 2 * sample_coordinates_d1_normed_ortho
+        poly_path_2 = sample_coordinates - sample_width[:, None] / 2 * sample_coordinates_d1_normed_ortho
 
         assert shapely.geometry.LineString(np.concatenate([poly_path_1, poly_path_2[::-1, :]])).is_simple, \
             'Outer lines of parameterized wg intersect. Try using lower bend radii or smaller a smaller wg'
@@ -323,7 +323,7 @@ class Waveguide(object):
         bezier_curve = CubicBezierCurve(p0, p1, p2, p3)
 
         self.add_parameterized_path(path=bezier_curve.evaluate, path_derivative=bezier_curve.evaluate_d1, width=width,
-                                    path_function_supports_numpy=True,  **kwargs)
+                                    path_function_supports_numpy=True, **kwargs)
         return self
 
     def add_bezier_to(self, final_coordinates, final_angle, bend_strength, width=None, **kwargs):
@@ -349,7 +349,7 @@ class Waveguide(object):
 
     def add_bezier_to_port(self, port, bend_strength, width=None, **kwargs):
         if not width and not np.isclose(self.width, port.width):
-            width = lambda t: t*(port.width-self.width) + self.width
+            width = lambda t: t * (port.width - self.width) + self.width
             supports_numpy = True
         else:
             supports_numpy = False
@@ -395,19 +395,20 @@ class Waveguide(object):
         # Calculate the angle bisector
         u1 = np.array([np.cos(self.angle), np.sin(self.angle)])
         u2 = np.array([np.cos(final_angle), np.sin(final_angle)])
-        u_half = u1+u2
+        u_half = u1 + u2
         half_angle = np.arctan2(u_half[1], u_half[0])
-        diff_angle = normalize_phase(self.angle-final_angle - np.pi)
+        diff_angle = normalize_phase(self.angle - final_angle - np.pi)
 
-        _, r1 = find_line_intersection(r1, self.angle + np.pi/2, intersection_point, half_angle)
+        _, r1 = find_line_intersection(r1, self.angle + np.pi / 2, intersection_point, half_angle)
 
         if not on_line_only:
-            max_poss_radius = min(np.abs([r1[0], distance[0]/np.tan(diff_angle/2), distance[1]/np.tan(diff_angle/2)]))
+            max_poss_radius = min(
+                np.abs([r1[0], distance[0] / np.tan(diff_angle / 2), distance[1] / np.tan(diff_angle / 2)]))
         else:
-            max_poss_radius = min(np.abs([r1[0], distance[0]/np.tan(diff_angle/2)]))
+            max_poss_radius = min(np.abs([r1[0], distance[0] / np.tan(diff_angle / 2)]))
 
         radius = min([max_bend_strength, max_poss_radius]) if max_bend_strength is not None else max_poss_radius
-        d = abs(radius*np.tan(diff_angle/2))
+        d = abs(radius * np.tan(diff_angle / 2))
 
         tmp_wg = Waveguide.make_at_port(self.current_port)
         tmp_wg.add_straight_segment(distance[0] - d)
@@ -467,7 +468,7 @@ class Waveguide(object):
         :param x: value
         :param line_kw: Parameters passed on to add_straight_segment.
         """
-        self.add_straight_segment_to_intersection([x, 0], np.pi/2, **line_kw)
+        self.add_straight_segment_to_intersection([x, 0], np.pi / 2, **line_kw)
         return self
 
     def add_straight_segment_until_y(self, y, **line_kw):
@@ -498,7 +499,7 @@ class Waveguide(object):
             furthest_port_idx = distances.argmax()
             port = port[furthest_port_idx]
 
-        self.add_straight_segment_to_intersection(port.origin, port.angle - np.pi/2, **line_kw)
+        self.add_straight_segment_to_intersection(port.origin, port.angle - np.pi / 2, **line_kw)
         return self
 
 
@@ -514,18 +515,18 @@ def _example():
     path = Waveguide.make_at_port(port)
 
     path.add_straight_segment(10)
-    path.add_bend(np.pi/2, 10, final_width=0.5)
-    path.add_bend(-np.pi/2, 10, final_width=1)
-    path.add_arc(np.pi*3/4, 10,)
+    path.add_bend(np.pi / 2, 10, final_width=0.5)
+    path.add_bend(-np.pi / 2, 10, final_width=1)
+    path.add_arc(np.pi * 3 / 4, 10, )
 
     splitter = Splitter.make_at_root_port(path.current_port, 30, 10)
     path2 = Waveguide.make_at_port(splitter.right_branch_port)
-    path2.add_bend(-np.pi/4, 10)
+    path2.add_bend(-np.pi / 4, 10)
 
     n = 10
-    path2.add_parameterized_path(lambda t: (n*10*t, np.cos(n*2*np.pi*t)-1),
-                                 path_derivative=lambda t: (n*10, -n*2*np.pi*np.sin(n*2*np.pi*t)),
-                                 width=lambda t: np.cos(n*2*np.pi*t)*0.2+np.exp(-t)*0.3 + 0.5,
+    path2.add_parameterized_path(lambda t: (n * 10 * t, np.cos(n * 2 * np.pi * t) - 1),
+                                 path_derivative=lambda t: (n * 10, -n * 2 * np.pi * np.sin(n * 2 * np.pi * t)),
+                                 width=lambda t: np.cos(n * 2 * np.pi * t) * 0.2 + np.exp(-t) * 0.3 + 0.5,
                                  width_function_supports_numpy=True)
     path2.add_straight_segment(10)
     print(path2.length)
@@ -549,8 +550,6 @@ def _example():
 
     whole_layout = (path, splitter, path2, splitter2, coupler1, path3, path4, empty_path)
 
-
-
     layout = gdsCAD.core.Layout('LIBRARY')
     cell = gdsCAD.core.Cell('TOP')
     cell.add(convert_to_gdscad(whole_layout))
@@ -559,13 +558,13 @@ def _example():
 
     layout.add(cell)
 
-
     cell_df = gdsCAD.core.Cell('TOP_DF')
     cell_df.add(convert_to_gdscad(convert_to_positive_resist(whole_layout, buffer_radius=1.5)))
     layout.add(cell_df)
 
     layout.save('output.gds')
     cell.show()
+
 
 if __name__ == '__main__':
     _example()
