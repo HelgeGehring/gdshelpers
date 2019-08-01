@@ -1,9 +1,9 @@
-from . import _fonts
 import numpy as np
 import shapely.geometry
 import shapely.ops
 import shapely.affinity
 
+from gdshelpers.parts import _fonts
 from gdshelpers.helpers import normalize_phase
 from gdshelpers.helpers.alignment import Alignment
 
@@ -33,7 +33,7 @@ class Text(object):
     def origin(self, origin):
         self._invalidate()
         self._origin = np.array(origin)
-        assert self._origin.shape == (2, ), 'origin not valid'
+        assert self._origin.shape == (2,), 'origin not valid'
 
     @property
     def height(self):
@@ -68,7 +68,7 @@ class Text(object):
 
     @property
     def bounding_box(self):
-        #FIXME: Does not include offset and rotation!
+        # FIXME: Does not include offset and rotation!
         if self._bbox is None:
             self.get_shapely_object()
 
@@ -96,18 +96,18 @@ class Text(object):
                 continue
 
             char_font = font[char]
-            cursor_x += char_font['width']/2 * self.height
+            cursor_x += char_font['width'] / 2 * self.height
 
             for line in char_font['lines']:
                 points = np.array(line).T * self.height + (cursor_x, cursor_y)
                 polygons.append(shapely.geometry.Polygon(points))
 
             # Add kerning
-            if i < len(self.text) - 1 and self.text[i+1] not in special_handling_chars:
-                kerning = char_font['kerning'][self.text[i+1]]
-                cursor_x += (char_font['width']/2 + kerning) * self.height
+            if i < len(self.text) - 1 and self.text[i + 1] not in special_handling_chars:
+                kerning = char_font['kerning'][self.text[i + 1]]
+                cursor_x += (char_font['width'] / 2 + kerning) * self.height
 
-            max_x = max(max_x, cursor_x + char_font['width']/2 * self.height)
+            max_x = max(max_x, cursor_x + char_font['width'] / 2 * self.height)
 
         merged_polygon = shapely.ops.cascaded_union(polygons)
 
@@ -126,7 +126,7 @@ class Text(object):
             rotated_text = shapely.affinity.rotate(aligned_text, self.angle, origin=[0, 0], use_radians=True)
             final_text = shapely.affinity.translate(rotated_text, *self.origin)
         else:
-            final_text = shapely.affinity.translate(merged_polygon, *(offset+self.origin))
+            final_text = shapely.affinity.translate(merged_polygon, *(offset + self.origin))
 
         return final_text
 
@@ -142,6 +142,7 @@ def _example():
     cell = gdsCAD.core.Cell('FONTS')
     cell.add(convert_to_gdscad(text))
     cell.show()
+
 
 if __name__ == '__main__':
     _example()
