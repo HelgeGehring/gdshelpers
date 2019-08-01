@@ -13,6 +13,7 @@ from gdshelpers.parts.coupler_references import REFERENCES as COUPLER_REFERENCES
 from gdshelpers.parts.text import Text
 from gdshelpers.helpers import StandardLayers
 
+
 class GratingCoupler(object):
     """
     A standard style radial grating coupler.
@@ -49,6 +50,7 @@ class GratingCoupler(object):
         the taper measured to its origin. An assertion error is thrown, if the radius is to small to achieve the
         full opening angle.
     """
+
     def __init__(self, origin, angle, width, full_opening_angle, grating_lines, n_points=300,
                  extra_triangle_layer=False, start_radius_absolute=False):
         assert len(grating_lines) % 2 == 1, 'An odd number of grating lines is needed.'
@@ -57,7 +59,7 @@ class GratingCoupler(object):
         self._origin = origin
         self._angle = angle
         self._width = width
-        self._opening_angle = full_opening_angle/2
+        self._opening_angle = full_opening_angle / 2
         self._grating_lines = grating_lines
         self._points = n_points
 
@@ -72,7 +74,7 @@ class GratingCoupler(object):
     @classmethod
     def make_traditional_coupler(cls, origin, width, full_opening_angle, grating_period, grating_ff, n_gratings,
                                  ap_max_ff=1.0, n_ap_gratings=0, taper_length=None, extra_triangle_layer=False,
-                                 angle=-np.pi/2, n_points=394, implement_cadence_ff_bug=True):
+                                 angle=-np.pi / 2, n_points=394, implement_cadence_ff_bug=True):
         """
         Generate a traditional coupler as the ``lib/coupler/`` functions did. But this version is versatile enough
         to generate all kinds of couplers, including:
@@ -123,20 +125,20 @@ class GratingCoupler(object):
         if not implement_cadence_ff_bug:
             apodized_ffs = np.linspace(ap_max_ff, grating_ff, n_ap_gratings)
         else:
-            apodized_ffs = np.linspace(ap_max_ff, grating_ff, n_ap_gratings+1)[1:]
+            apodized_ffs = np.linspace(ap_max_ff, grating_ff, n_ap_gratings + 1)[1:]
 
         for ap_ff in apodized_ffs:
-            radii.append(grating_period*(1-ap_ff))
-            radii.append(grating_period*ap_ff)
+            radii.append(grating_period * (1 - ap_ff))
+            radii.append(grating_period * ap_ff)
 
         # Add simple gratings with constant ff
-        radii.extend([grating_period*(1-grating_ff), grating_period*grating_ff] * n_gratings)
+        radii.extend([grating_period * (1 - grating_ff), grating_period * grating_ff] * n_gratings)
 
         # Insert the inner radius
         radii.insert(0, taper_length if taper_length is not None else sum(radii))
 
-        obj = cls(origin, angle, width, full_opening_angle, radii, n_points/2,
-                   start_radius_absolute=True, extra_triangle_layer=extra_triangle_layer)
+        obj = cls(origin, angle, width, full_opening_angle, radii, n_points // 2,
+                  start_radius_absolute=True, extra_triangle_layer=extra_triangle_layer)
         obj._traditional_parameters = {
             'grating_period': grating_period,
             'grating_ff': grating_ff,
@@ -204,22 +206,23 @@ class GratingCoupler(object):
     def _generate(self):
         # For D1 continuous change from port waveguide side to the opening "triangle" we use circles.
         # We first generate this triangle and add the grating arcs later
-        alpha = math.pi/2-self._opening_angle
-        c_radius = -math.sin(alpha)*self._width/2/(math.sin(alpha) - 1)
+        alpha = math.pi / 2 - self._opening_angle
+        c_radius = -math.sin(alpha) * self._width / 2 / (math.sin(alpha) - 1)
 
-        tmp_a, tmp_b = c_radius, (c_radius+self._width/2)
-        minimum_taper_radius = math.sqrt(tmp_a**2 + tmp_b**2 - 2*tmp_a*tmp_b*math.cos(self._opening_angle))
+        tmp_a, tmp_b = c_radius, (c_radius + self._width / 2)
+        minimum_taper_radius = math.sqrt(tmp_a ** 2 + tmp_b ** 2 - 2 * tmp_a * tmp_b * math.cos(self._opening_angle))
 
-        radius = self._grating_lines[0] if self._start_radius_absolute else minimum_taper_radius+self._grating_lines[0]
+        radius = self._grating_lines[0] if self._start_radius_absolute else minimum_taper_radius + self._grating_lines[
+            0]
         assert (not self._start_radius_absolute or
                 self._grating_lines[0] >= minimum_taper_radius), 'Start radius is smaller than minimum start radius!'
 
         # noinspection PyTypeChecker
-        phi = np.linspace(0, self._opening_angle, 90) - math.pi/2
-        upper_half = [np.cos(phi) * c_radius, np.sin(phi) * c_radius + c_radius + self._width/2]
+        phi = np.linspace(0, self._opening_angle, 90) - math.pi / 2
+        upper_half = [np.cos(phi) * c_radius, np.sin(phi) * c_radius + c_radius + self._width / 2]
         # noinspection PyTypeChecker
-        phi = np.linspace(-self._opening_angle, 0, 90) + math.pi/2
-        lower_half = [np.cos(phi) * c_radius, np.sin(phi) * c_radius - c_radius - self._width/2]
+        phi = np.linspace(-self._opening_angle, 0, 90) + math.pi / 2
+        lower_half = [np.cos(phi) * c_radius, np.sin(phi) * c_radius - c_radius - self._width / 2]
 
         phi = np.linspace(self._opening_angle, -self._opening_angle, self._points)
         inner_circle = [np.cos(phi) * radius, np.sin(phi) * radius]
@@ -330,45 +333,36 @@ class GratingCoupler(object):
             if opening_angle:
                 desc.append(('angle', '%.2f' % np.rad2deg(self._traditional_parameters['full_opening_angle'])))
 
-
         else:
             raise NotImplementedError('Description not yet implemented for non-traditional couplers')
 
         return '\n'.join(['%s:%s' % x for x in desc])
 
-    def get_description_label(self, layer=StandardLayers.parnamelayer1, **desc_options):
-        import gdsCAD.core
-        return gdsCAD.core.Text(self.get_description_str(**desc_options),
-                                self.origin,
-                                anchor='middle left',
-                                layer=layer)
-
     def get_description_text(self, height=3., space=10, side='right', **desc_options):
-        assert  side in ['left', 'right'], 'side parameter must be left or right'
+        assert side in ['left', 'right'], 'side parameter must be left or right'
 
-        offset = abs(np.cos(np.pi/2-self._opening_angle)) * self.maximal_radius + space
+        offset = abs(np.cos(np.pi / 2 - self._opening_angle)) * self.maximal_radius + space
         if side == 'right':
             offset *= -1.
             alignment = 'left-top'
         if side == 'left':
             alignment = 'right-top'
 
-        text_port = self.port.parallel_offset(offset).rotated(3/2*np.pi)
+        text_port = self.port.parallel_offset(offset).rotated(3 / 2 * np.pi)
         text = Text(text_port.origin, height, text=self.get_description_str(**desc_options),
                     alignment=alignment, angle=text_port.angle)
         return text
 
-def _example():
-    import gdsCAD.core
-    import gdsCAD.templates
 
-    from gdshelpers.geometry import convert_to_gdscad, geometric_union
+def _example():
+    from gdshelpers.geometry.chip import Cell
+    from gdshelpers.geometry import geometric_union
 
     # Generate a coupler, which ought to be identical to
     # coupler_sn330_1550_bf_ff_ap( 0:0 1550 0.7 22 0.96 10 22 1 "active")
     # also known as
     # coupler_bf_ap_mff( 0:0 1 40.0 1.13 0.7 22 0.96 10 22 200 "active")
-    coupler = GratingCoupler.make_traditional_coupler([500, 0], 1, np.deg2rad(40), 1.13, 0.7,
+    coupler = GratingCoupler.make_traditional_coupler([150, 0], 1, np.deg2rad(40), 1.13, 0.7,
                                                       22, 0.96, 10, 22, angle=-np.pi)
 
     coupler2 = GratingCoupler.make_traditional_coupler_from_database([0, 0], 1, 'sn330', 1550)
@@ -377,27 +371,28 @@ def _example():
 
     whole_layout = (coupler, coupler2)
 
-    layout = gdsCAD.core.Layout('LIBRARY')
-    cell = gdsCAD.core.Cell('TOP')
-    cell.add(convert_to_gdscad(whole_layout))
-    cell.add(coupler.get_description_label())
-    cell.add(coupler2.get_description_label())
+    layout = Cell('LIBRARY')
+    cell = Cell('TOP')
+    cell.add_to_layer(1, *whole_layout)
+    cell.add_to_layer(StandardLayers.parnamelayer1, coupler.get_description_text())
+    cell.add_to_layer(StandardLayers.parnamelayer1, coupler2.get_description_text())
 
-    cell.add(convert_to_gdscad(coupler.get_description_text()))
-    cell.add(convert_to_gdscad(coupler2.get_description_text()))
-    cell.add(convert_to_gdscad(coupler2.get_description_text(side='left')))
-    layout.add(cell)
+    cell.add_to_layer(1, coupler.get_description_text())
+    cell.add_to_layer(1, coupler2.get_description_text())
+    cell.add_to_layer(1, coupler2.get_description_text(side='left'))
+    layout.add_cell(cell)
 
     # We could also easily generate a dark field layout out of this
     def make_dark_field(obj, buffer_size=1.5):
         return obj.buffer(buffer_size).difference(obj)
 
-    cell_df = gdsCAD.core.Cell('TOP_DF')
-    cell_df.add(convert_to_gdscad(make_dark_field(geometric_union(whole_layout))))
-    layout.add(cell_df)
+    cell_df = Cell('TOP_DF')
+    cell_df.add_to_layer(2, make_dark_field(geometric_union(whole_layout)))
+    layout.add_cell(cell_df)
 
-    layout.save('output.gds')
+    layout.save('coupler.gds')
     cell.show()
+
 
 if __name__ == '__main__':
     _example()
