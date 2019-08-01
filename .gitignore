@@ -18,3 +18,7 @@ docs/_build/
 # files corresponds to Blender
 *.blend
 *.tmp
+
+# coverage
+.coverage
+/cover/
