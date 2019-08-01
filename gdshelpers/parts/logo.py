@@ -111,14 +111,15 @@ class WWULogo(object):
         x6, y6 = x1 + (w - w6) / 2, y5 + (h5 + s5)
 
         # define boxes
-        boxes = []
-        boxes.append(box(x1, y1, x1 + w, y1 + h1))  # box1
-        boxes.append(box(x2, y2, x2 + w, y2 + h2))  # ...
-        boxes.append(box(x3l, y3, x3l + w3, y3 + h3))
-        boxes.append(box(x3r, y3, x3r + w3, y3 + h3))
-        boxes.append(box(x4, y4, x4 + w4, y4 + h4))
-        boxes.append(box(x5, y5, x5 + w5, y5 + h5))
-        boxes.append(box(x6, y6, x6 + w6, y6 + h6))  # box6
+        boxes = [
+            box(x1, y1, x1 + w, y1 + h1),  # box1
+            box(x2, y2, x2 + w, y2 + h2),  # ...
+            box(x3l, y3, x3l + w3, y3 + h3),
+            box(x3r, y3, x3r + w3, y3 + h3),
+            box(x4, y4, x4 + w4, y4 + h4),
+            box(x5, y5, x5 + w5, y5 + h5),
+            box(x6, y6, x6 + w6, y6 + h6)  # box6
+        ]
 
         logo_unscaled = cascaded_union(boxes)
 
