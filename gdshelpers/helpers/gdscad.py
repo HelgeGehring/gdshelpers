@@ -12,9 +12,8 @@ def save_as_image(obj, file_path, resolution=1., antialiased=True, include_text=
 
     You can either use a rasterized file format such as png but also formats such as SVG or PDF.
 
-    :param file_path:
     :param obj: Any gdsCAD object
-    :param path: Path of the image file.
+    :param file_path: Path of the image file.
     :param resolution: Rasterization resolution in GDSII units.
     :param antialiased: Whether to use a anti-aliasing or not.
     :param include_text: Include text in the output.
