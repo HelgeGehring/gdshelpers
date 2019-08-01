@@ -28,7 +28,7 @@ def annotate_write_fields(cell, origin='left-top', end='right-bottom', size=100,
     }
 
     assert type(origin) in [list, tuple] or origin in corner_labels.keys(), \
-        'origin must either be a tuple or one of %s' % origin.keys()
+        'origin must either be a tuple or one of %s' % corner_labels.keys()
     assert type(end) in [list, tuple] or end in corner_labels.keys(), \
         'origin must either be a tuple or one of %s' % corner_labels.keys()
     assert size > 0, 'Write field alignment must be a number greater 0'
