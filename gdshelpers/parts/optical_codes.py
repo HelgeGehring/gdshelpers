@@ -94,15 +94,15 @@ class QRCode(object):
 def _example():
     qr_code = QRCode([0, 0], 'A0.0', 1.0, version=1, error_correction=QRCode.ERROR_CORRECT_M)
 
-    from gdshelpers.geometry.chip import Cell, Device
+    from gdshelpers.geometry.chip import Cell
 
-    device = Device('test')
+    device = Cell('test')
     device.add_to_layer(1, qr_code)
 
-    device.get_cell('Code1').show()
+    device.show()
 
     chip = Cell('optical_codes')
-    chip.add_cell(device.get_cell('Code1'))
+    chip.add_cell(device)
     chip.start_viewer()
     chip.save()
 
