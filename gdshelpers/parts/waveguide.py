@@ -135,7 +135,7 @@ class Waveguide(object):
             end_angle = start_angle + angle
 
             # Calculate the points needed for this angle
-            points = max(abs(end_angle - start_angle) / (np.pi / 2) * n_points, 2)
+            points = max(int(abs(end_angle - start_angle) / (np.pi / 2) * n_points), 2)
 
             phi = np.linspace(start_angle, end_angle, points)
             upper_radius_points = np.linspace(radius - self.width / 2, radius - final_width / 2, points)
