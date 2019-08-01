@@ -362,20 +362,20 @@ class MMI:
 
     @property
     def left_branch_port(self):
-        '''
+        """
         Returns the leftmost output port (like a Y-Splitter)
 
         :return: leftmost Port
-        '''
+        """
         return self.output_ports[-1]
 
     @property
     def right_branch_port(self):
-        '''
+        """
         Returns the rightmost output port (like a Y-Splitter)
 
         :return: rightmost Port
-        '''
+        """
         return self.output_ports[0]
 
     @property
