@@ -36,7 +36,7 @@ def save_as_blend(shapely_3d_list, filename, scale=0.1, resolution_x=1980, resol
     writes the 'filename.blend' file
 
     :param shapely_3d_list: a list of the meshes to export
-    :param filename: the name of the \*.blend and \*.tmp file
+    :param filename: the name of the .blend and .tmp file
     :param scale: size factor
     :param resolution_x: set x resolution for a later render process
     :param resolution_y: set y resolution for a later render process
@@ -58,7 +58,7 @@ def render_image(shapely_3d_list, filename, scale=0.1, resolution_x=1980, resolu
     writes the 'filename.png' file
 
     :param shapely_3d_list: a list of the meshes to export
-    :param filename: the name of the \*.png and \*.tmp file
+    :param filename: the name of the .png and .tmp file
     :param scale: size factor
     :param resolution_x: set x resolution for a later render process
     :param resolution_y: set y resolution for a later render process
@@ -82,7 +82,7 @@ def render_image_and_save_as_blend(shapely_3d_list, filename, scale=0.1, resolut
     writes the 'filename.png' and 'filename.blend' file
 
     :param shapely_3d_list: a list of the meshes to export
-    :param filename: the name of the \*.png, \*.blend and \*.tmp file
+    :param filename: the name of the .png, .blend and .tmp file
     :param scale: size factor
     :param resolution_x: set x resolution for a later render process
     :param resolution_y: set y resolution for a later render process
@@ -105,7 +105,7 @@ def _write_data_and_start_blender(shapely_3d_list, filename, scale, render, save
     handles the file operation
 
     :param shapely_3d_list: a list of the meshes to export
-    :param filename: the name of the \*.png, \*.blend and \*.tmp file
+    :param filename: the name of the .png, .blend and .tmp file
     :param scale: size factor
     :param resolution_x: set x resolution for a later render process
     :param resolution_y: set y resolution for a later render process
