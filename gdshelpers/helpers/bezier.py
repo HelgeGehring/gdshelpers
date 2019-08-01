@@ -32,8 +32,7 @@ class CubicBezierCurve(object):
 
         p1234 = (p234 - p123) * t + p123
 
-        return CubicBezierCurve(p1, p12, p123, p1234), \
-               CubicBezierCurve(p1234, p234, p34, p4)
+        return CubicBezierCurve(p1, p12, p123, p1234), CubicBezierCurve(p1234, p234, p34, p4)
 
 
 if __name__ == '__main__':

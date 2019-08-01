@@ -461,7 +461,8 @@ class Cell:
         :param taper_length: length of the taper
         :param tip_width: final width of the tip
         :param with_markers: for recognizing the taper markers near to the taper are necessary.
-            In certain designs the standard positions are not appropriate and can therefore be disabled and manually added
+            In certain designs the standard positions are not appropriate and
+            can therefore be disabled and manually added
         """
         taper_port = port.longitudinal_offset(taper_length)
         if taper_length > 0:

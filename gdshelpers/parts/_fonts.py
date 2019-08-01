@@ -1,5 +1,5 @@
 FONTS = {
-    'stencil': \
+    'stencil':
         {' ': {'kerning': {' ': 0.0,
                            '!': 0.0,
                            '"': 0.0,

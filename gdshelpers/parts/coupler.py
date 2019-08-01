@@ -168,13 +168,13 @@ class GratingCoupler(object):
         :rtype: GratingCoupler
         """
 
-        if not 'width' in kwargs:
+        if 'width' not in kwargs:
             kwargs['width'] = port.width
 
-        if not 'origin' in kwargs:
+        if 'origin' not in kwargs:
             kwargs['origin'] = port.origin
 
-        if not 'angle' in kwargs:
+        if 'angle' not in kwargs:
             kwargs['angle'] = port.angle
 
         return cls.make_traditional_coupler(**kwargs)

@@ -17,14 +17,15 @@ class CNT(object):
     This class implements the electrodes and tapered waveguide for an integrated CNT source.
     It provides the electrodes ports and the connecting waveguide port.
     The Electrode is made up of three part: the round head (defined by the radius) followed by a
-    straight fine line of length el_l_fine, followed by a taper to final_width with length el_l_taper and a box with length
-    el_l_straight.
+    straight fine line of length el_l_fine, followed by a taper to final_width with length el_l_taper and
+    a box with length el_l_straight.
 
     :param origin: Origin of the resonator, which is the start of the input waveguide.
     :param angle: Angle of the input waveguide.
     :param width: Width of the angle waveguide.
     :param gap: Gap between electrode tip and waveguide.
-    :param l_taper: length of the waveguide taper used before and after the cnt. i.a. 2*l_taper will be added to the waveguide
+    :param l_taper: length of the waveguide taper used before and after the cnt. i.a. 2*l_taper will be
+    added to the waveguide
     :param w_taper: width of waveguide at the cnts position
     :param el_l_straight: length of electrode part with largest thickness
     :param el_l_taper: length over which 2*el_radius is tapered to el_final_width

@@ -6,15 +6,15 @@ from gdshelpers.geometry import geometric_union
 
 
 class SquareMarker(object):
-    """ Square Marker
+    def __init__(self, origin, size):
+        """
+        Creates a square marker
 
         :param origin: (x,y), center of square
         :type origin: tuple
         :param size: length
         :type size: float or int
         """
-
-    def __init__(self, origin, size):
         assert (size >= 0)
         self.origin = np.asarray(origin)
         self.size = size

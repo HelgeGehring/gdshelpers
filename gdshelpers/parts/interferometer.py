@@ -173,10 +173,10 @@ def main():
 
     devicename = 'MZI'
 
-    mzi = MachZehnderInterferometer(origin=[0, 0], angle=0, width=1.2, splitter_length=10, splitter_separation=5,
+    mzi = MachZehnderInterferometer(origin=(0, 0), angle=0, width=1.2, splitter_length=10, splitter_separation=5,
                                     bend_radius=50, upper_vertical_length=50, lower_vertical_length=0,
                                     horizontal_length=0)
-    mzi_mmi = MachZehnderInterferometerMMI(origin=[0, 0], angle=0, width=1.2, splitter_length=33, splitter_width=7.7,
+    mzi_mmi = MachZehnderInterferometerMMI(origin=(0, 0), angle=0, width=1.2, splitter_length=33, splitter_width=7.7,
                                            bend_radius=50, upper_vertical_length=50, lower_vertical_length=0,
                                            horizontal_length=0)
     print(mzi_mmi.device_width)
@@ -190,7 +190,7 @@ def main():
 
     layout = gdsCAD.core.Layout()
     layout.add(cell=cell)
-    layout.save('%s.gds' % (devicename))
+    layout.save('%s.gds' % devicename)
     layout.show()
 
 

@@ -298,7 +298,8 @@ class MMI:
         :param width: width of the multimode area
         :param num_inputs: number of input ports
         :param num_outputs: number of output ports
-        :param pos: port, that has to be connected to the given port, first letter-> i=input/o=output, second letter->number of the input/output
+        :param pos: port, that has to be connected to the given port, first letter-> i=input/o=output,
+        second letter->number of the input/output
         :param taper_width: width of the tapers at the multimode area
         :param taper_length: length of the tapers
         :return:

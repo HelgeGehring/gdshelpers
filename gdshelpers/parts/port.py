@@ -44,7 +44,6 @@ class Port(object):
         Set port parameters via named keyword arguments.
 
         :param kwargs: The keywords to set.
-        :type kwargs: dict
 
         :return: The modified port
         :rtype: Port
