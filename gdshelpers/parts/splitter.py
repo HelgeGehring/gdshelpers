@@ -311,7 +311,7 @@ class MMI:
                    num_inputs, num_outputs, taper_width, taper_length)
 
     @classmethod
-    def _calculate_positions(self, num_inputs, num_outputs):
+    def _calculate_positions(cls, num_inputs, num_outputs):
         if num_inputs > 2 or num_outputs > 2:
             # TODO Are the positions correct for N>2?
             raise NotImplementedError("Positions may not be correct -> checking needed")
