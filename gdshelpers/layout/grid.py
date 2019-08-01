@@ -20,7 +20,7 @@ class GridLayout(object):
     :param tight: Pack all devices as close as possible along the x-axis.
     :type tight: bool
     :param region_layer_type: One of ``None``, ``'layout'`` or ``cell``.
-    :type region_layer_type: str
+    :type region_layer_type: None, str
     :param region_layer_on_labels: Put a region layer around the labels as well when in ``cell`` mode.
     :type region_layer_on_labels: bool
     :param vertical_spacing: Minimum vertical spacing between devices. The true spacing will be bigger in most
