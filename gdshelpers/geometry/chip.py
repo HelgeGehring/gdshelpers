@@ -344,18 +344,23 @@ class Cell:
 
             layout.cells = [cells[0]] + list(set(cells[1:]))
 
-            name_id = {}
-            for i, cell in enumerate(layout.cells):
-                if cell.name.string in name_id:
-                    raise RuntimeError(
-                        'Each cell name should be unique, name "' + cell.name.string + '" is used multiple times')
-                name_id[cell.name.string] = i
-                cell.name = i
-            for cell in layout.cells:
-                for placement in cell.placements:
-                    placement.name = name_id[placement.name.string]
+            # noinspection PyUnresolvedReferences
+            def replace_names_by_ids(oasis_layout):
+                name_id = {}
+                for cell_id, cell in enumerate(oasis_layout.cells):
+                    if cell.name.string in name_id:
+                        raise RuntimeError(
+                            'Each cell name should be unique, name "' + cell.name.string + '" is used multiple times')
+                    name_id[cell.name.string] = cell_id
+                    cell.name = cell_id
+                for cell in oasis_layout.cells:
+                    for placement in cell.placements:
+                        placement.name = name_id[placement.name.string]
 
-            layout.cellnames = {v: k for k, v in name_id.items()}
+                oasis_layout.cellnames = {v: k for k, v in name_id.items()}
+
+            # improves performance for reading oasis file and workaround for fatamorgana-bug
+            replace_names_by_ids(layout)
 
             with open(name + '.oas', 'wb') as f:
                 layout.write(f)
@@ -391,13 +396,13 @@ class Cell:
                                     for layer, min_max in layer_defs.items()
                                     for geometry in self.get_reduced_layer(layer))).export(filename)
 
-    def _get_patches(self, origin=(0, 0), angle_sum=0, angle=0, layers=None):
+    def get_patches(self, origin=(0, 0), angle_sum=0, angle=0, layers=None):
         from descartes import PolygonPatch
 
-        def rotate_pos(pos, angle):
-            if angle is None:
+        def rotate_pos(pos, rotation_angle):
+            if rotation_angle is None:
                 return pos
-            c, s = np.cos(angle), np.sin(angle)
+            c, s = np.cos(rotation_angle), np.sin(rotation_angle)
             result = np.array([[c, -s], [s, c]]).dot(pos)
             return result
 
@@ -407,7 +412,7 @@ class Cell:
                 color=['red', 'green', 'blue', 'teal', 'pink'][(layer - 1) % 5], linewidth=0)
             for layer, geometry in self.layer_dict.items() if (layers is None or layer in layers)]
         sub_cells_patches = [p for cell_dict in self.cells for p in
-                             cell_dict['cell']._get_patches(
+                             cell_dict['cell'].get_patches(
                                  np.array(origin) + rotate_pos(cell_dict['origin'], angle),
                                  angle_sum=angle_sum + (cell_dict['angle'] or 0), angle=cell_dict['angle'],
                                  layers=layers)]
@@ -424,7 +429,7 @@ class Cell:
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots()
-        for patch in self._get_patches(layers=layers):
+        for patch in self.get_patches(layers=layers):
             ax.add_patch(patch)
 
         bounds = self.get_bounds(layers)
