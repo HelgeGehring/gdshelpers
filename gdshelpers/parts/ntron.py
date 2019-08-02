@@ -1,6 +1,7 @@
 import numpy as np
 from shapely.affinity import rotate, translate
 from shapely.geometry import Polygon
+from itertools import chain
 
 from gdshelpers.geometry import convert_to_gdscad
 from gdshelpers.helpers.bezier import CubicBezierCurve
@@ -91,7 +92,7 @@ class Ntron(object):
         y_bottom = bottom_curve.evaluate(np.linspace(1, 0, self._points_per_curve))
         y_top = top_curve.evaluate(np.linspace(0, 1, self._points_per_curve))
 
-        return Polygon(zip(y_top[0], y_top[1]) + zip(y_bottom[0], y_bottom[1]))
+        return Polygon(chain(zip(y_top[0], y_top[1]), zip(y_bottom[0], y_bottom[1])))
 
     # one side flat and one side bezier shaped polygon
     def _bezier_guide_channel(self, start, outer_width, inner_width, length, p2, p3):
@@ -105,8 +106,9 @@ class Ntron(object):
                                          outer_width - p3[1] * (outer_width - inner_width)),
                                         (start + length, outer_width))
 
-        return Polygon(zip(*top_curve.evaluate(np.linspace(0, 1, self._points_per_curve))) + zip(*bottom_curve.evaluate(
-            np.linspace(0, 1, self._points_per_curve))) + ([(length, 0), (0, 0)]))
+        return Polygon(
+            chain(zip(*top_curve.evaluate(np.linspace(0, 1, self._points_per_curve))), zip(*bottom_curve.evaluate(
+                np.linspace(0, 1, self._points_per_curve))), ([(length, 0), (0, 0)])))
 
     # Creating the different par polygons
     def _gate(self):
