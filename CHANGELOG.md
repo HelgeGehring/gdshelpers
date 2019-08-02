@@ -5,6 +5,7 @@ Changelog
 -----
 * Structures in Cell are now converted individually for pattern export
 * annotate_write_fields now works with Cells instead of gdscad.Cells
+* fixed some bugs
 
 1.0.2
 -----
