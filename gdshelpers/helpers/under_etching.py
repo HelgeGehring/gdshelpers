@@ -9,7 +9,7 @@ def create_holes_for_under_etching(underetch_parts, complete_structure, hole_rad
 
     :param underetch_parts: List of gdshelpers parts around which the holes shall be placed
     :param complete_structure: geometric union of the complete structure, needed to avoid collisions between
-    underetching holes and other structures, e.g. waveguides
+        underetching holes and other structures, e.g. waveguides
     :param hole_radius: Radius of the holes in microns
     :param hole_distance: Distance of the holes center from the the structures in microns
     :param hole_spacing: Distance between the holes in microns

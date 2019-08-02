@@ -25,7 +25,7 @@ class CNT(object):
     :param width: Width of the angle waveguide.
     :param gap: Gap between electrode tip and waveguide.
     :param l_taper: length of the waveguide taper used before and after the cnt. i.a. 2*l_taper will be
-    added to the waveguide
+        added to the waveguide
     :param w_taper: width of waveguide at the cnts position
     :param el_l_straight: length of electrode part with largest thickness
     :param el_l_taper: length over which 2*el_radius is tapered to el_final_width
