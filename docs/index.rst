@@ -1,14 +1,16 @@
-**************************************
-Welcome to gdshelpers's documentation!
-**************************************
+*****************************************
+Welcome to the gdshelpers' documentation!
+*****************************************
 
-The gdshelper is primarily a design help for gds files, developed primarily for integrated optics design. It builds
-on the shoulder of the `Shapely <http://toblerity.org/shapely/index.html>`_ project. Please make sure that you have an initial understanding of this. Afterwards this package should be simple to understand.
+The gdshelpers-package is a design framework for lithography-pattern files, developed primarily for integrated optics.
+It builds on the shoulder of the `Shapely <http://toblerity.org/shapely/index.html>`_ project.
+Please make sure that you have an initial understanding of this.
+Afterwards this package should be simple to understand.
 
-It includes adapters to convert any Shapely object to gdsCAD/gdspy objects - including correct fracturing of polygons and
+It includes adapters to convert any Shapely objects to gdsCAD/gdspy objects - including correct fracturing of polygons and
 lines in elements with less than 200 points. An archaic restriction of the GDII file format.
-Furthermore, it allows to save the design in the more recent OASIS-format, which allows smaller files-sizes and has less restrictions.
-The user can use an abstraction layer above these libraries, which allows convenient exchange of the underlying library and therefore changing the export-format by a simple command.
+Furthermore, it allows to save the design in the more recent OASIS-format using the fatamorgana-library, which allows smaller files-sizes and has less restrictions.
+The user can use an abstraction layer above these libraries, which allows convenient exchange of the underlying library and therefore changing the export-format by a parameter.
 
 In addition it includes a growing selection of optical and superconducting parts, including:
 
@@ -16,14 +18,23 @@ In addition it includes a growing selection of optical and superconducting parts
 
   - Includes parameterized paths and Bézier curves.
   - Automatic smooth connection to a target point/port
-* Y-splitter, MMI-splitters, Directional splitter
+  - The size of the waveguide can be tapered (linear or by a user defined function), which can e.g. be used for optical edge coupling or electronic contact pads
+* Different types of splitters:
+
+  - Y-splitter
+  - MMI-splitters
+  - Directional splitter
 * Couplers
+
+  - Grating couplers (allowing apodized gratings)
+  - Tapers for hybrid 3D-integration
 * Ring and racetrack resonators
-* Mach-Zehnder interferometer
+* Mach-Zehnder interferometers
 * Spirals
 * Superconducting nanowire single photon detectors (SNSPDs)
-* Superconducting nanoscale Transistors
-* Different types of markers, QRcodes
+* Superconducting nanoscale Transistors (NTRONs)
+* Different types of markers
+* QRcodes
 * A possibility to include images
 * Text-elements for labeling the structures
 
