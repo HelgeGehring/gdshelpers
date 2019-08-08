@@ -129,7 +129,7 @@ class Cell:
         :param origin: position where to add the cell
         :param angle:
         """
-        if cell.name in [cell['cell'].name for cell in self.cells]:
+        if cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
             import warnings
             warnings.warn(
                 'Cell name "{cell_name:s}" added multiple times to {self_name:s}.'
