@@ -44,5 +44,5 @@ if __name__ == '__main__':
     _example()  # make sure the "output.gds" exists
 
     test_cell = Cell('test')
-    test_cell.add_to_layer(1, GDSImport('output.gds', cell_name='TOP', layer=1))
+    test_cell.add_to_layer(1, GDSIIImport('output.gds', cell_name='TOP', layer=1))
     test_cell.show()
