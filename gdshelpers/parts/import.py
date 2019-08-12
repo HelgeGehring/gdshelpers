@@ -4,7 +4,7 @@ from shapely.ops import cascaded_union
 from shapely.affinity import translate, rotate, scale
 
 
-class GDSImport:
+class GDSIIImport:
     def __init__(self, filename, cell_name, layer=None, datatype=None):
         self.gdslib = gdspy.GdsLibrary(infile=filename)
         self.cell_name = cell_name

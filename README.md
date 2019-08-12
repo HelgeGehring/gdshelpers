@@ -36,6 +36,7 @@ So far, the following parts are implemented:
 * QRcodes
 * A possibility to include images
 * Text-elements for labeling the structures
+* GDSII-import
 
 Besides this it also allows to perform conveniently operations on the design, like:
 
