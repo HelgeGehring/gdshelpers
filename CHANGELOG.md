@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.4
+-----
+* Added part for GDS-import
+* bugfix
+
 1.0.3
 -----
 * Structures in Cell are now converted individually for pattern export
