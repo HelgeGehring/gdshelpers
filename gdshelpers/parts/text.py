@@ -9,7 +9,7 @@ from gdshelpers.helpers.alignment import Alignment
 
 
 class Text(object):
-    def __init__(self, origin, height, text='', alignment='left-bottom', angle=0, font='stencil', line_spacing=1.5,
+    def __init__(self, origin, height, text='', alignment='left-bottom', angle=0., font='stencil', line_spacing=1.5,
                  true_bbox_alignment=False):
         self.origin = origin
         self.height = height
@@ -68,7 +68,6 @@ class Text(object):
 
     @property
     def bounding_box(self):
-        # FIXME: Does not include offset and rotation!
         if self._bbox is None:
             self.get_shapely_object()
 
@@ -119,7 +118,6 @@ class Text(object):
             bbox = np.array(merged_polygon.bounds).reshape(2, 2)
 
         offset = self._alignment.calculate_offset(bbox)
-        self._bbox = bbox + offset
 
         if not np.isclose(normalize_phase(self.angle), 0):
             aligned_text = shapely.affinity.translate(merged_polygon, *offset)
@@ -128,19 +126,20 @@ class Text(object):
         else:
             final_text = shapely.affinity.translate(merged_polygon, *(offset + self.origin))
 
+        self._bbox = np.array(final_text.bounds).reshape(2, 2)
         return final_text
 
 
 def _example():
     text = Text([100, 100], 10, 'The quick brown fox jumps over the lazy dog\n123\n4567',
-                alignment='left-bottom')
+                alignment='left-bottom', angle=0.1)
     print(text.bounding_box)
 
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
-    cell = gdsCAD.core.Cell('FONTS')
-    cell.add(convert_to_gdscad(text))
+    cell = Cell('FONTS')
+    cell.add_to_layer(2, shapely.geometry.box(*text.bounding_box.reshape(4)))
+    cell.add_to_layer(1, text)
     cell.show()
 
 
