@@ -38,7 +38,7 @@ def create_holes_for_under_etching(underetch_parts, complete_structure, hole_rad
     return geometric_union(holes)
 
 
-if __name__ == '__main__':
+def _example():
     import gdsCAD.core
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.resonator import RingResonator
@@ -68,3 +68,7 @@ if __name__ == '__main__':
     cell.add(convert_to_gdscad(holes, layer=2))
     # Show the cell
     cell.show()
+
+
+if __name__ == '__main__':
+    _example()
