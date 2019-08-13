@@ -139,9 +139,9 @@ class Ntron(object):
 
     # Unite and translate the polygons parts
     def get_shapely_object(self):
-        object = geometric_union(
+        shapely_object = geometric_union(
             [self._gate(), self._choke_channel(), self._choke_left(), self._choke_right(), self._channel()])
-        rotated_object = rotate(object, self._angle, (0, 0), True)
+        rotated_object = rotate(shapely_object, self._angle, (0, 0), True)
         return translate(rotated_object, self._origin[0], self._origin[1], 0)
 
     @classmethod
