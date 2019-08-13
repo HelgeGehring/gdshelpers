@@ -25,15 +25,17 @@ class Spiral:
         self.wg_out = None
 
     @classmethod
-    def make_at_port(cls, port, num, gap, inner_gap, **kwargs):
-        default_port_param = dict(port.get_parameters())
-        default_port_param.update(kwargs)
-        del default_port_param['origin']
-        del default_port_param['angle']
-        del default_port_param['width']
+    def make_at_port(cls, port, num, gap, inner_gap):
+        """
+        Creates a Spiral around the given port
 
+        :param port: port at which the spiral starts
+        :param num: number of turns
+        :param gap: gap between two waveguides
+        :param inner_gap: inner radius of the spiral
+        """
         return cls(port.parallel_offset(-num * (port.width + gap) - inner_gap).origin,
-                   port.angle, port.width, num, gap, inner_gap, **default_port_param)
+                   port.angle, port.width, num, gap, inner_gap)
 
     ###
     # Let's allow the user to change the values
