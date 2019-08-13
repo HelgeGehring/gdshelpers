@@ -6,9 +6,6 @@ from shapely.affinity import translate, rotate
 from shapely.geometry import box
 
 from gdshelpers.geometry.shapely_adapter import convert_to_layout_objs, bounds_union, transform_bounds
-from gdshelpers.parts.waveguide import Waveguide
-from gdshelpers.parts.marker import DLWMarker
-from gdshelpers.parts.text import Text
 from gdshelpers.geometry import geometric_union
 import gdshelpers.helpers.layers as std_layers
 
@@ -385,6 +382,7 @@ class Cell:
         :param layer: the layer whose structures will be returned
         :return: a single shapely-geometry
         """
+
         def translate_and_rotate(geometry, offset, angle):
             if not geometry:
                 return geometry
@@ -461,6 +459,9 @@ class Cell:
         :param layer: Layer at which the marker and markers should be written
         :param origin: Position of the marker
         """
+        from gdshelpers.parts.marker import DLWMarker
+        from gdshelpers.parts.text import Text
+
         self.add_to_layer(layer, DLWMarker(origin))
         self.add_to_layer(std_layers.parnamelayer1, Text(origin, 2, label, alignment='center-center'))
 
@@ -479,8 +480,11 @@ class Cell:
             In certain designs the standard positions are not appropriate and
             can therefore be disabled and manually added
         """
+        from gdshelpers.parts.text import Text
+
         taper_port = port.longitudinal_offset(taper_length)
         if taper_length > 0:
+            from gdshelpers.parts.waveguide import Waveguide
             wg = Waveguide.make_at_port(port)
             wg.add_straight_segment(taper_length, final_width=tip_width)
             self.add_to_layer(layer, wg.get_shapely_object())
@@ -505,14 +509,14 @@ if __name__ == '__main__':
     # Create a port to connect waveguide structures to
     port = Port(origin=(0, 0), width=1, angle=0)
     waveguide = Waveguide.make_at_port(port)
-    for i in range(9):
-        waveguide.add_bend(angle=np.pi, radius=60 + i * 40)
+    for i_bend in range(9):
+        waveguide.add_bend(angle=np.pi, radius=60 + i_bend * 40)
     # Add direct laser writing taper and alignment marker for postprocessing with a dlw printer to the cell-like object.
     # The cell dlw files will be saved with the cell.
     device_cell.add_dlw_taper_at_port('A0', 2, port.inverted_direction, 30)
     device_cell.add_dlw_taper_at_port('A1', 2, waveguide.current_port, 30)
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()
-    # Creates the output file by using gdspy,gdsCAD or fatamorgana. To use the implemented parallell processing, set
+    # Creates the output file by using gdspy,gdscad or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
     device_cell.save(name='my_design', parallel=True, library='gdspy')
