@@ -91,6 +91,9 @@ class Cell:
 
     @property
     def size(self):
+        """
+        Returns the size of the cell
+        """
         bounds = self.bounds
         if bounds is None:
             return 0, 0
@@ -376,6 +379,12 @@ class Cell:
             json.dump(self.get_desc(), f, indent=True)
 
     def get_reduced_layer(self, layer):
+        """
+        Returns a single shapely object containing the structures on a certain layer from this cell and all added cells.
+
+        :param layer: the layer whose structures will be returned
+        :return: a single shapely-geometry
+        """
         def translate_and_rotate(geometry, offset, angle):
             if not geometry:
                 return geometry
@@ -387,6 +396,12 @@ class Cell:
              for cell in self.cells])
 
     def export_mesh(self, filename, layer_defs):
+        """
+        Saves the current geometry as a mesh-file.
+
+        :param filename: Name of the file which will be created. The file ending determines the format.
+        :param layer_defs: Definition of the layers, should be a list like [(layer,(z_min,z_max)),...]
+        """
         from functools import reduce
         from trimesh.primitives import Extrusion
         from trimesh.transformations import translation_matrix
