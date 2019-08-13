@@ -68,6 +68,18 @@ For exporting the design to the OASIS-format you should install the library `fat
 In order to create GDSII-files, you can decide between `gdspy` (fully python 3 compatible, ``pip install gdspy``) and `gdsCAD` (also working under python 3, but not installable using `pip`).
 For directly generating pictures from the designs the package `descartes` needs to be installed (``pip install descartes``).
 
+Alternatively, installing the gdshelpers e.g. with gdspy-export and image-export can directly be done using the single command::
+
+    pip install gdshelpers[gdspy_export,image_export]
+
+For most users this configuration should be sufficient.
+
+Updating gdshelpers
+^^^^^^^^^^^^^^^^^^^
+
+In order the update to the most recent version of gdshelpers you should execute from time to time::
+
+    pip install --upgrade gdshelpers
 
 Finish
 """"""
