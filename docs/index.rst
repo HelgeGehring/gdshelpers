@@ -37,6 +37,7 @@ In addition it includes a growing selection of optical and superconducting parts
 * QRcodes
 * A possibility to include images
 * Text-elements for labeling the structures
+* GDSII-import
 
 The library itself is designed to be as simple to use as possible:
 
