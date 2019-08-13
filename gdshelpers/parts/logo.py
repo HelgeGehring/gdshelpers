@@ -124,10 +124,10 @@ class WWULogo(object):
 
         # write WWU
         # create W
-        x_W = [-40.58, -13.7, 1.05, 16.86, 40.05, 68.51, 45.06, 29.78, 13.17, -11.33, -28.19, -43.21, -66.93]
-        y_W = [0, 0, 78.26, 0, 0, 114, 114, 33.46, 114, 114, 33.46, 114, 114]
-        W_coords = zip(x_W, y_W)
-        W = Polygon(W_coords)
+        x_w = [-40.58, -13.7, 1.05, 16.86, 40.05, 68.51, 45.06, 29.78, 13.17, -11.33, -28.19, -43.21, -66.93]
+        y_w = [0, 0, 78.26, 0, 0, 114, 114, 33.46, 114, 114, 33.46, 114, 114]
+        w_coords = zip(x_w, y_w)
+        w = Polygon(w_coords)
 
         # create U
         # ellipse w=82=2a, h=58=2b
@@ -154,37 +154,37 @@ class WWULogo(object):
         y = np.concatenate((yb, yr, yt[::-1], yl))
 
         u_coord = zip(x, y)
-        U = Polygon(u_coord)
+        u = Polygon(u_coord)
 
-        WWU_unscaled = cascaded_union([W, translate(W, 139), translate(U, 261, 29)])
+        wwu_unscaled = cascaded_union([w, translate(w, 139), translate(u, 261, 29)])
 
         # create whole logo
         if self.text == 0:
             # no text
             # calculate scaling of logo and WWU for set height
-            M = self.height / h  # scaling factor
+            m = self.height / h  # scaling factor
 
-            logo_complete = scale(logo_unscaled, M, M, origin=(0, 0))
+            logo_complete = scale(logo_unscaled, m, m, origin=(0, 0))
         elif self.text == 1:
             # text right of logo
             # calculate scaling of logo and WWU for set height
-            M = self.height / h  # scaling factor
-            M2 = (y3 + h3) * M / 114
+            m = self.height / h  # scaling factor
+            m2 = (y3 + h3) * m / 114
 
-            logo_complete = cascaded_union([scale(logo_unscaled, M, M, origin=(0, 0)),
-                                            translate(scale(WWU_unscaled, M2, M2, origin=(0, 0)),
-                                                      (x1 + w) * M + 80 * M2)])
+            logo_complete = cascaded_union([scale(logo_unscaled, m, m, origin=(0, 0)),
+                                            translate(scale(wwu_unscaled, m2, m2, origin=(0, 0)),
+                                                      (x1 + w) * m + 80 * m2)])
         else:
             # text under logo
             # calculate scaling of logo and WWU with sum equal to set height
             # WWU width = 368.93 = 369     *M2 == w
             # box width unscaled = w = 336
-            M2 = w / 369.  # scale width of WWU to width of logo
-            M = self.height / (h + 10 + 114)  # scaling factor height
+            m2 = w / 369.  # scale width of WWU to width of logo
+            m = self.height / (h + 10 + 114)  # scaling factor height
 
             logo_complete_unscaled = cascaded_union(
-                [scale(translate(WWU_unscaled, 67, 0), M2, M2, origin=(0, 0)), translate(logo_unscaled, 0, (114 + 10))])
-            logo_complete = scale(logo_complete_unscaled, M, M, origin=(0, 0))
+                [scale(translate(wwu_unscaled, 67, 0), m2, m2, origin=(0, 0)), translate(logo_unscaled, 0, (114 + 10))])
+            logo_complete = scale(logo_complete_unscaled, m, m, origin=(0, 0))
 
         return translate(logo_complete, *self.origin)
 
