@@ -91,14 +91,14 @@ def _example():
     wg.add_straight_segment(length=10)
     right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg.current_port, 'sn330', 1550)
 
-    cell = gdsCAD.core.Cell('SIMPLE_DEVICE')
-    cell.add(convert_to_gdscad([left_coupler, wg, right_coupler], layer=1))
-    cell.add(convert_to_gdscad([left_coupler.get_description_text(side='right'),
-                                right_coupler.get_description_text(side='left')], layer=2))
+    gdscad_cell = gdsCAD.core.Cell('SIMPLE_DEVICE')
+    gdscad_cell.add(convert_to_gdscad([left_coupler, wg, right_coupler], layer=1))
+    gdscad_cell.add(convert_to_gdscad([left_coupler.get_description_text(side='right'),
+                                       right_coupler.get_description_text(side='left')], layer=2))
 
-    save_as_image(cell, '/tmp/test.png', resolution=1)
-    save_as_image(cell, '/tmp/test.pdf')
-    save_as_image(cell, '/tmp/test.svg')
+    save_as_image(gdscad_cell, '/tmp/test.png', resolution=1)
+    save_as_image(gdscad_cell, '/tmp/test.pdf')
+    save_as_image(gdscad_cell, '/tmp/test.svg')
 
 
 if __name__ == '__main__':

@@ -42,11 +42,11 @@ if __name__ == '__main__':
     curve = CubicBezierCurve(*cp)
     curve2, curve3 = curve.split(0.1)
 
-    t = np.linspace(0, 1, num=100)
+    ts = np.linspace(0, 1, num=100)
 
-    curve_eval = curve.evaluate(t)
-    curve2_eval = curve2.evaluate(t)
-    curve3_eval = curve3.evaluate(t)
+    curve_eval = curve.evaluate(ts)
+    curve2_eval = curve2.evaluate(ts)
+    curve3_eval = curve3.evaluate(ts)
 
     plt.figure()
     plt.plot(curve_eval[0, :], curve_eval[1, :])

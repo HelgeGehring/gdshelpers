@@ -507,13 +507,13 @@ if __name__ == '__main__':
     # gdsCAD,gdspy or fatamorgana
     device_cell = Cell('my_cell')
     # Create a port to connect waveguide structures to
-    port = Port(origin=(0, 0), width=1, angle=0)
-    waveguide = Waveguide.make_at_port(port)
+    start_port = Port(origin=(0, 0), width=1, angle=0)
+    waveguide = Waveguide.make_at_port(start_port)
     for i_bend in range(9):
         waveguide.add_bend(angle=np.pi, radius=60 + i_bend * 40)
     # Add direct laser writing taper and alignment marker for postprocessing with a dlw printer to the cell-like object.
     # The cell dlw files will be saved with the cell.
-    device_cell.add_dlw_taper_at_port('A0', 2, port.inverted_direction, 30)
+    device_cell.add_dlw_taper_at_port('A0', 2, start_port.inverted_direction, 30)
     device_cell.add_dlw_taper_at_port('A1', 2, waveguide.current_port, 30)
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()

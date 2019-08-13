@@ -1,4 +1,6 @@
+# noinspection PyUnresolvedReferences
 import bpy
+# noinspection PyUnresolvedReferences
 import bmesh
 import sys
 import os
