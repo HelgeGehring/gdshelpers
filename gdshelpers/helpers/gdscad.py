@@ -1,8 +1,7 @@
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches
 import matplotlib.text
-
-import numpy as np
 
 
 def save_as_image(obj, file_path, resolution=1., antialiased=True, include_text=False,

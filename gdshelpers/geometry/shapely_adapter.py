@@ -1,16 +1,15 @@
 from __future__ import division, print_function
 
+import warnings
 import itertools
 
+import numpy as np
 import shapely.topology
 import shapely.ops
 import shapely.geometry
 import shapely.geos
 import shapely.validation
 
-import numpy as np
-
-import warnings
 import gdshelpers
 from gdshelpers.helpers import raith_eline_dosefactor_to_datatype
 

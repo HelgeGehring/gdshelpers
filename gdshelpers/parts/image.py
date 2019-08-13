@@ -1,7 +1,12 @@
-import imageio
+import numpy as np
 import shapely.geometry
 import shapely.ops
-import numpy as np
+
+try:
+    # noinspection PyUnresolvedReferences
+    import imageio
+except ImportError:
+    raise ImportError('python-imageio package needed for QR code generation')
 
 
 class GdsImage(object):

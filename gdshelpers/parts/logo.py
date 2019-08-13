@@ -1,8 +1,7 @@
 from __future__ import division
 
-import numpy as np
-
 from math import sqrt
+import numpy as np
 from shapely.affinity import rotate, translate, scale
 from shapely.geometry import Polygon, box
 from shapely.ops import cascaded_union

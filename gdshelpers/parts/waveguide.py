@@ -2,6 +2,9 @@ from __future__ import print_function, division
 
 import collections
 
+import numpy as np
+import numpy.linalg as linalg
+import scipy.interpolate
 import shapely.geometry
 import shapely.affinity
 import shapely.ops
@@ -11,10 +14,6 @@ from gdshelpers.parts import Port
 from gdshelpers.helpers import find_line_intersection, normalize_phase
 from gdshelpers.helpers.bezier import CubicBezierCurve
 from gdshelpers.helpers.positive_resist import convert_to_positive_resist
-
-import numpy as np
-import numpy.linalg as linalg
-import scipy.interpolate
 
 
 class Waveguide(object):

@@ -1,7 +1,7 @@
-import gdspy
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
 from shapely.affinity import translate, rotate, scale
+import gdspy
 
 
 class GDSIIImport:

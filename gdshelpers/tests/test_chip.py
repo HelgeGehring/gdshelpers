@@ -1,10 +1,11 @@
 import unittest
-from gdshelpers.geometry.chip import Cell
-from gdshelpers.parts.waveguide import Waveguide
+import numpy as np
 from shapely.geometry import box
 from shapely.geometry.point import Point
 from shapely.geometry.linestring import LineString
-import numpy as np
+
+from gdshelpers.geometry.chip import Cell
+from gdshelpers.parts.waveguide import Waveguide
 
 
 class DeviceTestCase(unittest.TestCase):

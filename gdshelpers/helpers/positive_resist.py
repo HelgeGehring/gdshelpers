@@ -1,6 +1,6 @@
-from gdshelpers.geometry import geometric_union
-
 import numpy as np
+
+from gdshelpers.geometry import geometric_union
 
 
 def convert_to_positive_resist(parts, buffer_radius, outer_resolution=None):

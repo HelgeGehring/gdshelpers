@@ -1,14 +1,12 @@
 from __future__ import print_function, division
 
 import math
-
+import numpy as np
 import shapely.geometry
 import shapely.affinity
 import shapely.validation
 
-import numpy as np
 from gdshelpers.parts import Port
-
 from gdshelpers.parts.coupler_references import REFERENCES as COUPLER_REFERENCES
 from gdshelpers.parts.text import Text
 from gdshelpers.helpers import StandardLayers

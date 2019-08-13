@@ -8,11 +8,12 @@ try:
 except ImportError:
     raise ImportError('python-qrcode package needed for QR code generation')
 
-from gdshelpers.helpers.alignment import Alignment
 import shapely.geometry
 import shapely.ops
 import shapely.affinity
 import numpy as np
+
+from gdshelpers.helpers.alignment import Alignment
 
 
 class ShapelyImageFactory(qrcode.image.base.BaseImage):

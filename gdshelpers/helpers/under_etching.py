@@ -1,4 +1,5 @@
 import numpy as np
+
 from gdshelpers.geometry import geometric_union, shapely_adapter
 from gdshelpers.parts.coupler import GratingCoupler
 

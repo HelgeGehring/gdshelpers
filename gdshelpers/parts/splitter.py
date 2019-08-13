@@ -1,11 +1,10 @@
 from __future__ import print_function, division
 
 import math
-
+import numpy as np
 import shapely.geometry
 import shapely.affinity
 
-import numpy as np
 from gdshelpers.parts.port import Port
 from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.geometry import geometric_union
