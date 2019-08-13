@@ -42,7 +42,8 @@ class Ntron(object):
         :param channel_length: length of the channel
         :param outer_channel_width: starting width of the channel at the gates
         :param inner_channel_width: end width in the middle of the channel
-        :param channel_position: channel position corresponding to the _gate, for 0 choke is on the bottom, for 1 on the top
+        :param channel_position: channel position corresponding to the _gate, for 0 choke is on the bottom,
+            for 1 on the top
         :param gate_length: the length of the bezier calculated shape of the gate
         :param choke_start: starting x pos of the choke section, should be equal to gate_length
         :param gate_choke_length:
@@ -172,7 +173,8 @@ class Ntron(object):
         :param channel_length: length of the channel
         :param outer_channel_width: starting width of the channel at the gates
         :param inner_channel_width: end width in the middle of the channel
-        :param channel_position: channel position corresponding to the gate, for 0 choke is on the bottom, for 1 on the top
+        :param channel_position: channel position corresponding to the gate, for 0 choke is on the bottom,
+            for 1 on the top
         :param gate_length: the length of the bezier calculated shape of the gate
         :param choke_start: starting x pos of the choke section, should be equal to gate_length
         :param gate_choke_length:
