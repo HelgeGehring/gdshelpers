@@ -214,7 +214,7 @@ class DirectionalCoupler(object):
         :param gap: gap between the waveguides in the coupling area
         :param bend_radius: radius of the curves
         :param bend_angle: angle of the curves
-        :param which: decides on which side to start, either left or right
+        :param which: decides on which side to start, either 0 or 1
         :return:
         """
         if which == 0:
