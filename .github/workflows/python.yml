@@ -1,15 +1,14 @@
-name: Python package
+name: Python
 
 on: [push]
 
 jobs:
-  build:
+  ckeck:
 
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 3
       matrix:
-        python-version: [3.5, 3.6, 3.7]
+        python-version: [3.6, 3.7, 3.8-dev]
 
     steps:
     - uses: actions/checkout@v1
