@@ -3,7 +3,8 @@ Changelog
 
 1.0.4
 -----
-* Added part for GDS-import
+* Added part for GDSII-import
+* Added direct GDSII-export
 * bugfix
 
 1.0.3
