@@ -6,6 +6,7 @@ from shapely.affinity import translate, rotate
 from shapely.geometry import box
 
 from gdshelpers.geometry.shapely_adapter import convert_to_layout_objs, bounds_union, transform_bounds
+from gdshelpers.export.gdsii_export import write_cell_to_gds_file
 from gdshelpers.geometry import geometric_union
 import gdshelpers.helpers.layers as std_layers
 
@@ -134,7 +135,8 @@ class Cell:
             warnings.warn(
                 'Cell name "{cell_name:s}" added multiple times to {self_name:s}.'
                 ' Can be problematic for desc/dlw-files'.format(cell_name=cell.name, self_name=self.name))
-        self.cells.append(dict(cell=cell, origin=origin, angle=angle))
+        self.cells.append(
+            dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False))
 
     def add_region_layer(self, region_layer=std_layers.regionlayer, layers=None):
         """
@@ -215,6 +217,22 @@ class Cell:
                                                  **cell['cell'].get_desc()) for cell in self.cells}
         return desc
 
+    def get_fractured_layer_dict(self, max_points=4000, max_line_points=4000):
+        from gdshelpers.geometry.shapely_adapter import shapely_collection_to_basic_objs, fracture_intelligently
+        fractured_layer_dict = {}
+        for layer, geometries in self.layer_dict.items():
+            fractured_geometries = []
+            for geometry in geometries:
+                geometry = geometry.get_shapely_object() if hasattr(geometry, 'get_shapely_object') else geometry
+                if type(geometry) in [list, tuple]:
+                    geometry = geometric_union(geometry)
+                geometry = shapely_collection_to_basic_objs(geometry)
+                geometry = itertools.chain(
+                    *[fracture_intelligently(geo, max_points, max_line_points) for geo in geometry])
+                fractured_geometries.append(geometry)
+            fractured_layer_dict[layer] = itertools.chain(*fractured_geometries)
+        return fractured_layer_dict
+
     def get_gdspy_cell(self, executor=None):
         if self.cell_gdspy is None:
             self.cell_gdspy = gdspy.Cell(self.name)
@@ -222,7 +240,8 @@ class Cell:
                 angle = np.rad2deg(sub_cell['angle']) if sub_cell['angle'] is not None else None
                 self.cell_gdspy.add(
                     gdspy.CellReference(sub_cell['cell'].get_gdspy_cell(executor), origin=sub_cell['origin'],
-                                        rotation=angle))
+                                        rotation=angle, magnification=sub_cell['magnification'],
+                                        x_reflection=sub_cell['x_reflection']))
             for layer, geometries in self.layer_dict.items():
                 for geometry in geometries:
                     if executor:
@@ -281,13 +300,14 @@ class Cell:
     def start_viewer(self):
         gdspy.LayoutViewer(library=self.get_gdspy_lib(), depth=10)
 
-    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False):
+    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False, timestamp=None):
         """
         Exports the layout and creates an DLW-file, if DLW-features are used.
 
         :param name: Optionally, the filename of the saved file (without ending).
         :param library: Name of the used library.
             Currently, for gds-export gdspy and gdscad are supported, for oasis-export fatamorgana is supported.
+            Setting the library to 'gdshelpers' will select the gds_export of gdshelpers (experimental).
         :param grid_steps_per_micron: Defines the resolution
         :param parallel: Defines if palatalization is used (only supported in Python 3).
             Standard value will be changed to True in a future version.
@@ -305,7 +325,10 @@ class Cell:
 
         library = library or gds_library
 
-        if library == 'gdspy':
+        if library == 'gdshelpers':
+            with open(name + '.gds', 'wb') as f:
+                write_cell_to_gds_file(f, self, grid_steps_per_micron, timestamp=timestamp)
+        elif library == 'gdspy':
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor() as pool:
@@ -318,11 +341,13 @@ class Cell:
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor() as pool:
-                    binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
+                    binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells),
+                                            [timestamp] * len(gdspy_cells))
             else:
-                binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
+                binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells),
+                                   [timestamp] * len(gdspy_cells))
 
-            self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells)
+            self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells, timestamp=timestamp)
         elif library == 'gdscad':
             layout = gdsCAD.core.Layout(precision=1e-6 / grid_steps_per_micron)
             if parallel:
@@ -519,4 +544,4 @@ if __name__ == '__main__':
     device_cell.show()
     # Creates the output file by using gdspy,gdscad or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
-    device_cell.save(name='my_design', parallel=True, library='gdspy')
+    device_cell.save(name='my_design', parallel=True, library='gdshelpers')
