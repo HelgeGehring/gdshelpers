@@ -6,7 +6,7 @@ from shapely.affinity import translate, rotate
 from shapely.geometry import box
 
 from gdshelpers.geometry.shapely_adapter import convert_to_layout_objs, bounds_union, transform_bounds
-from gdshelpers.export.gdsii_export import write_cell_to_gds_file
+from gdshelpers.export.gdsii_export import write_cell_to_gdsii_file
 from gdshelpers.geometry import geometric_union
 import gdshelpers.helpers.layers as std_layers
 
@@ -327,7 +327,7 @@ class Cell:
 
         if library == 'gdshelpers':
             with open(name + '.gds', 'wb') as f:
-                write_cell_to_gds_file(f, self, grid_steps_per_micron, timestamp=timestamp)
+                write_cell_to_gdsii_file(f, self, grid_steps_per_micron, timestamp=timestamp)
         elif library == 'gdspy':
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
