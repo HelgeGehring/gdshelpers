@@ -56,7 +56,7 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
 
 
 def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000, max_points=4000, max_line_points=4000,
-                             timestamp=None):
+                             timestamp=None, parallel=False):
     name = 'gdshelpers_exported_library'
     grid_step_unit = unit / grid_steps_per_unit
     timestamp = datetime.datetime.now() if timestamp is None else timestamp
@@ -83,8 +83,16 @@ def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000,
     outfile.write(pack('>2H', 4 + len(name), 0x0206) + name.encode('ascii'))  # LIBNAME STRING libname
     outfile.write(pack('>2H', 20, 0x0305) + _real_to_8byte(grid_step_unit / unit) + _real_to_8byte(grid_step_unit))
     # UNITS REAL_8 1/grid_steps_per_unit grid_step_unit
-    for c in cells:
-        outfile.write(_cell_to_gdsii_binary(c, grid_steps_per_unit, max_points, max_line_points, timestamp))
+    if parallel:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor() as pool:
+            num = len(cells)
+            for binary in pool.map(_cell_to_gdsii_binary, cells, (grid_steps_per_unit,) * num, (max_points,) * num,
+                                   (max_line_points,) * num, (timestamp,) * num):
+                outfile.write(binary)
+    else:
+        for c in cells:
+            outfile.write(_cell_to_gdsii_binary(c, grid_steps_per_unit, max_points, max_line_points, timestamp))
     outfile.write(pack('>2H', 4, 0x0400))  # ENDLIB N0_DATA
 
 
@@ -108,4 +116,4 @@ if __name__ == '__main__':
     device_cell.add_cell(sub_cell, origin=(10, 10), angle=np.pi / 2)
 
     with open('gdsii_export.gds', 'wb') as file:
-        write_cell_to_gdsii_file(file, device_cell)
+        write_cell_to_gdsii_file(file, device_cell, parallel=True)

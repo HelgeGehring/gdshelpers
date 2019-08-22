@@ -40,7 +40,7 @@ class Cell:
         """
         self.name = name
         self.cells = []
-        self.layer_dict = defaultdict(lambda: [])
+        self.layer_dict = {}
         self.dlw_data = {}
         self.desc = {'dlw': self.dlw_data, 'desc': {}, 'ebl': []}
         self.cell_gdspy = None
@@ -106,6 +106,8 @@ class Cell:
         :param geometry: shapely geometry
         """
         self._bounds = None
+        if layer not in self.layer_dict:
+            self.layer_dict[layer] = []
         self.layer_dict[layer] += geometry
 
     def add_dlw_data(self, dlw_type, dlw_id, data):
@@ -327,7 +329,7 @@ class Cell:
 
         if library == 'gdshelpers':
             with open(name + '.gds', 'wb') as f:
-                write_cell_to_gdsii_file(f, self, grid_steps_per_micron, timestamp=timestamp)
+                write_cell_to_gdsii_file(f, self, grid_steps_per_micron, timestamp=timestamp, parallel=parallel)
         elif library == 'gdspy':
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
