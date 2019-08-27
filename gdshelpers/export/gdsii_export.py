@@ -34,6 +34,7 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
                              6, 0x0E02, layer,  # DATATYPE INTEGER_2 datatype
                              4 + 8 * len(xy), 0x1003))  # XY INTEGER_4
                 b.write(xy.tobytes())  # coords of polygon
+                b.write(xy[0].tobytes())  # coords of polygon
                 b.write(pack('>2H', 4, 0x1100))  # ENDEL NO_DATA
 
         for ref in cell.cells:
