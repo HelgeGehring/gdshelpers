@@ -324,6 +324,9 @@ class Cell:
         elif name.endswith('.oasis'):
             name = name[:-6]
             library = library or 'fatamorgana'
+        elif name.endswith('.dxf'):
+            name = name[:-4]
+            library = library or 'ezwriter'
 
         library = library or gds_library
 
@@ -391,6 +394,10 @@ class Cell:
 
             with open(name + '.oas', 'wb') as f:
                 layout.write(f)
+        elif library == 'ezdxf':
+            from gdshelpers.export.dxf_export import write_cell_to_dxf_file
+            with open(name + '.gds', 'wb') as f:
+                write_cell_to_dxf_file(f, self, grid_steps_per_micron, parallel=parallel)
         else:
             raise ValueError('library must be either "gdscad", "gdspy" or "fatamorgana"')
 
