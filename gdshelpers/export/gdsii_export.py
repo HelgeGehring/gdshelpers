@@ -69,7 +69,7 @@ def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000,
         cells.append(start_cell)
         cell_names.append(start_cell.name)
         for c in start_cell.cells:
-            if c not in cells:
+            if c['cell'] not in cells:
                 if c['cell'].name in cell_names:
                     raise RuntimeError(
                         'Each cell name must be unique, "{}" is used more than once'.format(c['cell'].name))
