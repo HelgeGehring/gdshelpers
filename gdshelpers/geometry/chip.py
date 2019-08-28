@@ -452,11 +452,17 @@ class Cell:
             result = np.array([[c, -s], [s, c]]).dot(pos)
             return result
 
-        own_patches = [
-            PolygonPatch(
-                translate(rotate(geometric_union(geometry), angle_sum, use_radians=True, origin=(0, 0)), *origin),
-                color=['red', 'green', 'blue', 'teal', 'pink'][(layer - 1) % 5], linewidth=0)
-            for layer, geometry in self.layer_dict.items() if (layers is None or layer in layers)]
+        own_patches = []
+        for layer, geometry in self.layer_dict.items():
+            if layers is not None and layer not in layers:
+                continue
+            geometry = geometric_union(geometry)
+            if geometry.is_empty:
+                continue
+            geometry = translate(rotate(geometry, angle_sum, use_radians=True, origin=(0, 0)), *origin)
+            own_patches.append(
+                PolygonPatch(geometry, color=['red', 'green', 'blue', 'teal', 'pink'][(layer - 1) % 5], linewidth=0))
+
         sub_cells_patches = [p for cell_dict in self.cells for p in
                              cell_dict['cell'].get_patches(
                                  np.array(origin) + rotate_pos(cell_dict['origin'], angle),
