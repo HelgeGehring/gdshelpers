@@ -1,7 +1,6 @@
 import itertools
 import json
 import numpy as np
-from collections import defaultdict
 from shapely.affinity import translate, rotate
 from shapely.geometry import box
 
@@ -10,7 +9,7 @@ from gdshelpers.export.gdsii_export import write_cell_to_gdsii_file
 from gdshelpers.geometry import geometric_union
 import gdshelpers.helpers.layers as std_layers
 
-gds_library = None
+gds_library = 'gdshelpers'
 try:
     import gdspy
 
