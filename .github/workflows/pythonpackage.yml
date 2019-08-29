@@ -29,5 +29,5 @@ jobs:
           flake8 gdshelpers/ --count --exit-zero --max-line-length=120 --statistics
       - name: Test with pytest
         run: |
-          pip install pytest
-          pytest
+          pip install pytest pytest-cov
+          pytest --cov
