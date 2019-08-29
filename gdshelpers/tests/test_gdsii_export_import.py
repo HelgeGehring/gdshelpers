@@ -7,8 +7,6 @@ from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.geometry.chip import Cell
 from gdshelpers.parts.pattern_import import GDSIIImport
 
-from gdshelpers.export.gdsii_export import _real_to_8byte
-
 
 class GdsTestCase(unittest.TestCase):
     def test_export_import(self):
