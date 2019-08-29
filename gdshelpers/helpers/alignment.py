@@ -75,7 +75,7 @@ class Alignment(object):
     def calculate_offset(self, bbox):
         """
         Calculate the coordinates of the current alignment for the given bounding box *bbox*.
-        
+
         :param bbox: Bounding box in the ``((min_x, min_y), (max_x, max_y))`` format.
         :return: (x, y) offset coordinates.
         :rtype: np.array

@@ -348,7 +348,9 @@ class Waveguide(object):
 
     def add_bezier_to_port(self, port, bend_strength, width=None, **kwargs):
         if not width and not np.isclose(self.width, port.width):
-            width = lambda t: t * (port.width - self.width) + self.width
+            def width(t):
+                return t * (port.width - self.width) + self.width
+
             supports_numpy = True
         else:
             supports_numpy = False

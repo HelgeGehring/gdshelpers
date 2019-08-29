@@ -212,13 +212,11 @@ def example():
     wg1.add_straight_segment(100.)
     # wg1.add_bend(0, 60.)
     detector = SNSPD.make_at_port(wg1.current_port, **snspd_parameters)
-    wg = detector.get_waveguide()
-    electrodes = detector.get_electrodes()
     pl = detector.get_passivation_layer(passivation_buffer=0.2)
 
     wg2 = Waveguide.make_at_port(detector.current_port)
     wg2.add_straight_segment(50.)
-    # cell = gdsCAD.core.Cell('test')
+
     cell = Cell('test')
     cell.add_to_layer(3, Point(detector.get_aux_top()[0]).buffer(0.05))
     cell.add_to_layer(4, Point(detector.get_aux_top()[1]).buffer(0.05))

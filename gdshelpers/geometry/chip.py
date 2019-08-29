@@ -540,7 +540,6 @@ class Cell:
 if __name__ == '__main__':
     from gdshelpers.parts.port import Port
     from gdshelpers.parts.waveguide import Waveguide
-    from gdshelpers.geometry.chip import Cell
 
     # Create a cell-like object that offers a save output command '.save' which creates the .gds or .oas file by using
     # gdsCAD,gdspy or fatamorgana

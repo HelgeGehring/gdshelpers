@@ -135,7 +135,7 @@ class DeviceTestCase(unittest.TestCase):
         self.assertTrue(cell.layer_dict[102][0].contains(wg2_shapely))
 
     def test_frame(self):
-        # Add frame 
+        # Add frame
         cell = Cell('test_frame')
         cell.add_to_layer(4, box(0, 0, 10, 10))
         cell.add_frame(padding=10, line_width=1., frame_layer=5)
