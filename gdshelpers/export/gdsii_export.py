@@ -27,7 +27,7 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
         for layer, polygons in cell.get_fractured_layer_dict(max_points, max_line_points).items():
             for polygon in polygons:
                 if polygon.interiors:
-                    raise RuntimeError('GDSII only supports polygons without holes')
+                    raise AssertionError('GDSII only supports polygons without holes')
                 xy = np.round(np.array(polygon.exterior.coords) * grid_steps_per_unit).astype('>i4')
                 b.write(pack('>10H', 4, 0x0800,  # BOUNDARY NO_DATA
                              6, 0x0D02, layer,  # LAYER INTEGER_2 layer
@@ -71,7 +71,7 @@ def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000,
         for c in start_cell.cells:
             if c['cell'] not in cells:
                 if c['cell'].name in cell_names:
-                    raise RuntimeError(
+                    raise AssertionError(
                         'Each cell name must be unique, "{}" is used more than once'.format(c['cell'].name))
                 add_cells_to_unique_list(c['cell'])
 
