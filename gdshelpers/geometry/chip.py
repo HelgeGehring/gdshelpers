@@ -403,7 +403,15 @@ class Cell:
             with open(name + '.dlw', 'w') as f:
                 json.dump(dlw_data, f, indent=True)
 
-        with open(name + '.desc', 'w') as f:
+    def save_desc(self, filename):
+        """
+        Saves a description file for the layout. The file format is not final yet and might change in a future release.
+
+        :param filename: name of the file the description data will be written to
+        """
+        if not filename.endswith('.desc'):
+            filename += '.desc'
+        with open(filename + '.desc', 'w') as f:
             json.dump(self.get_desc(), f, indent=True)
 
     def get_reduced_layer(self, layer):
