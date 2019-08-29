@@ -145,7 +145,3 @@ class DeviceTestCase(unittest.TestCase):
 
         cell.add_frame(padding=10, line_width=1., frame_layer=99, bbox=(0, 0, 2, 3))
         self.assertEqual(cell.get_bounds(layers=[99]), (-11, -11, 13, 14))
-
-
-def test_suite():
-    return unittest.TestLoader().loadTestsFromTestCase(DeviceTestCase)

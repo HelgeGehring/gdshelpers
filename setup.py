@@ -34,7 +34,7 @@ setup(
         'image_export': ['descartes'],
         'mesh_export': ['trimesh']
     },
-    test_suite='gdshelpers.tests.test_suite',
+    test_suite='gdshelpers.tests',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',

@@ -27,7 +27,3 @@ class RingResonatorTestCase(unittest.TestCase):
         self.assertRaises(ValueError, RingResonator, [0, 0], 0, 1., (0.5, -0.5), 50)
         self.assertRaises(ValueError, RingResonator, [0, 0], 0, 1., (-0.5, 0.5), 50)
         self.assertRaises(ValueError, RingResonator, [0, 0], 0, 1., (1, 2, 3), 50)
-
-
-def test_suite():
-    return unittest.TestLoader().loadTestsFromTestCase(RingResonatorTestCase)

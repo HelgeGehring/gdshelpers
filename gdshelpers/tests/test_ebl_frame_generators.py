@@ -16,7 +16,3 @@ class MarkerFrameTestCase(unittest.TestCase):
                                     (-50, 1050), (-50, 1020), (-20, 1050), (1050, -50), (1050, -20), (1020, -50)}
 
         self.assertEqual(markerpositions, expected_markerpositions)
-
-
-def test_suite():
-    return unittest.TestLoader().loadTestsFromTestCase(MarkerFrameTestCase)

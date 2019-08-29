@@ -12,7 +12,3 @@ class HelpersTestCase(unittest.TestCase):
 
     def test_id_to_alphanumeric(self):
         self.assertEqual(id_to_alphanumeric(4, 26 + 25), 'AZ4')
-
-
-def test_suite():
-    return unittest.TestLoader().loadTestsFromTestCase(HelpersTestCase)
