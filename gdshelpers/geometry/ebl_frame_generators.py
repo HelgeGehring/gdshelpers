@@ -17,10 +17,10 @@ def raith_marker_frame(bounds, padding=100, pitch=200, size=20, n=5):
     :param size: The marker size
     :param n: This determines the number of markers: There will be (2*n)+1 markers in each corner.
     """
-    marker_offsets = [(0,0)] + [(0, (i+1)*pitch) for i in range(n)] + [((i+1)*pitch, 0) for i in range(n)]
-    signs = product([-1,1], repeat=2)
+    marker_offsets = [(0, 0)] + [(0, (i + 1) * pitch) for i in range(n)] + [((i + 1) * pitch, 0) for i in range(n)]
+    signs = product([-1, 1], repeat=2)
     x, y = 0.5 * (bounds[0] + bounds[2]), 0.5 * (bounds[1] + bounds[3])
-    half_width, half_height = 0.5*(bounds[2] - bounds[0]) + padding, 0.5*(bounds[3] - bounds[1]) + padding
-    
-    return [SquareMarker((x + (half_width - off[0])*sign[0], y + (half_height - off[1])*sign[1]), size)
+    half_width, half_height = 0.5 * (bounds[2] - bounds[0]) + padding, 0.5 * (bounds[3] - bounds[1]) + padding
+
+    return [SquareMarker((x + (half_width - off[0]) * sign[0], y + (half_height - off[1]) * sign[1]), size)
             for sign, off in product(signs, marker_offsets)]
