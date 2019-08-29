@@ -41,6 +41,8 @@ class GdsTestCase(unittest.TestCase):
                       *offset).almost_equals(
                 GDSIIImport('test.gds', 'test', 3).get_shapely_object(), decimal=3))
 
+        self.assertTrue(GDSIIImport('test.gds', 'test', 1, 2).get_shapely_object().is_empty)
+
     def test_parallel_export(self):
         waveguide = Waveguide([0, 0], 0, 1)
         for i_bend in range(9):
