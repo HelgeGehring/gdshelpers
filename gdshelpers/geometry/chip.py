@@ -301,7 +301,7 @@ class Cell:
     def start_viewer(self):
         gdspy.LayoutViewer(library=self.get_gdspy_lib(), depth=10)
 
-    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False, timestamp=None):
+    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False):
         """
         Exports the layout and creates an DLW-file, if DLW-features are used.
 
@@ -331,8 +331,7 @@ class Cell:
 
         if library == 'gdshelpers':
             with open(name + '.gds', 'wb') as f:
-                write_cell_to_gdsii_file(f, self, grid_steps_per_unit=grid_steps_per_micron, timestamp=timestamp,
-                                         parallel=parallel)
+                write_cell_to_gdsii_file(f, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel)
         elif library == 'gdspy':
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
@@ -346,13 +345,11 @@ class Cell:
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor() as pool:
-                    binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells),
-                                            [timestamp] * len(gdspy_cells))
+                    binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
             else:
-                binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells),
-                                   [timestamp] * len(gdspy_cells))
+                binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
 
-            self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells, timestamp=timestamp)
+            self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells)
         elif library == 'gdscad':
             layout = gdsCAD.core.Layout(precision=1e-6 / grid_steps_per_micron)
             if parallel:
