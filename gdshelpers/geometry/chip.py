@@ -331,7 +331,8 @@ class Cell:
 
         if library == 'gdshelpers':
             with open(name + '.gds', 'wb') as f:
-                write_cell_to_gdsii_file(f, self, grid_steps_per_micron, timestamp=timestamp, parallel=parallel)
+                write_cell_to_gdsii_file(f, self, grid_steps_per_unit=grid_steps_per_micron, timestamp=timestamp,
+                                         parallel=parallel)
         elif library == 'gdspy':
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
