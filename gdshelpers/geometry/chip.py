@@ -472,6 +472,43 @@ class Cell:
 
         return own_patches + sub_cells_patches
 
+    def save_image(self, filename, layers=None, antialiased=True, resolution=1., ylim=(None, None), xlim=(None, None)):
+        """
+           Save cell object as an image.
+
+           You can either use a rasterized file format such as png but also formats such as SVG or PDF.
+
+           :param filename: Name of the image file.
+           :param resolution: Rasterization resolution in GDSII units.
+           :param antialiased: Whether to use a anti-aliasing or not.
+           :param ylim: Tuple of (min_x, max_x) to export.
+           :param xlim: Tuple of (min_y, max_y) to export.
+           """
+        import matplotlib.pyplot as plt
+
+        # For vector graphics, map 1um to {resolution} mm instead of inch.
+        is_vector = filename.split('.')[-1] in ('svg', 'svgz', 'eps', 'ps', 'emf', 'pdf')
+        scale = 5 / 127. if is_vector else 1.
+
+        fig, ax = plt.subplots()
+        for patch in self.get_patches(layers=layers):
+            patch.set_antialiased(antialiased)
+            ax.add_patch(patch)
+
+        # Autoscale, then change the axis limits and read back what is actually displayed
+        ax.autoscale(True, tight=True)
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        actual_ylim, actual_xlim = ax.get_ylim(), ax.get_xlim()
+        fig.set_size_inches(np.asarray((actual_xlim[1] - actual_xlim[0], actual_ylim[1] - actual_ylim[0])) * scale)
+
+        ax.set_aspect(1)
+        ax.axis('off')
+
+        fig.set_dpi(1 / resolution)
+        plt.savefig(filename, transparent=True, bbox_inches='tight', dpi=1 / resolution)
+        plt.close()
+
     def show(self, layers=None, padding=5):
         """
         Shows the current cell
@@ -556,6 +593,7 @@ if __name__ == '__main__':
     device_cell.add_dlw_taper_at_port('A1', 2, waveguide.current_port, 30)
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()
+    device_cell.save_image('chip.pdf')
     # Creates the output file by using gdspy,gdscad or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
     device_cell.save(name='my_design', parallel=True, library='gdshelpers')
