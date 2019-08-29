@@ -29,7 +29,7 @@ class GdsTestCase(unittest.TestCase):
         sub_cell2.add_to_layer(3, waveguide)
         cell.add_cell(sub_cell2, origin=offset, angle=angle)
 
-        cell.save(library='gdshelpers', grid_steps_per_micron=10_000)
+        cell.save(library='gdshelpers', grid_steps_per_micron=10000)
 
         self.assertTrue(
             waveguide.get_shapely_object().almost_equals(GDSIIImport('test.gds', 'test', 1).get_shapely_object(),
