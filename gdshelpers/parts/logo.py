@@ -127,7 +127,7 @@ class WWULogo(object):
         x_w = [-40.58, -13.7, 1.05, 16.86, 40.05, 68.51, 45.06, 29.78, 13.17, -11.33, -28.19, -43.21, -66.93]
         y_w = [0, 0, 78.26, 0, 0, 114, 114, 33.46, 114, 114, 33.46, 114, 114]
         w_coords = zip(x_w, y_w)
-        w = Polygon(w_coords)
+        w_shape = Polygon(w_coords)
 
         # create U
         # ellipse w=82=2a, h=58=2b
@@ -154,9 +154,9 @@ class WWULogo(object):
         y = np.concatenate((yb, yr, yt[::-1], yl))
 
         u_coord = zip(x, y)
-        u = Polygon(u_coord)
+        u_shape = Polygon(u_coord)
 
-        wwu_unscaled = cascaded_union([w, translate(w, 139), translate(u, 261, 29)])
+        wwu_unscaled = cascaded_union([w_shape, translate(w_shape, 139), translate(u_shape, 261, 29)])
 
         # create whole logo
         if self.text == 0:
