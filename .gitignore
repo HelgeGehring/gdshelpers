@@ -20,6 +20,13 @@ docs/_build/
 *.blend
 *.tmp
 
+# images
+*.svg
+*.svgz
+*.png
+*.pdf
+*.eps
+
 # coverage
 .coverage
 /cover/
