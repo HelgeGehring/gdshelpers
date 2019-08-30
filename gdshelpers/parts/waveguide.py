@@ -161,7 +161,8 @@ class Waveguide(object):
         return self
 
     def add_parameterized_path(self, path, width=None, sample_distance=0.50, sample_points=100, path_derivative=None,
-                               path_function_supports_numpy=False, width_function_supports_numpy=False):
+                               path_function_supports_numpy=False, width_function_supports_numpy=False,
+                               last_derivative=None):
         """
         Generate a parameterized path.
 
@@ -199,6 +200,7 @@ class Waveguide(object):
         :param path_derivative:
         :param path_function_supports_numpy:
         :param width_function_supports_numpy:
+        :param last_derivative: Supply the values (dx, dy) of the last derivative of the path.
         """
 
         path_callable = callable(path)
@@ -257,6 +259,9 @@ class Waveguide(object):
                 sample_coordinates_d1 = np.array([path_derivative(x) for x in sample_t])
         else:
             sample_coordinates_d1 = np.vstack(([1, 0], np.diff(sample_coordinates, axis=0)))
+
+        if last_derivative:
+            sample_coordinates_d1[-1] = last_derivative
 
         sample_coordinates_d1_norm = np.apply_along_axis(linalg.norm, 1, sample_coordinates_d1)
         sample_coordinates_d1_normed = sample_coordinates_d1 / sample_coordinates_d1_norm[:, None]
