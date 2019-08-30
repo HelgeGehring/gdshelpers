@@ -16,7 +16,3 @@ class SplitterTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(splitter.root_port.origin[0], 0)
         self.assertAlmostEqual(splitter.root_port.origin[1], 0)
-
-
-def test_suite():
-    return unittest.TestLoader().loadTestsFromTestCase(SplitterTestCase)

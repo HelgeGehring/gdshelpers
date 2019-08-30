@@ -28,7 +28,3 @@ class WaveguideTestCase(unittest.TestCase):
         self.assertAlmostEqual(wg.current_port.origin[0], 10)
         self.assertAlmostEqual(wg.current_port.origin[1], 10)
         self.assertAlmostEqual(abs(wg.current_port.angle), math.pi)
-
-
-def test_suite():
-    return unittest.TestLoader().loadTestsFromTestCase(WaveguideTestCase)

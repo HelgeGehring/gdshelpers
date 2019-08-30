@@ -5,7 +5,8 @@ Changelog
 -----
 * Added part for GDSII-import
 * Added direct GDSII-export
-* bugfix
+* Added DXF-export
+* bugfixes
 
 1.0.3
 -----

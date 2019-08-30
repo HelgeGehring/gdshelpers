@@ -1,5 +1,5 @@
 from shapely.geometry.polygon import Polygon
-from shapely.ops import cascaded_union
+from shapely.geometry.multipolygon import MultiPolygon
 from shapely.affinity import translate, rotate, scale
 import gdspy
 
@@ -24,14 +24,17 @@ class GDSIIImport:
 
         for reference in gdspy_cell.references:
             sub_geometry = self.get_as_shapely(reference.ref_cell, layer, datatype)
+            if sub_geometry.is_empty:
+                continue
             sub_geometry = scale(sub_geometry,
                                  *[reference.magnification] * 2) if reference.magnification else sub_geometry
             sub_geometry = scale(sub_geometry, -1) if reference.x_reflection else sub_geometry
-            sub_geometry = rotate(sub_geometry, reference.rotation) if reference.rotation else sub_geometry
+            sub_geometry = rotate(sub_geometry, reference.rotation,
+                                  origin=(0, 0)) if reference.rotation else sub_geometry
             sub_geometry = translate(sub_geometry, *reference.origin)
             geometry.extend(sub_geometry)
 
-        return cascaded_union(geometry)
+        return MultiPolygon(geometry)
 
     def get_shapely_object(self):
         return self.get_as_shapely(self.cell_name, self.layer, self.datatype)

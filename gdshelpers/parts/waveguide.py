@@ -348,7 +348,9 @@ class Waveguide(object):
 
     def add_bezier_to_port(self, port, bend_strength, width=None, **kwargs):
         if not width and not np.isclose(self.width, port.width):
-            width = lambda t: t * (port.width - self.width) + self.width
+            def width(t):
+                return t * (port.width - self.width) + self.width
+
             supports_numpy = True
         else:
             supports_numpy = False
@@ -503,10 +505,7 @@ class Waveguide(object):
 
 
 def _example():
-    import gdsCAD
-    import gdsCAD.templates
-
-    from gdshelpers.geometry import convert_to_gdscad, geometric_union
+    from gdshelpers.geometry.chip import Cell
     from gdshelpers.parts.splitter import Splitter
     from gdshelpers.parts.coupler import GratingCoupler
 
@@ -549,17 +548,17 @@ def _example():
 
     whole_layout = (path, splitter, path2, splitter2, coupler1, path3, path4, empty_path)
 
-    layout = gdsCAD.core.Layout('LIBRARY')
-    cell = gdsCAD.core.Cell('TOP')
-    cell.add(convert_to_gdscad(whole_layout))
-    cell.add(convert_to_gdscad(empty_path, layer=2))
-    cell.add(convert_to_gdscad(splitter.root_port.debug_shape, layer=4))
+    layout = Cell('LIBRARY')
+    cell = Cell('TOP')
+    cell.add_to_layer(1, *whole_layout)
+    cell.add_to_layer(2, empty_path)
+    cell.add_to_layer(4, splitter.root_port.debug_shape)
 
-    layout.add(cell)
+    layout.add_cell(cell)
 
-    cell_df = gdsCAD.core.Cell('TOP_DF')
-    cell_df.add(convert_to_gdscad(convert_to_positive_resist(whole_layout, buffer_radius=1.5)))
-    layout.add(cell_df)
+    cell_df = Cell('TOP_DF')
+    cell_df.add_to_layer(1, convert_to_positive_resist(whole_layout, buffer_radius=1.5))
+    layout.add_cell(cell_df)
 
     layout.save('output.gds')
     cell.show()

@@ -14,10 +14,18 @@ docs/_build/
 *.gds
 *.desc
 *.dlw
+*.dxf
 
 # files corresponds to Blender
 *.blend
 *.tmp
+
+# images
+*.svg
+*.svgz
+*.png
+*.pdf
+*.eps
 
 # coverage
 .coverage

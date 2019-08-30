@@ -1,7 +1,6 @@
 import itertools
 import json
 import numpy as np
-from collections import defaultdict
 from shapely.affinity import translate, rotate
 from shapely.geometry import box
 
@@ -10,7 +9,7 @@ from gdshelpers.export.gdsii_export import write_cell_to_gdsii_file
 from gdshelpers.geometry import geometric_union
 import gdshelpers.helpers.layers as std_layers
 
-gds_library = None
+gds_library = 'gdshelpers'
 try:
     import gdspy
 
@@ -305,7 +304,7 @@ class Cell:
     def start_viewer(self):
         gdspy.LayoutViewer(library=self.get_gdspy_lib(), depth=10)
 
-    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False, timestamp=None):
+    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False):
         """
         Exports the layout and creates an DLW-file, if DLW-features are used.
 
@@ -327,12 +326,15 @@ class Cell:
         elif name.endswith('.oasis'):
             name = name[:-6]
             library = library or 'fatamorgana'
+        elif name.endswith('.dxf'):
+            name = name[:-4]
+            library = library or 'ezwriter'
 
         library = library or gds_library
 
         if library == 'gdshelpers':
             with open(name + '.gds', 'wb') as f:
-                write_cell_to_gdsii_file(f, self, grid_steps_per_micron, timestamp=timestamp, parallel=parallel)
+                write_cell_to_gdsii_file(f, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel)
         elif library == 'gdspy':
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
@@ -346,13 +348,11 @@ class Cell:
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor() as pool:
-                    binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells),
-                                            [timestamp] * len(gdspy_cells))
+                    binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
             else:
-                binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells),
-                                   [timestamp] * len(gdspy_cells))
+                binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
 
-            self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells, timestamp=timestamp)
+            self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells)
         elif library == 'gdscad':
             layout = gdsCAD.core.Layout(precision=1e-6 / grid_steps_per_micron)
             if parallel:
@@ -394,6 +394,10 @@ class Cell:
 
             with open(name + '.oas', 'wb') as f:
                 layout.write(f)
+        elif library == 'ezdxf':
+            from gdshelpers.export.dxf_export import write_cell_to_dxf_file
+            with open(name + '.gds', 'wb') as f:
+                write_cell_to_dxf_file(f, self, grid_steps_per_micron, parallel=parallel)
         else:
             raise ValueError('library must be either "gdscad", "gdspy" or "fatamorgana"')
 
@@ -402,7 +406,15 @@ class Cell:
             with open(name + '.dlw', 'w') as f:
                 json.dump(dlw_data, f, indent=True)
 
-        with open(name + '.desc', 'w') as f:
+    def save_desc(self, filename):
+        """
+        Saves a description file for the layout. The file format is not final yet and might change in a future release.
+
+        :param filename: name of the file the description data will be written to
+        """
+        if not filename.endswith('.desc'):
+            filename += '.desc'
+        with open(filename + '.desc', 'w') as f:
             json.dump(self.get_desc(), f, indent=True)
 
     def get_reduced_layer(self, layer):
@@ -449,11 +461,17 @@ class Cell:
             result = np.array([[c, -s], [s, c]]).dot(pos)
             return result
 
-        own_patches = [
-            PolygonPatch(
-                translate(rotate(geometric_union(geometry), angle_sum, use_radians=True, origin=(0, 0)), *origin),
-                color=['red', 'green', 'blue', 'teal', 'pink'][(layer - 1) % 5], linewidth=0)
-            for layer, geometry in self.layer_dict.items() if (layers is None or layer in layers)]
+        own_patches = []
+        for layer, geometry in self.layer_dict.items():
+            if layers is not None and layer not in layers:
+                continue
+            geometry = geometric_union(geometry)
+            if geometry.is_empty:
+                continue
+            geometry = translate(rotate(geometry, angle_sum, use_radians=True, origin=(0, 0)), *origin)
+            own_patches.append(
+                PolygonPatch(geometry, color=['red', 'green', 'blue', 'teal', 'pink'][(layer - 1) % 5], linewidth=0))
+
         sub_cells_patches = [p for cell_dict in self.cells for p in
                              cell_dict['cell'].get_patches(
                                  np.array(origin) + rotate_pos(cell_dict['origin'], angle),
@@ -461,6 +479,43 @@ class Cell:
                                  layers=layers)]
 
         return own_patches + sub_cells_patches
+
+    def save_image(self, filename, layers=None, antialiased=True, resolution=1., ylim=(None, None), xlim=(None, None)):
+        """
+           Save cell object as an image.
+
+           You can either use a rasterized file format such as png but also formats such as SVG or PDF.
+
+           :param filename: Name of the image file.
+           :param resolution: Rasterization resolution in GDSII units.
+           :param antialiased: Whether to use a anti-aliasing or not.
+           :param ylim: Tuple of (min_x, max_x) to export.
+           :param xlim: Tuple of (min_y, max_y) to export.
+           """
+        import matplotlib.pyplot as plt
+
+        # For vector graphics, map 1um to {resolution} mm instead of inch.
+        is_vector = filename.split('.')[-1] in ('svg', 'svgz', 'eps', 'ps', 'emf', 'pdf')
+        scale = 5 / 127. if is_vector else 1.
+
+        fig, ax = plt.subplots()
+        for patch in self.get_patches(layers=layers):
+            patch.set_antialiased(antialiased)
+            ax.add_patch(patch)
+
+        # Autoscale, then change the axis limits and read back what is actually displayed
+        ax.autoscale(True, tight=True)
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        actual_ylim, actual_xlim = ax.get_ylim(), ax.get_xlim()
+        fig.set_size_inches(np.asarray((actual_xlim[1] - actual_xlim[0], actual_ylim[1] - actual_ylim[0])) * scale)
+
+        ax.set_aspect(1)
+        ax.axis('off')
+
+        fig.set_dpi(1 / resolution)
+        plt.savefig(filename, transparent=True, bbox_inches='tight', dpi=1 / resolution)
+        plt.close()
 
     def show(self, layers=None, padding=5):
         """
@@ -531,7 +586,6 @@ class Cell:
 if __name__ == '__main__':
     from gdshelpers.parts.port import Port
     from gdshelpers.parts.waveguide import Waveguide
-    from gdshelpers.geometry.chip import Cell
 
     # Create a cell-like object that offers a save output command '.save' which creates the .gds or .oas file by using
     # gdsCAD,gdspy or fatamorgana
@@ -547,6 +601,7 @@ if __name__ == '__main__':
     device_cell.add_dlw_taper_at_port('A1', 2, waveguide.current_port, 30)
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()
+    device_cell.save_image('chip.pdf')
     # Creates the output file by using gdspy,gdscad or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
     device_cell.save(name='my_design', parallel=True, library='gdshelpers')

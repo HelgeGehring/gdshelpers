@@ -25,10 +25,13 @@ class PhotonicCrystalCavity:
         :param origin: vector, Position of the center of the Photonic Crystal cavity
         :param angle: angle of the roation
         :param width: width of the waveguide
-        :param lengthofcavity:  float, distance between the central two points, set to -1*holediameters for hole centered cavities
+        :param lengthofcavity:  float, distance between the central two points, set to -1*holediameters for
+            hole centered cavities
         :param numberofholes:  int, number of holes on each side
-        :param holediameters: float or List of the diameters of the holes on each side. In case of linear increase use e.g. np.linespace
-        :param holedistances: float or List of the distances of the holes on each side. In case of linear increase use e.g. np.linespace
+        :param holediameters: float or List of the diameters of the holes on each side.
+            In case of linear increase use e.g. np.linespace
+        :param holedistances: float or List of the distances of the holes on each side.
+            In case of linear increase use e.g. np.linespace
         :param tapermode: None for constant widht, 'quadratic' for quadratic tapering
         :param finalwidth: width in the the center of the cavity
         :param taperlength: length over which the cavity will be tapered
@@ -88,7 +91,7 @@ class PhotonicCrystalCavity:
         self._generate()
         if underetching:
             self.generate_underetch()
-        if markers == True:
+        if markers:
             self.generate_marker()
         if markers == 'inverse':
             self.invertmarker = True
@@ -96,10 +99,14 @@ class PhotonicCrystalCavity:
 
     def _generate(self):
         if not self.tapermode:
-            width_func = lambda x: self.width
+            def width_func(x):
+                return self.width
+
             restlength = 0
         elif self.tapermode == 'quadratic':
-            width_func = lambda x: (self.widthdiff) * ((1 - x) ** 2) + self.width
+            def width_func(x):
+                return self.widthdiff * ((1 - x) ** 2) + self.width
+
             restlength = self.devlen / 2 - self.taperlength
 
         wgcavl = Waveguide.make_at_port(self._center_portl)
@@ -153,7 +160,7 @@ class PhotonicCrystalCavity:
 
     def generate_marker(self):
         sign = 1
-        if self.invertmarker == True:
+        if self.invertmarker:
             sign = -1
 
         markerdistancex = sign * self.markerdistancex / 2
@@ -204,18 +211,18 @@ def main():
     from gdshelpers.geometry import convert_to_gdscad
 
     devicename = 'Cavity'
-    cavitiyparameter_const = {'origin': [0, 0], 'angle': 0, 'width': 0.726, 'lengthofcavity': 0.26, 'numberofholes': 17,
-                              'holediameters': 0.416, 'holedistances': 0.53}
-    cavitiyparameter_lin = {'origin': [100, 500], 'angle': 0, 'width': 0.726, 'lengthofcavity': 0.26,
-                            'numberofholes': 17,
-                            'holediameters': np.linspace(0.233, 0.416, 17),
-                            'holedistances': np.linspace(0.53, 0.605, 16)}
-    taperlength = 15 * 0.414
-    cavitiyparameter_tap_width = {'origin': [-50, -30], 'angle': np.pi, 'width': 1.1, 'numberofholes': 25,
-                                  'taperlength': taperlength,
-                                  'lengthofcavity': -0.414, 'finalwidth': 1.55, 'tapermode': 'quadratic',
-                                  'holediameters': 0.414,
-                                  'holedistances': 0.620}
+    # cavitiyparameter_const = {'origin': [0, 0], 'angle': 0, 'width': 0.726, 'lengthofcavity': 0.26,
+    #                          'numberofholes': 17, 'holediameters': 0.416, 'holedistances': 0.53}
+    # cavitiyparameter_lin = {'origin': [100, 500], 'angle': 0, 'width': 0.726, 'lengthofcavity': 0.26,
+    #                        'numberofholes': 17,
+    #                        'holediameters': np.linspace(0.233, 0.416, 17),
+    #                        'holedistances': np.linspace(0.53, 0.605, 16)}
+    # taperlength = 15 * 0.414
+    # cavitiyparameter_tap_width = {'origin': [-50, -30], 'angle': np.pi, 'width': 1.1, 'numberofholes': 25,
+    #                              'taperlength': taperlength,
+    #                              'lengthofcavity': -0.414, 'finalwidth': 1.55, 'tapermode': 'quadratic',
+    #                              'holediameters': 0.414,
+    #                              'holedistances': 0.620}
     holeparams_bg = {'mindia': 0.267, 'maxdia': 0.267, 'mindist': 0.512, 'maxdist': 0.512, 'numholestap': 1,
                      'numholesmir': 10}
     bandgapparameter = {'origin': [0, 0], 'angle': 0,
@@ -227,7 +234,7 @@ def main():
 
     port1 = Port(origin=[10, 10], angle=np.pi / 2, width=1)
     # cav2 = PhotonicCrystalCavity.make_at_port(port=port1, **cavitiyparameter_tap_width)
-    pccav3 = PhotonicCrystalCavity(**cavitiyparameter_tap_width)
+    # pccav3 = PhotonicCrystalCavity(**cavitiyparameter_tap_width)
     wg = Waveguide.make_at_port(port1.inverted_direction)
     wg.add_straight_segment(length=5)
 
@@ -243,7 +250,7 @@ def main():
 
     # cell.add(convert_to_gdscad(pccav2.layer_photonic_cavity, layer=1))
     # cell.add(convert_to_gdscad(pccav3.get_holes_list()))
-    holes = pccav3.get_holes_list()
+    # holes = pccav3.get_holes_list()
 
     layout = gdsCAD.core.Layout()
     layout.add(cell=cell)
