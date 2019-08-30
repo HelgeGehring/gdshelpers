@@ -174,19 +174,22 @@ class Cell:
         self.add_to_layer(layer, marker)
         self.desc['ebl'].append(list(marker.origin))
 
-    def add_ebl_frame(self, layer, frame_generator, **kwargs):
+    def add_ebl_frame(self, layer, frame_generator, bounds=None, **kwargs):
         """
         Adds global markers to the layout
 
         :param layer:  layer on which the markers should be positioned
         :param frame_generator: either a method, which returns a list of the markers, which should be added or the name
             of a generator from the gdshelpers.geometry.ebl_frame_generators package
-        :param kwargs: Parameters which are directly passed to the frame generator
+        :param bounds: Optionally the bounds to use can be provided. If None, the standard cell bounds will be used.
+        :param kwargs: Parameters which are directly passed to the frame generator (other than the bounds parameter)
         """
         from gdshelpers.geometry import ebl_frame_generators
         frame_generator = frame_generator if callable(frame_generator) else getattr(ebl_frame_generators,
                                                                                     frame_generator)
-        for marker in frame_generator(self.bounds, **kwargs):
+        bounds = bounds or self.bounds
+
+        for marker in frame_generator(bounds, **kwargs):
             self.add_ebl_marker(layer, marker)
 
     def add_to_desc(self, key, data):
