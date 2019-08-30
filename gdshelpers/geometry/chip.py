@@ -146,20 +146,20 @@ class Cell:
         """
         self.add_to_layer(region_layer, box(*self.get_bounds(layers)))
 
-    def add_frame(self, padding=30., line_width=1., frame_layer=std_layers.framelayer, bbox=None):
+    def add_frame(self, padding=30., line_width=1., frame_layer=std_layers.framelayer, bounds=None):
         """
         Generates a rectangular frame around the contents of the cell.
 
         :param padding: Add a padding of the given value around the contents of the cell
         :param line_width: Width of the frame line
         :param frame_layer: Layer to put the frame on.
-        :param bbox: Optionally, an explicit extent can be passed to the function. If `None` (default),
-                     the current extent of the cell will be chosen.
+        :param bounds: Optionally, an explicit extent in the form (min_x, min_y, max_x, max_y) can be passed to
+            the function. If `None` (default), the current extent of the cell will be chosen.
         """
         padding = padding + line_width
-        bbox = bbox or self.bounds
+        bounds = bounds or self.bounds
 
-        frame = box(bbox[0] - padding, bbox[1] - padding, bbox[2] + padding, bbox[3] + padding)
+        frame = box(bounds[0] - padding, bounds[1] - padding, bounds[2] + padding, bounds[3] + padding)
         frame = frame.difference(frame.buffer(-line_width))
         self.add_to_layer(frame_layer, frame)
 
@@ -180,7 +180,8 @@ class Cell:
         :param layer:  layer on which the markers should be positioned
         :param frame_generator: either a method, which returns a list of the markers, which should be added or the name
             of a generator from the gdshelpers.geometry.ebl_frame_generators package
-        :param bounds: Optionally the bounds to use can be provided. If None, the standard cell bounds will be used.
+        :param bounds: Optionally the bounds to use can be provided in the form (min_x, min_y, max_x, max_y). If None,
+            the standard cell bounds will be used.
         :param kwargs: Parameters which are directly passed to the frame generator (other than the bounds parameter)
         """
         from gdshelpers.geometry import ebl_frame_generators
