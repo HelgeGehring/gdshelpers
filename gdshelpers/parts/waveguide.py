@@ -260,7 +260,7 @@ class Waveguide(object):
         else:
             sample_coordinates_d1 = np.vstack(([1, 0], np.diff(sample_coordinates, axis=0)))
 
-        if last_derivative:
+        if last_derivative is not None:
             sample_coordinates_d1[-1] = last_derivative
 
         sample_coordinates_d1_norm = np.apply_along_axis(linalg.norm, 1, sample_coordinates_d1)
