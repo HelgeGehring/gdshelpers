@@ -26,7 +26,7 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
 
         for layer, polygons in cell.get_fractured_layer_dict(max_points, max_line_points).items():
             for polygon in polygons:
-                if polygon.interiors:
+                if hasattr(polygon, 'interiors') and polygon.interiors:
                     raise AssertionError('GDSII only supports polygons without holes')
                 xy = np.round(np.array(polygon.exterior.coords) * grid_steps_per_unit).astype('>i4')
                 b.write(pack('>10H', 4, 0x0800,  # BOUNDARY NO_DATA
