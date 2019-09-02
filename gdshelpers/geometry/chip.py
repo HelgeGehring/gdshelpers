@@ -233,7 +233,7 @@ class Cell:
                     geometry = geometric_union(geometry)
                 geometry = shapely_collection_to_basic_objs(geometry)
                 geometry = itertools.chain(
-                    *[fracture_intelligently(geo, max_points, max_line_points) for geo in geometry])
+                    *[fracture_intelligently(geo, max_points, max_line_points) for geo in geometry if not geo.is_empty])
                 fractured_geometries.append(geometry)
             fractured_layer_dict[layer] = itertools.chain(*fractured_geometries)
         return fractured_layer_dict
