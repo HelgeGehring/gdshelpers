@@ -44,6 +44,8 @@ The library itself is designed to be as simple to use as possible:
 .. plot::
     :include-source:
 
+    import numpy as np
+
     from gdshelpers.geometry.chip import Cell
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.coupler import GratingCoupler
