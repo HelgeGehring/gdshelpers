@@ -34,7 +34,7 @@ class Alignment(object):
         }
     }
 
-    def __init__(self, alignment='bottom-left'):
+    def __init__(self, alignment='left-bottom'):
         self.alignment = alignment
 
     @property
