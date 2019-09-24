@@ -29,17 +29,19 @@ class GdsTestCase(unittest.TestCase):
 
         cell.save(library='gdshelpers', grid_steps_per_micron=10000)
 
-        self.assertTrue(
-            waveguide.get_shapely_object().almost_equals(GDSIIImport('test.gds', 'test', 1).get_shapely_object(),
-                                                         decimal=3))
-        self.assertTrue(
-            waveguide.get_shapely_object().almost_equals(GDSIIImport('test.gds', 'test', 2).get_shapely_object(),
-                                                         decimal=3))
+        def assert_almost_equal_shapely(a, b, tolerance=2e-4):
+            self.assertTrue(a.buffer(tolerance).contains(b))
+            self.assertTrue(b.buffer(tolerance).contains(a))
 
-        self.assertTrue(
+        assert_almost_equal_shapely(
+            waveguide.get_shapely_object(), GDSIIImport('test.gds', 'test', 1).get_shapely_object())
+
+        assert_almost_equal_shapely(
+            waveguide.get_shapely_object(), GDSIIImport('test.gds', 'test', 2).get_shapely_object())
+
+        assert_almost_equal_shapely(
             translate(rotate(waveguide.get_shapely_object(), angle, use_radians=True, origin=(0, 0)),
-                      *offset).almost_equals(
-                GDSIIImport('test.gds', 'test', 3).get_shapely_object(), decimal=3))
+                      *offset), GDSIIImport('test.gds', 'test', 3).get_shapely_object())
 
         self.assertTrue(GDSIIImport('test.gds', 'test', 1, 2).get_shapely_object().is_empty)
 
