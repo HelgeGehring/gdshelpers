@@ -314,7 +314,7 @@ class Cell:
             Currently, for gds-export gdspy and gdscad are supported, for oasis-export fatamorgana is supported.
             Setting the library to 'gdshelpers' will select the gds_export of gdshelpers (experimental).
         :param grid_steps_per_micron: Defines the resolution
-        :param parallel: Defines if palatalization is used (only supported in Python 3).
+        :param parallel: Defines if parallelization is used (only supported in Python 3).
             Standard value will be changed to True in a future version.
             Deactivating can be useful for debugging reasons.
         """
@@ -603,6 +603,6 @@ if __name__ == '__main__':
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()
     device_cell.save_image('chip.pdf')
-    # Creates the output file by using gdspy,gdscad or fatamorgana. To use the implemented parallel processing, set
+    # Creates the output file by using gdspy, gdscad or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
     device_cell.save(name='my_design', parallel=True, library='gdshelpers')
