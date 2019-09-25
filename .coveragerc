@@ -2,6 +2,7 @@
 source = gdshelpers/
 omit = 
 	*blender*
+	*tests*
 
 [report]
 exclude_lines =
