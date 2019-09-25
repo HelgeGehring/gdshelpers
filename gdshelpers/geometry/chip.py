@@ -9,26 +9,6 @@ from gdshelpers.export.gdsii_export import write_cell_to_gdsii_file
 from gdshelpers.geometry import geometric_union
 import gdshelpers.helpers.layers as std_layers
 
-gds_library = 'gdshelpers'
-try:
-    import gdspy
-
-    gds_library = 'gdspy'
-except ImportError:
-    pass  # Error will come when trying to use get_gdspy_cell
-try:
-    import gdsCAD
-
-    gds_library = 'gdscad'
-except ImportError:
-    pass  # Error will come when trying to use get_gdscad_cell
-
-try:
-    import fatamorgana
-    import fatamorgana.records
-except ImportError:
-    pass
-
 
 class Cell:
     def __init__(self, name):
@@ -239,6 +219,7 @@ class Cell:
         return fractured_layer_dict
 
     def get_gdspy_cell(self, executor=None):
+        import gdspy
         if self.cell_gdspy is None:
             self.cell_gdspy = gdspy.Cell(self.name)
             for sub_cell in self.cells:
@@ -257,6 +238,7 @@ class Cell:
         return self.cell_gdspy
 
     def get_gdscad_cell(self, executor=None):
+        import gdsCAD
         if self.cell_gdscad is None:
             self.cell_gdscad = gdsCAD.core.Cell(self.name)
             for sub_cell in self.cells:
@@ -274,6 +256,8 @@ class Cell:
         return self.cell_gdscad
 
     def get_oasis_cells(self, grid_steps_per_micron=1000, executor=None):
+        import fatamorgana
+        import fatamorgana.records
         if self.cell_oasis is None:
             self.cell_oasis = fatamorgana.Cell(fatamorgana.NString(self.name))
             for sub_cell in self.cells:
@@ -299,10 +283,12 @@ class Cell:
                                     sub_cell['cell'].get_oasis_cells(grid_steps_per_micron, executor)]
 
     def get_gdspy_lib(self):
+        import gdspy
         self.get_gdspy_cell()
         return gdspy.current_library
 
     def start_viewer(self):
+        import gdspy
         gdspy.LayoutViewer(library=self.get_gdspy_lib(), depth=10)
 
     def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False):
@@ -311,8 +297,8 @@ class Cell:
 
         :param name: Optionally, the filename of the saved file (without ending).
         :param library: Name of the used library.
-            Currently, for gds-export gdspy and gdscad are supported, for oasis-export fatamorgana is supported.
-            Setting the library to 'gdshelpers' will select the gds_export of gdshelpers (experimental).
+            Should stay `None` in order to select the library depending on the file-ending.
+            Additionally, for gds-export gdspy and gdscad can be selected.
         :param grid_steps_per_micron: Defines the resolution
         :param parallel: Defines if parallelization is used (only supported in Python 3).
             Standard value will be changed to True in a future version.
@@ -323,7 +309,7 @@ class Cell:
             name = self.name
         elif name.endswith('.gds'):
             name = name[:-4]
-            library = library or gds_library
+            library = library or 'gdshelpers'
         elif name.endswith('.oasis'):
             name = name[:-6]
             library = library or 'fatamorgana'
@@ -331,7 +317,7 @@ class Cell:
             name = name[:-4]
             library = library or 'ezwriter'
 
-        library = library or gds_library
+        library = library or 'gdshelpers'
 
         if library == 'gdshelpers':
             from tempfile import NamedTemporaryFile
@@ -342,6 +328,8 @@ class Cell:
             shutil.move(tmp.name, name + '.gds')
 
         elif library == 'gdspy':
+            import gdspy
+
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor() as pool:
@@ -360,6 +348,7 @@ class Cell:
 
             self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells)
         elif library == 'gdscad':
+            import gdsCAD
             layout = gdsCAD.core.Layout(precision=1e-6 / grid_steps_per_micron)
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
@@ -369,6 +358,7 @@ class Cell:
                 layout.add(self.get_gdscad_cell())
             layout.save(name + '.gds')
         elif library == 'fatamorgana':
+            import fatamorgana
             layout = fatamorgana.OasisLayout(grid_steps_per_micron)
 
             if parallel:
