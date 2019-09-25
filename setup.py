@@ -32,7 +32,8 @@ setup(
         'dxf_export': ['ezdxf'],
         'image_import': ['imageio'],
         'image_export': ['descartes'],
-        'mesh_export': ['trimesh']
+        'mesh_export': ['trimesh'],
+        'fdtd_simulation': ['meep']
     },
     test_suite='gdshelpers.tests',
     classifiers=[

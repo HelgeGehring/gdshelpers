@@ -5,6 +5,7 @@ Unreleased
 ----------
 * Added support for slot waveguides and coplanar waveguides
 * Direct GDSII-export is now the standard GDSII-writer
+* Added meep integration
 
 1.0.4
 -----

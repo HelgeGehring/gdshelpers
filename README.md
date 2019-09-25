@@ -54,6 +54,10 @@ The structures are organized in cells, which allow:
 * Automatized generation of region layers
 * Parallelized export
 
+Additionally the structures can conveniently be simulated by:
+
+* Using the meep integration (FDTD)
+
 Finally, there are also different formats in which the pattern can be exported:
 
 * The GDSII-format, which is quite often used for (electron beam/...)-lithography
