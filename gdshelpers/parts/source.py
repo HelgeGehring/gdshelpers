@@ -142,7 +142,7 @@ class CNT(object):
         return geometric_union(self.waveguide)
 
 
-def _cnt_example():
+def _example_cnt():
     import gdsCAD.core
     from gdshelpers.geometry import convert_to_gdscad
     from gdshelpers.parts.waveguide import Waveguide
@@ -183,4 +183,4 @@ def _cnt_example():
 
 
 if __name__ == '__main__':
-    _cnt_example()
+    _example_cnt()

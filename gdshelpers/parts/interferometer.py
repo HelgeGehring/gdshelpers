@@ -168,7 +168,7 @@ class MachZehnderInterferometerMMI(object):
         return geometric_union([splitter1, splitter2, upper_wg, lower_wg])
 
 
-def main():
+def _example():
     import gdsCAD
 
     devicename = 'MZI'
@@ -196,4 +196,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    _example()

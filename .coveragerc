@@ -2,6 +2,7 @@
 source = gdshelpers/
 omit = 
 	*blender*
+	*tests*
 
 [report]
 exclude_lines =
@@ -9,5 +10,6 @@ exclude_lines =
 		if __name__ == .__main__.:
 		raise AssertionError
 		raise NotImplementedError
+		def _example*
 
 show_missing = True

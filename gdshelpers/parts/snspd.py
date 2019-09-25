@@ -206,7 +206,7 @@ snspd_parameters = {
 }
 
 
-def example():
+def _example():
     start_port = Port((0, 0), 0.5 * np.pi, 1.)
     wg1 = Waveguide.make_at_port(start_port)
     wg1.add_straight_segment(100.)
@@ -237,4 +237,4 @@ def example():
 
 
 if __name__ == '__main__':
-    example()
+    _example()

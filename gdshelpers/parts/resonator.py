@@ -203,7 +203,7 @@ class RingResonator(object):
         return geometric_union([ring, wg, opposite_wg])
 
 
-def example():
+def _example():
     from gdshelpers.geometry import convert_to_gdscad
     import gdsCAD
 
@@ -229,4 +229,4 @@ def example():
 
 
 if __name__ == '__main__':
-    example()
+    _example()

@@ -206,7 +206,7 @@ class PhotonicCrystalCavity:
             angle=port.angle, **cavityparameter)
 
 
-def main():
+def _example():
     import gdsCAD
     from gdshelpers.geometry import convert_to_gdscad
 
@@ -258,4 +258,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    _example()
