@@ -19,7 +19,8 @@ So far, the following parts are implemented:
   - Includes parameterized paths and Bézier curves.
   - Automatic smooth connection to a target point/port
   - The size of the waveguide can be tapered (linear or by a user defined function), 
-    which can e.g. be used for optical edge coupling or electronic contact pads 
+    which can e.g. be used for optical edge coupling or electronic contact pads
+  - Allows to design slot-waveguides and coplanar waveguides (with arbitrary number of rails)  
 * Different types of splitters:
   - Y-splitter
   - MMI-splitters
