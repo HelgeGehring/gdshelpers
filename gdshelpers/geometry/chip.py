@@ -334,8 +334,13 @@ class Cell:
         library = library or gds_library
 
         if library == 'gdshelpers':
-            with open(name + '.gds', 'wb') as f:
-                write_cell_to_gdsii_file(f, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel)
+            from tempfile import NamedTemporaryFile
+            import shutil
+
+            with NamedTemporaryFile('wb', delete=False) as tmp:
+                write_cell_to_gdsii_file(tmp, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel)
+            shutil.move(tmp.name, name + '.gds')
+
         elif library == 'gdspy':
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
