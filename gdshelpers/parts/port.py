@@ -113,17 +113,26 @@ class Port(object):
     @property
     def width(self):
         """
-        The width of the port.
+        The width of the port. E.g. for slot waveguides it can also be an array in the format [width, gap, width, ...],
+        where each width describe the width of each rail and the gap defines the gap in between.
+        This array can also end with a gap, which facilitates e.g. the design of adiabatic mode converters.
+        """
+        return self._width
+
+    @property
+    def total_width(self):
+        """
+        The total width of the port.
 
         Guarantied to be a positive float.
         """
-        return self._width
+        return np.sum(self._width)
 
     # noinspection PyAttributeOutsideInit
     @width.setter
     def width(self, width):
-        assert width > 0, 'Port width must be larger than zero'
-        self._width = float(width)
+        assert np.sum(width) > 0, 'Port width must be larger than zero'
+        self._width = np.array(width)
 
     def parallel_offset(self, offset):
         """
@@ -171,11 +180,11 @@ class Port(object):
     @property
     def debug_shape(self):
         from gdshelpers.parts.waveguide import Waveguide
-        d = self.width / 5
-        wg = Waveguide.make_at_port(self.longitudinal_offset(-d), width=self.width * 10)
+        d = self.total_width / 5
+        wg = Waveguide.make_at_port(self.longitudinal_offset(-d), width=self.total_width * 10)
         wg.add_straight_segment(d)
         wg.width = self.width
-        wg.add_straight_segment(4 * self.width)
+        wg.add_straight_segment(4 * self.total_width)
         wg.width = self.width * 5
-        wg.add_straight_segment(self.width * 5, final_width=self.width * 0.1)
+        wg.add_straight_segment(self.total_width * 5, final_width=self.total_width * 0.1)
         return wg.get_shapely_object()

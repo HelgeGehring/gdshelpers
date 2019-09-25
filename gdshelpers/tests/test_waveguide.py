@@ -21,7 +21,7 @@ class WaveguideTestCase(unittest.TestCase):
         self.assertAlmostEqual(wg.current_port.origin[0], 15)
         self.assertAlmostEqual(wg.current_port.origin[1], 5)
         self.assertAlmostEqual(wg.current_port.angle, math.pi / 2)
-        self.assertAlmostEqual(wg.length_last_segment, math.pi / 2 * 5)
+        self.assertAlmostEqual(wg.length_last_segment, math.pi / 2 * 5, delta=10e-5)
 
         # Add another arc, so that we are finally pointing 180 degree backwards
         wg.add_arc(math.pi, 5)
