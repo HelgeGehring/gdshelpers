@@ -93,7 +93,7 @@ class Waveguide(object):
             assert length >= 0, 'Length of straight segment must not be negative'
 
             self.add_parameterized_path(path=lambda t: [t * length, 0],
-                                        width=lambda t: self.width * (1 - t) + final_width * t,
+                                        width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
                                         sample_points=2, sample_distance=0)
         return self
 
