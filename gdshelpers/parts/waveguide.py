@@ -120,7 +120,7 @@ class Waveguide(object):
             path_function_supports_numpy=True,
             path_derivative=lambda t: [radius * np.cos(abs(angle) * t) * abs(angle),
                                        np.sign(angle) * radius * (np.sin(angle * t) * angle)],
-            width=lambda t: self.width * (1 - t) + final_width * t,
+            width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
             sample_points=sample_points, sample_distance=0)
 
         return self
@@ -271,7 +271,6 @@ class Waveguide(object):
         endpoint = shapely.affinity.translate(endpoint, self.x, self.y)
         self._current_port.origin = endpoint.coords[0]
 
-        print(sample_width[-1])
         self._current_port.width = sample_width[-1]
         self._current_port.angle += np.arctan2(sample_coordinates_d1[-1][1], sample_coordinates_d1[-1][0])
         return self
@@ -322,7 +321,7 @@ class Waveguide(object):
         return self
 
     def add_bezier_to_port(self, port, bend_strength, width=None, **kwargs):
-        if not width and not np.isclose(self.width, port.width):
+        if not width and not np.isclose(np.array(self.width), np.array(port.width)):
             def width(t):
                 return t * (port.width - self.width) + self.width
 
