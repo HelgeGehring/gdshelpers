@@ -275,7 +275,7 @@ class Waveguide(object):
         self._current_port.origin = endpoint.coords[0]
 
         # If the width does not need to be a list, convert it back to a scalar
-        self._current_port.width = sample_width[-1] if sample_width[-1].size != 1 else float(sample_width[-1])
+        self._current_port.width = sample_width[-1]
         self._current_port.angle += np.arctan2(sample_coordinates_d1[-1][1], sample_coordinates_d1[-1][0])
         return self
 
