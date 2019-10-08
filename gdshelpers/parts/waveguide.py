@@ -93,7 +93,7 @@ class Waveguide(object):
             assert length >= 0, 'Length of straight segment must not be negative'
 
             self.add_parameterized_path(path=lambda t: [t * length, 0],
-                                        width=lambda t: self.width * (1 - t) + final_width * t,
+                                        width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
                                         sample_points=2, sample_distance=0)
         return self
 
@@ -120,7 +120,7 @@ class Waveguide(object):
             path_function_supports_numpy=True,
             path_derivative=lambda t: [radius * np.cos(abs(angle) * t) * abs(angle),
                                        np.sign(angle) * radius * (np.sin(angle * t) * angle)],
-            width=lambda t: self.width * (1 - t) + final_width * t,
+            width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
             sample_points=sample_points, sample_distance=0)
 
         return self
@@ -322,7 +322,7 @@ class Waveguide(object):
         return self
 
     def add_bezier_to_port(self, port, bend_strength, width=None, **kwargs):
-        if not width and not np.isclose(self.width, port.width):
+        if not width and not np.isclose(np.array(self.width), np.array(port.width)):
             def width(t):
                 return t * (port.width - self.width) + self.width
 
