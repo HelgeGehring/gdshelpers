@@ -1,0 +1,4 @@
+name: gdshelpers_readthedocs
+
+dependencies:
+  - meep
