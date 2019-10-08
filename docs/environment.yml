@@ -1,4 +1,7 @@
 name: gdshelpers_readthedocs
 
+channels:
+  - conda-forge
+
 dependencies:
-  - meep
+  - pymeep
