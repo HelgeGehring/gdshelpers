@@ -132,7 +132,7 @@ class Port(object):
     @width.setter
     def width(self, width):
         assert np.sum(width) > 0, 'Port width must be larger than zero'
-        self._width = np.array(width)
+        self._width = np.array(width) if np.array(width).size > 1 else float(width)
 
     def parallel_offset(self, offset):
         """
