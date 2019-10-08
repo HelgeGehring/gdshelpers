@@ -155,7 +155,7 @@ Slot waveguides
 """""""""""""""
 
 Alternatively, the width can also be an array for describing the dimensions of slot/coplanar waveguides.
-The array has the format `[rail_width_1, slot_width_1, rail_width_2, ...]`, where the rail_widths describe the width of the rails and the widths of the slots are defined by the slot_widths.
+The array has the format `[rail_width_1, slot_width_1, rail_width_2, ...]`, where the rail_widths describe the widths of the rails and the widths of the slots are defined by the slot_widths.
 This array can also end with a `slot_width`, which would lead to an asymmetry with respect to the center. This can e.g. be useful for tapering between single waveguides and slot waveguides.
 
 .. plot::
