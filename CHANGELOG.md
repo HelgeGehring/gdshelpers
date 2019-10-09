@@ -4,6 +4,7 @@ Changelog
 Unreleased
 ----------
 * Added support for slot waveguides and coplanar waveguides
+* Direct GDSII-export is now the standard GDSII-writer
 
 1.0.4
 -----

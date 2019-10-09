@@ -295,15 +295,21 @@ class Cell:
         """
         Exports the layout and creates an DLW-file, if DLW-features are used.
 
-        :param name: Optionally, the filename of the saved file (without ending).
+        :param name: The filename of the saved file. The ending of the filename defines the format.
+            Currently .gds, .oasis and .dxf are supported.
         :param library: Name of the used library.
             Should stay `None` in order to select the library depending on the file-ending.
-            Additionally, for gds-export gdspy and gdscad can be selected.
+            The use of this parameter is deprecated and this parameter will be removed in a future release.
         :param grid_steps_per_micron: Defines the resolution
         :param parallel: Defines if parallelization is used (only supported in Python 3).
             Standard value will be changed to True in a future version.
             Deactivating can be useful for debugging reasons.
         """
+
+        if library is not None:
+            import warnings
+            warnings.warn('The use of the `library` parameter is deprecated. '
+                          'Instead, define the format by the file ending of the filename.', DeprecationWarning)
 
         if not name:
             name = self.name
