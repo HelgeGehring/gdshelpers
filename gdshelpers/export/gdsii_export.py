@@ -28,13 +28,17 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
             for polygon in polygons:
                 if polygon.interiors:
                     raise AssertionError('GDSII only supports polygons without holes')
-                xy = np.round(np.array(polygon.exterior.coords) * grid_steps_per_unit).astype('>i4')
-                b.write(pack('>10H', 4, 0x0800,  # BOUNDARY NO_DATA
+                xy = np.round(
+                    np.array(
+                        list(polygon.exterior.coords) + [polygon.exterior.coords[0]]) * grid_steps_per_unit).astype(
+                    '>i4')
+                b.write(pack('>8H', 4, 0x0800,  # BOUNDARY NO_DATA
                              6, 0x0D02, layer,  # LAYER INTEGER_2 layer
-                             6, 0x0E02, layer,  # DATATYPE INTEGER_2 datatype
-                             12 + 8 * len(xy), 0x1003))  # XY INTEGER_4
-                b.write(xy.tobytes())  # coords of polygon
-                b.write(xy[0].tobytes())  # coords of polygon
+                             6, 0x0E02, layer))  # DATATYPE INTEGER_2 datatype
+                for start in range(0, xy.shape[0], 8191):  # Split in Blocks of 8191 points
+                    stop = min(start + 8191, xy.shape[0])
+                    b.write(pack('>2H', 4 + 8 * (stop - start), 0x1003))  # XY INTEGER_4
+                    b.write(xy[start:stop].tobytes())  # coords of polygon
                 b.write(pack('>2H', 4, 0x1100))  # ENDEL NO_DATA
 
         for ref in cell.cells:
