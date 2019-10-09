@@ -83,7 +83,7 @@ class Spiral:
 
     def _generate(self):
         def path(a):
-            return (self.num * (np.sum(self.width) + self.gap) * np.abs(1 - a) + self.inner_gap) * np.array(
+            return (self.num * (self._origin_port.total_width + self.gap) * np.abs(1 - a) + self.inner_gap) * np.array(
                 (np.sin(np.pi * a * self.num), np.cos(np.pi * a * self.num)))
 
         self.wg_in = Waveguide.make_at_port(self._origin_port)
