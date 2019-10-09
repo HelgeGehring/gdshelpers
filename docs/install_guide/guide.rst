@@ -65,12 +65,12 @@ and then ``Attach`` to add it to your project. Using this way, it is also possib
 
 Additionally you need extra packages for certain functions of the package.
 For exporting the design to the OASIS-format you should install the library `fatamorgana` using ``pip install fatamorgana``.
-In order to create GDSII-files, you can decide between `gdspy` (fully python 3 compatible, ``pip install gdspy``) and `gdsCAD` (also working under python 3, but not installable using `pip`).
+In order to create GDSII-files, you can use the included GDSII-export or decide between `gdspy` (fully python 3 compatible, ``pip install gdspy``) and `gdsCAD` (also working under python 3, but not installable using `pip`).
 For directly generating pictures from the designs the package `descartes` needs to be installed (``pip install descartes``).
 
-Alternatively, installing the gdshelpers e.g. with gdspy-export and image-export can directly be done using the single command::
+Alternatively, installing the gdshelpers e.g. with image-export can directly be done using the single command::
 
-    pip install gdshelpers[gdspy_export,image_export]
+    pip install gdshelpers[image_export]
 
 For most users this configuration should be sufficient.
 
