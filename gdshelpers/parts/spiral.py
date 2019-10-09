@@ -34,7 +34,7 @@ class Spiral:
         :param gap: gap between two waveguides
         :param inner_gap: inner radius of the spiral
         """
-        return cls(port.parallel_offset(-num * (port.width + gap) - inner_gap).origin,
+        return cls(port.parallel_offset(-num * (port.total_width + gap) - inner_gap).origin,
                    port.angle, port.width, num, gap, inner_gap)
 
     ###
@@ -68,12 +68,12 @@ class Spiral:
     @property
     def in_port(self):
         return self._origin_port.inverted_direction.parallel_offset(
-            -self.num * (self._origin_port.width + self.gap) - self.inner_gap)
+            -self.num * (self._origin_port.total_width + self.gap) - self.inner_gap)
 
     @property
     def out_port(self):
         return self._origin_port.parallel_offset(
-            -self.num * (self._origin_port.width + self.gap) - self.inner_gap)
+            -self.num * (self._origin_port.total_width + self.gap) - self.inner_gap)
 
     @property
     def length(self):
@@ -83,7 +83,7 @@ class Spiral:
 
     def _generate(self):
         def path(a):
-            return (self.num * (self.width + self.gap) * np.abs(1 - a) + self.inner_gap) * np.array(
+            return (self.num * (self._origin_port.total_width + self.gap) * np.abs(1 - a) + self.inner_gap) * np.array(
                 (np.sin(np.pi * a * self.num), np.cos(np.pi * a * self.num)))
 
         self.wg_in = Waveguide.make_at_port(self._origin_port)
@@ -107,6 +107,7 @@ def _example():
     wg = Waveguide((0, 0), 1, 1)
     wg.add_straight_segment(30)
     spiral = Spiral.make_at_port(wg.current_port, 2, 5, 50)
+    print(spiral.out_port.origin)
     wg2 = Waveguide.make_at_port(spiral.out_port)
     wg2.add_straight_segment(100)
 

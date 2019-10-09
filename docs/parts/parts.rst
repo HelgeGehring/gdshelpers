@@ -151,6 +151,30 @@ line is defined in the function `add_straight_segment_to_intersection`. Note tha
 	cell.add_to_layer(2, wg_3)  # green
 	cell.show()
 
+Slot waveguides
+"""""""""""""""
+
+Alternatively, the width can also be an array for describing the dimensions of slot/coplanar waveguides.
+The array has the format `[rail_width_1, slot_width_1, rail_width_2, ...]`, where the rail_widths describe the widths of the rails and the widths of the slots are defined by the slot_widths.
+This array can also end with a `slot_width`, which would lead to an asymmetry with respect to the center. This can e.g. be useful for tapering between single waveguides and slot waveguides.
+
+.. plot::
+    :include-source:
+
+	import numpy as np
+	from gdshelpers.geometry.chip import Cell
+	from gdshelpers.parts.port import Port
+	from gdshelpers.parts.waveguide import Waveguide
+
+	wg_1 = Waveguide.make_at_port(Port(origin=(0, 0), angle=np.pi / 8, width=[0.2,0.2,0.2])) # array as width -> slot waveguide
+	wg_1.add_straight_segment(10)
+	wg_1.add_bend(np.pi, 10)
+	wg_1.add_straight_segment(20, final_width=np.array([0.6,0.4,0.6])) # tapering between two slot waveguides
+	wg_1.add_straight_segment(20, final_width=np.array([0,0,1])) # tapering to a ridge waveguide
+
+	cell = Cell('CELL')
+	cell.add_to_layer(1, wg_1)  # red
+	cell.show()
 
 
 Beam splitters

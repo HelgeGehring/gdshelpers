@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Unreleased
+----------
+* Added support for slot waveguides and coplanar waveguides
+
 1.0.4
 -----
 * Added part for GDSII-import

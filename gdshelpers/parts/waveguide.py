@@ -85,25 +85,16 @@ class Waveguide(object):
         """
         return [(port.copy(), obj, length) for port, obj, length in self._segments]
 
-    def add_straight_segment(self, length, final_width=None, **kargs):
-        self._current_port.set_port_properties(**kargs)
-        final_width = final_width or self.width
-
-        endpoint = shapely.geometry.Point(length, 0)
+    def add_straight_segment(self, length, final_width=None, **kwargs):
+        self._current_port.set_port_properties(**kwargs)
+        final_width = final_width if final_width is not None else self.width
 
         if not np.isclose(length, 0):
             assert length >= 0, 'Length of straight segment must not be negative'
-            polygon = shapely.geometry.Polygon(([0, self.width / 2], [length, final_width / 2],
-                                                [length, -final_width / 2], [0, -self.width / 2]))
-            polygon = shapely.affinity.rotate(polygon, self.angle, origin=[0, 0], use_radians=True)
-            polygon = shapely.affinity.translate(polygon, self.x, self.y)
-            self._segments.append((self._current_port.copy(), polygon, length))
 
-        endpoint = shapely.affinity.rotate(endpoint, self.angle, origin=[0, 0], use_radians=True)
-        endpoint = shapely.affinity.translate(endpoint, self.x, self.y)
-
-        self._current_port.origin = endpoint.coords[0]
-        self._current_port.width = final_width
+            self.add_parameterized_path(path=lambda t: [t * length, 0],
+                                        width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
+                                        sample_points=2, sample_distance=0)
         return self
 
     def add_arc(self, final_angle, radius, final_width=None, n_points=128, shortest=True, **kwargs):
@@ -114,49 +105,23 @@ class Waveguide(object):
             self.add_bend(delta, radius, final_width, n_points, **kwargs)
         return self
 
-    def add_bend(self, angle, radius, final_width=None, n_points=128, **kargs):
+    def add_bend(self, angle, radius, final_width=None, n_points=128, **kwargs):
         # If number of points is None, default to 128
         n_points = n_points if n_points else 128
 
-        self._current_port.set_port_properties(**kargs)
+        self._current_port.set_port_properties(**kwargs)
+        sample_points = max(int(abs(angle) / (np.pi / 2) * n_points), 2)
         final_width = final_width or self.width
 
         angle = normalize_phase(angle, zero_to_two_pi=True) - (0 if angle > 0 else 2 * np.pi)
 
-        if not np.isclose(radius, 0) and not np.isclose(angle, 0) and radius > 0:
-            if angle > 0:
-                circle_center = (-np.sin(self.angle) * radius, np.cos(self.angle) * radius) + self.current_port.origin
-                start_angle = -np.pi / 2 + self.angle
-            else:
-                circle_center = (np.sin(self.angle) * radius, -np.cos(self.angle) * radius) + self.current_port.origin
-                start_angle = np.pi / 2 + self.angle
-
-            end_angle = start_angle + angle
-
-            # Calculate the points needed for this angle
-            points = max(int(abs(end_angle - start_angle) / (np.pi / 2) * n_points), 2)
-
-            phi = np.linspace(start_angle, end_angle, points)
-            upper_radius_points = np.linspace(radius - self.width / 2, radius - final_width / 2, points)
-            upper_line_points = np.array([upper_radius_points * np.cos(phi),
-                                          upper_radius_points * np.sin(phi)]).T + circle_center
-
-            lower_radius_points = np.linspace(radius + self.width / 2, radius + final_width / 2, points)
-            lower_line_points = np.array([lower_radius_points * np.cos(phi),
-                                          lower_radius_points * np.sin(phi)]).T + circle_center
-
-            polygon = shapely.geometry.Polygon(np.concatenate([upper_line_points, lower_line_points[::-1, :]]))
-            self._segments.append((self._current_port.copy(), polygon, abs(angle) * radius))
-
-            endpoint = shapely.geometry.Point(radius * np.cos(end_angle) + circle_center[0],
-                                              radius * np.sin(end_angle) + circle_center[1])
-            self._current_port.origin = endpoint.coords[0]
-
-        self._current_port.width = final_width
-        self._current_port.angle += angle
-
-        # assert self._segments[-1][1].is_valid, \
-        #     'Invalid polygon generated: %s' % shapely.validation.explain_validity(self._segments[-1][1])
+        self.add_parameterized_path(
+            path=lambda t: [radius * np.sin(abs(angle) * t), np.sign(angle) * -radius * (np.cos(angle * t) - 1)],
+            path_function_supports_numpy=True,
+            path_derivative=lambda t: [radius * np.cos(abs(angle) * t) * abs(angle),
+                                       np.sign(angle) * radius * (np.sin(angle * t) * angle)],
+            width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
+            sample_points=sample_points, sample_distance=0)
 
         return self
 
@@ -180,7 +145,10 @@ class Waveguide(object):
         none as sample_distance parameter.
 
         The width of the generated waveguide may either be constant when passing a number or also be a callable
-        function, using the same parameter as the path.
+        function, using the same parameter as the path. For generating slot/coplanar/... waveguides it is also possible
+        to pass an array of the form `[rail_width_1, gap_width_1, rail_width_2, ...]` which defines the width of each
+        rail and the gaps between the rails. This array is also allowed to end with a gap_width for positioning the
+        rails asymmetrically to the path which can be useful e.g. for strip-to-slot mode converters.
 
         Note, that your final direction of the path might not be what you expected. This is caused by the numerical
         procedure which generates numerical errors when calculating the first derivative. You can either append another
@@ -274,17 +242,26 @@ class Waveguide(object):
         else:
             sample_width = np.array([(width if width else self.current_port.width), ])
 
+        if sample_width.ndim == 1:
+            sample_width = sample_width[..., None]
+
         # Now we have everything to calculate the polygon
-        poly_path_1 = sample_coordinates + sample_width[:, None] / 2 * sample_coordinates_d1_normed_ortho
-        poly_path_2 = sample_coordinates - sample_width[:, None] / 2 * sample_coordinates_d1_normed_ortho
+        polygons = []
+        for i in range((sample_width.shape[-1] + 1) // 2):
+            start = np.sum(sample_width[:, :(2 * i)], axis=-1) - np.sum(sample_width, axis=-1) / 2
+            stop = np.sum(sample_width[:, :(2 * i + 1)], axis=-1) - np.sum(sample_width, axis=-1) / 2
+            poly_path_1 = sample_coordinates + start[..., None] * sample_coordinates_d1_normed_ortho
+            poly_path_2 = sample_coordinates + stop[..., None] * sample_coordinates_d1_normed_ortho
 
-        assert shapely.geometry.LineString(np.concatenate([poly_path_1, poly_path_2[::-1, :]])).is_simple, \
-            'Outer lines of parameterized wg intersect. Try using lower bend radii or smaller a smaller wg'
+            assert shapely.geometry.LineString(np.concatenate([poly_path_1, poly_path_2[::-1, :]])).is_simple, \
+                'Outer lines of parameterized wg intersect. Try using lower bend radii or smaller a smaller wg'
 
-        # Now add the shapely objects and do book keeping
-        polygon = shapely.geometry.Polygon(np.concatenate([poly_path_1, poly_path_2[::-1, :]]))
-        assert polygon.is_valid, 'Generated polygon path is not valid: %s' % \
-                                 shapely.validation.explain_validity(polygon)
+            # Now add the shapely objects and do book keeping
+            polygon = shapely.geometry.Polygon(np.concatenate([poly_path_1, poly_path_2[::-1, :]]))
+            assert polygon.is_valid, 'Generated polygon path is not valid: %s' % \
+                                     shapely.validation.explain_validity(polygon)
+            polygons.append(polygon)
+        polygon = shapely.geometry.MultiPolygon(polygons)
 
         polygon = shapely.affinity.rotate(polygon, self.angle, origin=[0, 0], use_radians=True)
         polygon = shapely.affinity.translate(polygon, self.x, self.y)
@@ -297,7 +274,8 @@ class Waveguide(object):
         endpoint = shapely.affinity.translate(endpoint, self.x, self.y)
         self._current_port.origin = endpoint.coords[0]
 
-        self._current_port.width = sample_width[-1] if callable(width) else sample_width
+        # If the width does not need to be a list, convert it back to a scalar
+        self._current_port.width = sample_width[-1]
         self._current_port.angle += np.arctan2(sample_coordinates_d1[-1][1], sample_coordinates_d1[-1][0])
         return self
 
@@ -347,7 +325,7 @@ class Waveguide(object):
         return self
 
     def add_bezier_to_port(self, port, bend_strength, width=None, **kwargs):
-        if not width and not np.isclose(self.width, port.width):
+        if not width and not np.isclose(np.array(self.width), np.array(port.width)):
             def width(t):
                 return t * (port.width - self.width) + self.width
 
@@ -526,11 +504,12 @@ def _example():
                                  path_derivative=lambda t: (n * 10, -n * 2 * np.pi * np.sin(n * 2 * np.pi * t)),
                                  width=lambda t: np.cos(n * 2 * np.pi * t) * 0.2 + np.exp(-t) * 0.3 + 0.5,
                                  width_function_supports_numpy=True)
-    path2.add_straight_segment(10)
+    path2.add_straight_segment(10, width=[.5, .5, .5])
     print(path2.length)
     print(path2.length_last_segment)
 
     path2.add_cubic_bezier_path((0, 0), (5, 0), (10, 10), (5, 10))
+    path2.add_bend(-np.pi, 40)
 
     coupler1 = GratingCoupler([100, 50], 0, 1, np.deg2rad(30), [10, 0.1, 2, 0.1, 2], start_radius_absolute=True)
 
