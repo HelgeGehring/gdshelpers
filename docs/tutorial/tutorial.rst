@@ -508,7 +508,7 @@ For now, we are just after a simple standard layout, so we can use the :class:`.
         wg2.add_straight_segment(length=10)
         right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg2.current_port, 'sn330', 1550)
 
-        cell = Cell('SIMPLE_RES_DEVICE')
+        cell = Cell('SIMPLE_RES_DEVICE r={:.1f} g={:.1f}'.format(resonator_radius, resonator_gap))
         cell.add_to_layer(1, left_coupler, wg1, ring_res, wg2, right_coupler)
         return cell
 
