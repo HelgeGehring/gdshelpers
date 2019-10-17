@@ -12,6 +12,7 @@ docs/_build/
 
 # gdsHelpers
 *.gds
+*.oas
 *.desc
 *.dlw
 *.dxf
