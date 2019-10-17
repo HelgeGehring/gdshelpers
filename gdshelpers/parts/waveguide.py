@@ -65,7 +65,7 @@ class Waveguide(object):
 
     @property
     def length(self):
-        return sum((length for port, obj, length in self._segments))
+        return sum((length for port, obj, length, center_coordinates in self._segments))
 
     @property
     def length_last_segment(self):
@@ -73,11 +73,15 @@ class Waveguide(object):
             return 0
         return self._segments[-1][2]
 
+    @property
+    def center_coordinates(self):
+        return np.concatenate([center_coordinates for port, obj, length, center_coordinates in self._segments])
+
     def get_shapely_object(self):
         """
         Get a shapely object which forms this path.
         """
-        return shapely.ops.cascaded_union([obj for port, obj, length in self._segments])
+        return shapely.ops.cascaded_union([obj for port, obj, length, center_coordinates in self._segments])
 
     def get_segments(self):
         """
@@ -267,7 +271,11 @@ class Waveguide(object):
         polygon = shapely.affinity.translate(polygon, self.x, self.y)
 
         length = np.sum(np.apply_along_axis(linalg.norm, 1, np.diff(sample_coordinates, axis=0)))
-        self._segments.append((self._current_port.copy(), polygon, length))
+        R = np.array(((np.cos(self.current_port.angle), -np.sin(self.current_port.angle)),
+                      (np.sin(self.current_port.angle), np.cos(self.current_port.angle))))
+        self._segments.append(
+            (self._current_port.copy(), polygon, length,
+             self.current_port.origin + np.einsum('ij,kj->ki', R, sample_coordinates)))
 
         endpoint = shapely.geometry.Point(sample_coordinates[-1][0], sample_coordinates[-1][1])
         endpoint = shapely.affinity.rotate(endpoint, self.angle, origin=[0, 0], use_radians=True)
@@ -319,7 +327,8 @@ class Waveguide(object):
         tmp_wg = Waveguide.make_at_port(self.current_port.copy().set_port_properties(angle=0))
         tmp_wg.add_cubic_bezier_path(p0, p1, p2, p3, width=width, **kwargs)
 
-        self._segments.append((self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.length))
+        self._segments.append(
+            (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.length, tmp_wg.center_coordinates))
         self._current_port = tmp_wg.current_port
 
         return self
@@ -393,7 +402,8 @@ class Waveguide(object):
         tmp_wg.add_straight_segment(distance[0] - d)
         tmp_wg.add_bend(-diff_angle, radius)
 
-        self._segments.append((self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.length))
+        self._segments.append(
+            (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.length, tmp_wg.center_coordinates))
         self._current_port = tmp_wg.current_port
 
         if not on_line_only:
