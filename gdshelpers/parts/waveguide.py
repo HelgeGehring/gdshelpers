@@ -505,6 +505,18 @@ def _example():
     path.add_bend(-np.pi / 2, 10, final_width=1)
     path.add_arc(np.pi * 3 / 4, 10, )
 
+    center_coordinates = shapely.geometry.LineString(path.center_coordinates)
+    dist = 1.4
+    circles = []
+    for pos in np.arange(dist / 2, center_coordinates.length - dist / 2, dist):
+        xy = np.array(center_coordinates.interpolate(pos))
+        diff = np.array(center_coordinates.interpolate(pos + dist / 2)) - np.array(
+            center_coordinates.interpolate(pos - dist / 2))
+        d1 = np.array((-diff[1], diff[0])) / np.linalg.norm(diff)
+        for offset in [-6, -3, 3, 6]:
+            circles.append(shapely.geometry.Point(xy + offset * d1).buffer(.3))
+    circles_polygon = shapely.ops.cascaded_union(circles)
+
     splitter = Splitter.make_at_root_port(path.current_port, 30, 10)
     path2 = Waveguide.make_at_port(splitter.right_branch_port)
     path2.add_bend(-np.pi / 4, 10)
@@ -542,6 +554,7 @@ def _example():
     cell.add_to_layer(1, *whole_layout)
     cell.add_to_layer(2, empty_path)
     cell.add_to_layer(4, splitter.root_port.debug_shape)
+    cell.add_to_layer(7, circles_polygon)
 
     layout.add_cell(cell)
 
