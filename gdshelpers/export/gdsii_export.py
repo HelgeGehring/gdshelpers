@@ -42,8 +42,12 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
                 b.write(pack('>2H', 4, 0x1100))  # ENDEL NO_DATA
 
         for ref in cell.cells:
+            aref = not (ref['columns'] == 1 and ref['rows'] == 1 and not ref['spacing'])
             name = ref['cell'].name + '\0' if len(ref['cell'].name) % 2 != 0 else ref['cell'].name
-            b.write(pack('>2H', 4, 0x0A00))  # SREF NO_DATA
+            if aref:
+                b.write(pack('>2H', 4, 0x0B00))  # AREF NO_DATA
+            else:
+                b.write(pack('>2H', 4, 0x0A00))  # SREF NO_DATA
             b.write(pack('>2H', 4 + len(name), 0x1206) + name.encode('ascii'))  # SNAME STRING ref_cell_name
             if (ref['angle'] is not None) or (ref['magnification'] is not None) or ref['x_reflection']:
                 b.write(pack('>3H', 6, 0x1A01, 1 << 15 if ref['x_reflection'] else 0))  # STRANS BIT_ARRAY bit15=1
@@ -51,8 +55,19 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
                     b.write(pack('>2H', 12, 0x1B05) + _real_to_8byte(ref['magnification']))  # MAG REAL_8
                 if ref['angle'] is not None:
                     b.write(pack('>2H', 12, 0x1C05) + _real_to_8byte(np.rad2deg(ref['angle'])))  # ANGLE REAL_8
-            b.write(pack('>2H', 12, 0x1003) + np.round(np.array(ref['origin']) * grid_steps_per_unit).astype(
+            if aref:
+                b.write(pack('>2H2h', 8, 0x1302, ref['columns'], ref['rows']))  # COLROW INTEGER_2 spacing
+            b.write(pack('>2H', 28 if aref else 12, 0x1003) + np.round(
+                np.array(ref['origin']) * grid_steps_per_unit).astype(
                 '>i4').tobytes())  # XY INTEGER_8 origin
+            if aref:
+                b.write((np.round(np.array((ref['spacing'][0] * ref['columns'], 0)) +
+                                  np.array(ref['origin'])) * grid_steps_per_unit).astype(
+                    '>i4').tobytes())  # XY INTEGER_8 edge_x
+                b.write((np.round(np.array((0, ref['spacing'][1] * ref['rows'])) +
+                                  np.array(ref['origin'])) * grid_steps_per_unit).astype(
+                    '>i4').tobytes())  # XY INTEGER_8 edge_y
+
             b.write(pack('>2H', 4, 0x1100))  # ENDEL NO_DATA
 
         b.write(pack('>2H', 4, 0x0700))  # ENDEST NO_DATA

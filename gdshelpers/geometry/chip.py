@@ -103,13 +103,16 @@ class Cell:
             raise ValueError('ID "{:s}" already used'.format(dlw_id))
         self.dlw_data[dlw_type][dlw_id] = data
 
-    def add_cell(self, cell, origin=(0, 0), angle=None):
+    def add_cell(self, cell, origin=(0, 0), angle=None, columns=1, rows=1, spacing=None):
         """
         Adds a Cell to this cell
 
         :param cell: Cell to add
         :param origin: position where to add the cell
-        :param angle:
+        :param angle: defines the rotation of the cell
+        :param columns: Number of columns
+        :param rows: Number of rows
+        :param spacing: Spacing between the cells, should be an array in the form [x_spacing, y_spacing]
         """
         if cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
             import warnings
@@ -117,7 +120,8 @@ class Cell:
                 'Cell name "{cell_name:s}" added multiple times to {self_name:s}.'
                 ' Can be problematic for desc/dlw-files'.format(cell_name=cell.name, self_name=self.name))
         self.cells.append(
-            dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False))
+            dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False, columns=columns,
+                 rows=rows, spacing=spacing))
 
     def add_region_layer(self, region_layer=std_layers.regionlayer, layers=None):
         """
@@ -224,10 +228,17 @@ class Cell:
             self.cell_gdspy = gdspy.Cell(self.name)
             for sub_cell in self.cells:
                 angle = np.rad2deg(sub_cell['angle']) if sub_cell['angle'] is not None else None
-                self.cell_gdspy.add(
-                    gdspy.CellReference(sub_cell['cell'].get_gdspy_cell(executor), origin=sub_cell['origin'],
+                if sub_cell['columns'] == 1 and sub_cell['rows'] == 1 and not sub_cell['spacing']:
+                    self.cell_gdspy.add(
+                        gdspy.CellReference(sub_cell['cell'].get_gdspy_cell(executor), origin=sub_cell['origin'],
+                                            rotation=angle, magnification=sub_cell['magnification'],
+                                            x_reflection=sub_cell['x_reflection']))
+                else:
+                    self.cell_gdspy.add(
+                        gdspy.CellArray(sub_cell['cell'].get_gdspy_cell(executor), origin=sub_cell['origin'],
                                         rotation=angle, magnification=sub_cell['magnification'],
-                                        x_reflection=sub_cell['x_reflection']))
+                                        x_reflection=sub_cell['x_reflection'], columns=sub_cell['columns'],
+                                        rows=sub_cell['rows'], spacing=sub_cell['spacing']))
             for layer, geometries in self.layer_dict.items():
                 for geometry in geometries:
                     if executor:
@@ -243,9 +254,17 @@ class Cell:
             self.cell_gdscad = gdsCAD.core.Cell(self.name)
             for sub_cell in self.cells:
                 angle = np.rad2deg(sub_cell['angle']) if sub_cell['angle'] is not None else None
-                self.cell_gdscad.add(
-                    gdsCAD.core.CellReference(sub_cell['cell'].get_gdscad_cell(executor), origin=sub_cell['origin'],
-                                              rotation=angle))
+                if sub_cell['columns'] == 1 and sub_cell['rows'] == 1 and not sub_cell['spacing']:
+                    self.cell_gdscad.add(
+                        gdsCAD.core.CellReference(sub_cell['cell'].get_gdscad_cell(executor), origin=sub_cell['origin'],
+                                                  rotation=angle, magnification=sub_cell['magnification'],
+                                                  x_reflection=sub_cell['x_reflection']))
+                else:
+                    self.cell_gdscad.add(
+                        gdsCAD.core.CellArray(sub_cell['cell'].get_gdscad_cell(executor), origin=sub_cell['origin'],
+                                              rotation=angle, magnification=sub_cell['magnification'],
+                                              x_reflection=sub_cell['x_reflection'], cols=sub_cell['columns'],
+                                              rows=sub_cell['rows'], spacing=sub_cell['spacing']))
             for layer, geometries in self.layer_dict.items():
                 for geometry in geometries:
                     if executor:
@@ -264,9 +283,16 @@ class Cell:
                 x, y = sub_cell['origin']
                 x, y = round(x * grid_steps_per_micron), round(y * grid_steps_per_micron)
                 angle = np.rad2deg(sub_cell['angle']) if sub_cell['angle'] is not None else None
+                repetition = None
+                if not (sub_cell['columns'] == 1 and sub_cell['rows'] == 1 and not sub_cell['spacing']):
+                    repetition = fatamorgana.basic.GridRepetition(
+                        [round(sub_cell['spacing'][0] * grid_steps_per_micron), 0],
+                        sub_cell['columns'],
+                        [0, round(sub_cell['spacing'][1] * grid_steps_per_micron)],
+                        sub_cell['rows'])
                 self.cell_oasis.placements.append(
                     fatamorgana.records.Placement(False, name=fatamorgana.NString(sub_cell['cell'].name), x=x, y=y,
-                                                  angle=angle))
+                                                  angle=angle, repetition=repetition))
             for layer, geometries in self.layer_dict.items():
                 for geometry in geometries:
                     if executor:
@@ -606,4 +632,8 @@ if __name__ == '__main__':
     device_cell.save_image('chip.pdf')
     # Creates the output file by using gdspy, gdscad or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
-    device_cell.save(name='my_design', parallel=True, library='gdshelpers')
+    device_cell.save(name='my_design', parallel=True)
+
+    array_cell = Cell('Array')
+    array_cell.add_cell(device_cell, rows=2, columns=2, spacing=(1000, 1000))
+    array_cell.save()
