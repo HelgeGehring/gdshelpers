@@ -14,7 +14,7 @@ The user can use an abstraction layer above these libraries, which allows conven
 
 In addition it includes a growing selection of optical and superconducting parts, including:
 
-* A waveguide part, allowing easy chaing of bends and straight waveguides.
+* A waveguide part, allowing easy chaining of bends and straight waveguides.
 
   - Includes parameterized paths and Bézier curves.
   - Automatic smooth connection to a target point/port

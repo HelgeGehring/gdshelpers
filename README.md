@@ -15,7 +15,7 @@ The library consists of growing list of parts, which can be composed into larger
 
 So far, the following parts are implemented:
 
-* A waveguide part, allowing easy chaing of bends and straight waveguides.
+* A waveguide part, allowing easy chaining of bends and straight waveguides.
   - Includes parameterized paths and Bézier curves.
   - Automatic smooth connection to a target point/port
   - The size of the waveguide can be tapered (linear or by a user defined function), 
