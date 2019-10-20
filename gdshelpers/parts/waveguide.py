@@ -71,7 +71,7 @@ class Waveguide(object):
     def length_last_segment(self):
         if not len(self._segments):
             return 0
-        return self._segments[-1][2]
+        return self._segments[-1][3]
 
     @property
     def center_coordinates(self):
