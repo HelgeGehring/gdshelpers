@@ -44,6 +44,7 @@ Besides this it also allows to perform conveniently operations on the design, li
 * Convert the pattern for usage of positive resist
 * Create holes around the circuitry, which is e.g. necessary for under-etching
 * Shapely-operations can also be applied on the generated structures, e.g. shrinking or inflating of the geometry
+* Surrounding the structures with holes in a rectangular lattice and filling waveguides with holes in a honeycomb lattice for controlling vortex dynamics
 
 The structures are organized in cells, which allow:
 
