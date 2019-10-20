@@ -65,7 +65,7 @@ class Waveguide(object):
 
     @property
     def length(self):
-        return sum((length for port, obj, length, center_coordinates in self._segments))
+        return sum((length for port, obj, outline, length, center_coordinates in self._segments))
 
     @property
     def length_last_segment(self):
@@ -75,19 +75,26 @@ class Waveguide(object):
 
     @property
     def center_coordinates(self):
-        return np.concatenate([center_coordinates for port, obj, length, center_coordinates in self._segments])
+        return np.concatenate([center_coordinates for port, obj, outline, length, center_coordinates in self._segments])
 
     def get_shapely_object(self):
         """
         Get a shapely object which forms this path.
         """
-        return shapely.ops.cascaded_union([obj for port, obj, length, center_coordinates in self._segments])
+        return shapely.ops.cascaded_union([obj for port, obj, outline, length, center_coordinates in self._segments])
+
+    def get_shapely_outline(self):
+        """
+        Get a shapely object which forms the outline of the path.
+        """
+        return shapely.ops.cascaded_union(
+            [outline for port, obj, outline, length, center_coordinates in self._segments])
 
     def get_segments(self):
         """
         Returns the list of tuples, containing their ports and shapely objects.
         """
-        return [(port.copy(), obj, length) for port, obj, length in self._segments]
+        return [(port.copy(), obj, length) for port, obj, outline, length, center_coordinates in self._segments]
 
     def add_straight_segment(self, length, final_width=None, **kwargs):
         self._current_port.set_port_properties(**kwargs)
@@ -266,15 +273,23 @@ class Waveguide(object):
                                      shapely.validation.explain_validity(polygon)
             polygons.append(polygon)
         polygon = shapely.geometry.MultiPolygon(polygons)
-
         polygon = shapely.affinity.rotate(polygon, self.angle, origin=[0, 0], use_radians=True)
         polygon = shapely.affinity.translate(polygon, self.x, self.y)
+
+        outline_poly_path_1 = sample_coordinates - np.sum(sample_width,
+                                                          axis=-1)[..., None] / 2 * sample_coordinates_d1_normed_ortho
+        outline_poly_path_2 = sample_coordinates + np.sum(sample_width,
+                                                          axis=-1)[..., None] / 2 * sample_coordinates_d1_normed_ortho
+        outline = shapely.geometry.Polygon(np.concatenate([outline_poly_path_1, outline_poly_path_2[::-1, :]]))
+
+        outline = shapely.affinity.rotate(outline, self.angle, origin=[0, 0], use_radians=True)
+        outline = shapely.affinity.translate(outline, self.x, self.y)
 
         length = np.sum(np.apply_along_axis(linalg.norm, 1, np.diff(sample_coordinates, axis=0)))
         R = np.array(((np.cos(self.current_port.angle), -np.sin(self.current_port.angle)),
                       (np.sin(self.current_port.angle), np.cos(self.current_port.angle))))
         self._segments.append(
-            (self._current_port.copy(), polygon, length,
+            (self._current_port.copy(), polygon, outline, length,
              self.current_port.origin + np.einsum('ij,kj->ki', R, sample_coordinates)))
 
         endpoint = shapely.geometry.Point(sample_coordinates[-1][0], sample_coordinates[-1][1])
@@ -328,7 +343,8 @@ class Waveguide(object):
         tmp_wg.add_cubic_bezier_path(p0, p1, p2, p3, width=width, **kwargs)
 
         self._segments.append(
-            (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.length, tmp_wg.center_coordinates))
+            (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.get_shapely_outline(), tmp_wg.length,
+             tmp_wg.center_coordinates))
         self._current_port = tmp_wg.current_port
 
         return self
@@ -403,7 +419,8 @@ class Waveguide(object):
         tmp_wg.add_bend(-diff_angle, radius)
 
         self._segments.append(
-            (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.length, tmp_wg.center_coordinates))
+            (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.get_shapely_outline(), tmp_wg.length,
+             tmp_wg.center_coordinates))
         self._current_port = tmp_wg.current_port
 
         if not on_line_only:
