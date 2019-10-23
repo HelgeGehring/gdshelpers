@@ -477,7 +477,8 @@ class Cell:
         reduce(lambda a, b: a + b, (Extrusion(polygon=geometry, height=min_max[1] - min_max[0],
                                               transform=translation_matrix((0, 0, min_max[0])))
                                     for layer, min_max in layer_defs.items()
-                                    for geometry in self.get_reduced_layer(layer))).export(filename)
+                                    for geometry in (lambda x: x if hasattr(x, '__iter__') else [x, ])(
+            self.get_reduced_layer(layer)))).export(filename)
 
     def get_patches(self, origin=(0, 0), angle_sum=0, angle=0, layers=None):
         from descartes import PolygonPatch
@@ -625,14 +626,15 @@ if __name__ == '__main__':
         waveguide.add_bend(angle=np.pi, radius=60 + i_bend * 40)
     # Add direct laser writing taper and alignment marker for postprocessing with a dlw printer to the cell-like object.
     # The cell dlw files will be saved with the cell.
-    device_cell.add_dlw_taper_at_port('A0', 2, start_port.inverted_direction, 30)
-    device_cell.add_dlw_taper_at_port('A1', 2, waveguide.current_port, 30)
+    device_cell.add_dlw_taper_at_port('A0', 1, start_port.inverted_direction, 30)
+    device_cell.add_dlw_taper_at_port('A1', 1, waveguide.current_port, 30)
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()
     device_cell.save_image('chip.pdf')
     # Creates the output file by using gdspy, gdscad or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
     device_cell.save(name='my_design', parallel=True)
+    device_cell.export_mesh('my_design.stl', layer_defs={1: (0, 1)})
 
     array_cell = Cell('Array')
     array_cell.add_cell(device_cell, rows=2, columns=2, spacing=(1000, 1000))
