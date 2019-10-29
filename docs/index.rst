@@ -98,6 +98,17 @@ The library itself is designed to be as simple to use as possible:
     cell.show()
 
 
+Citing GDSHelpers
+_________________
+We would appreciate if you cite the following paper in your publications for which you used GDSHelpers:
+
+Helge Gehring, Matthias Blaicher, Wladick Hartmann, and Wolfram H. P. Pernice,
+`"Python based open source design framework for integrated nanophotonic and superconducting circuitry with 2D-3D-hybrid integration" <https://www.osapublishing.org/osac/abstract.cfm?uri=osac-2-11-3091>`_
+OSA Continuum 2, 3091-3101 (2019)
+
+Table of contents
+_________________
+
 .. toctree::
    :maxdepth: 2
 

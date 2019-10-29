@@ -62,6 +62,13 @@ Finally, there are also different formats in which the pattern can be exported:
 * To stl-objects which are useful e.g. for 3D-renderings
 * Directly to a blender-file or an rendered 3D-image
 
+## Citing GDSHelpers
+We would appreciate if you cite the following paper in your publications for which you used GDSHelpers:
+
+Helge Gehring, Matthias Blaicher, Wladick Hartmann, and Wolfram H. P. Pernice,
+["Python based open source design framework for integrated nanophotonic and superconducting circuitry with 2D-3D-hybrid integration"](https://www.osapublishing.org/osac/abstract.cfm?uri=osac-2-11-3091)
+OSA Continuum 2, 3091-3101 (2019)
+
 ## Documentation
 You can find the [documentation on readthedocs](https://gdshelpers.readthedocs.io)
 
