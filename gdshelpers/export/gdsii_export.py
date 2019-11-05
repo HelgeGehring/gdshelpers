@@ -8,6 +8,7 @@ from struct import pack
 from io import BytesIO
 import numpy as np
 
+from shapely.geometry import Polygon
 
 def _real_to_8byte(value):
     if value == 0:
@@ -26,6 +27,10 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
 
         for layer, polygons in cell.get_fractured_layer_dict(max_points, max_line_points).items():
             for polygon in polygons:
+                if not isinstance(polygon, Polygon):
+                    import warnings
+                    warnings.warn('Shapely object of type ' + type(polygon) + ' not convertible to GDSII, skipping...')
+                    continue
                 if polygon.interiors:
                     raise AssertionError('GDSII only supports polygons without holes')
                 xy = np.round(
