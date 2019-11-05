@@ -29,7 +29,8 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
             for polygon in polygons:
                 if not isinstance(polygon, Polygon):
                     import warnings
-                    warnings.warn('Shapely object of type ' + type(polygon) + ' not convertible to GDSII, skipping...')
+                    warnings.warn(
+                        'Shapely object of type ' + str(type(polygon)) + ' not convertible to GDSII, skipping...')
                     continue
                 if polygon.interiors:
                     raise AssertionError('GDSII only supports polygons without holes')
