@@ -229,10 +229,11 @@ class GridLayout(object):
         else:
             return x
 
-    def generate_layout(self):
+    def generate_layout(self, cell_name='GRID_LAYOUT'):
         """
         Generate a layout cell.
 
+        :param cell_name: Name of the generated layout cell
         :return: Tuple of a cell, containing the layout and a dictionary mapping each unique id to the position inside
                  the cell.
         """
@@ -256,7 +257,7 @@ class GridLayout(object):
                 row_properties[row_id]['max_height'] = max(row_properties[row_id]['max_height'],
                                                            item['bbox'][1][1])
 
-        layout_cell = Cell('GRID_LAYOUT')
+        layout_cell = Cell(cell_name)
         pos = [0, self.vertical_spacing]
         limits = [0., 0.]
         mapping = dict()
