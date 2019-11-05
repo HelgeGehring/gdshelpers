@@ -16,6 +16,7 @@ docs/_build/
 *.desc
 *.dlw
 *.dxf
+*.stl
 
 # files corresponds to Blender
 *.blend
