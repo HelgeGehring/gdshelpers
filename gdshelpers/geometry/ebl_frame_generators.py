@@ -11,7 +11,7 @@ def raith_marker_frame(bounds, padding=100, pitch=200, size=20, n=5):
     with larger distance between the markers (minimize risk of wrong markers being
     found by the EBL) without taking up too much space.
 
-    :param bounds: The bounds around which the markers will be aranged (the marker centers will be inside these bounds)
+    :param bounds: The bounds around which the markers will be arranged (the marker centers will be inside these bounds)
     :param padding: Spacing between the given bounds and the markers.
         Can also be negative to place the markers inside the bounding box.
     :param pitch: Pitch between two adjacent markers
