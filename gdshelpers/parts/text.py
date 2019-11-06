@@ -74,6 +74,10 @@ class Text(object):
         return self._bbox
 
     def get_shapely_object(self):
+        if not self.text:
+            self._bbox = None
+            return shapely.geometry.Polygon()
+
         # Let's do the actual rendering
 
         polygons = list()
