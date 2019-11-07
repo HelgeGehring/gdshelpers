@@ -9,11 +9,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6, 3.7]
+        python-version: [3.5, 3.6, 3.7]
 
     steps:
       - uses: actions/checkout@v1
-        run: sudo apt-get install libgeos-dev libatlas3-base
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
