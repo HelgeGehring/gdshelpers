@@ -19,7 +19,7 @@ setup(
     },
     packages=find_packages(),
     platforms='All',
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     license='LGPLv3',
     description='A simple Python package for creating or reading GDSII/OASIS layout files.',
     long_description=long_description,
