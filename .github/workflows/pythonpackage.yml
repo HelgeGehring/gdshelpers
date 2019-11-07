@@ -9,12 +9,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7]
 
     steps:
       - uses: actions/checkout@v1
-      - name: Install GEOS/BLAS library
-        if: matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'
         run: sudo apt-get install libgeos-dev libatlas3-base
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
