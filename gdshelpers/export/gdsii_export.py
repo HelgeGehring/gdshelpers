@@ -10,6 +10,7 @@ import numpy as np
 
 from shapely.geometry import Polygon
 
+
 def _real_to_8byte(value):
     if value == 0:
         return b'\x00' * 8
