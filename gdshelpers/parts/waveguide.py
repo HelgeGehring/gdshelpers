@@ -227,6 +227,10 @@ class Waveguide(object):
             sample_coordinates = np.array(path)
             sample_t = np.linspace(0, 1, sample_coordinates.shape[0])
 
+        rotation_matrix = np.array(((np.cos(self.current_port.angle), -np.sin(self.current_port.angle)),
+                                    (np.sin(self.current_port.angle), np.cos(self.current_port.angle))))
+        sample_coordinates = self.current_port.origin + np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates)
+
         # Calculate the derivative
         if path_derivative:
             assert callable(path_derivative), 'The derivative of the path function must be callable'
@@ -234,8 +238,9 @@ class Waveguide(object):
                 sample_coordinates_d1 = np.array(path_derivative(sample_t)).T
             else:
                 sample_coordinates_d1 = np.array([path_derivative(x) for x in sample_t])
+            sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
         else:
-            sample_coordinates_d1 = np.vstack(([1, 0], np.diff(sample_coordinates, axis=0)))
+            sample_coordinates_d1 = np.vstack((rotation_matrix[:, 0], np.diff(sample_coordinates, axis=0)))
 
         sample_coordinates_d1_norm = np.apply_along_axis(linalg.norm, 1, sample_coordinates_d1)
         sample_coordinates_d1_normed = sample_coordinates_d1 / sample_coordinates_d1_norm[:, None]
@@ -273,8 +278,6 @@ class Waveguide(object):
                                      shapely.validation.explain_validity(polygon)
             polygons.append(polygon)
         polygon = shapely.geometry.MultiPolygon(polygons)
-        polygon = shapely.affinity.rotate(polygon, self.angle, origin=[0, 0], use_radians=True)
-        polygon = shapely.affinity.translate(polygon, self.x, self.y)
 
         outline_poly_path_1 = sample_coordinates - np.sum(sample_width,
                                                           axis=-1)[..., None] / 2 * sample_coordinates_d1_normed_ortho
@@ -282,24 +285,13 @@ class Waveguide(object):
                                                           axis=-1)[..., None] / 2 * sample_coordinates_d1_normed_ortho
         outline = shapely.geometry.Polygon(np.concatenate([outline_poly_path_1, outline_poly_path_2[::-1, :]]))
 
-        outline = shapely.affinity.rotate(outline, self.angle, origin=[0, 0], use_radians=True)
-        outline = shapely.affinity.translate(outline, self.x, self.y)
-
         length = np.sum(np.apply_along_axis(linalg.norm, 1, np.diff(sample_coordinates, axis=0)))
-        R = np.array(((np.cos(self.current_port.angle), -np.sin(self.current_port.angle)),
-                      (np.sin(self.current_port.angle), np.cos(self.current_port.angle))))
-        self._segments.append(
-            (self._current_port.copy(), polygon, outline, length,
-             self.current_port.origin + np.einsum('ij,kj->ki', R, sample_coordinates)))
+        self._segments.append((self._current_port.copy(), polygon, outline, length, sample_coordinates))
 
-        endpoint = shapely.geometry.Point(sample_coordinates[-1][0], sample_coordinates[-1][1])
-        endpoint = shapely.affinity.rotate(endpoint, self.angle, origin=[0, 0], use_radians=True)
-        endpoint = shapely.affinity.translate(endpoint, self.x, self.y)
-        self._current_port.origin = endpoint.coords[0]
-
+        self._current_port.origin = sample_coordinates[-1]
         # If the width does not need to be a list, convert it back to a scalar
         self._current_port.width = sample_width[-1]
-        self._current_port.angle += np.arctan2(sample_coordinates_d1[-1][1], sample_coordinates_d1[-1][0])
+        self._current_port.angle = np.arctan2(sample_coordinates_d1[-1][1], sample_coordinates_d1[-1][0])
         return self
 
     def add_cubic_bezier_path(self, p0, p1, p2, p3, width=None, **kwargs):
