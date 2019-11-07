@@ -197,7 +197,7 @@ class Waveguide(object):
                 # else:
                 #     presample_coordinates_d1 = np.diff(presample_coordinates, axis=0)
                 presample_coordinates_d1 = np.diff(presample_coordinates, axis=0)
-                presample_coordinates_d1_norm = np.apply_along_axis(linalg.norm, 1, presample_coordinates_d1)
+                presample_coordinates_d1_norm = np.linalg.norm(presample_coordinates_d1, axis=1)
                 presample_coordinates_d1__cum_norm = np.insert(np.cumsum(presample_coordinates_d1_norm), 0, 0)
 
                 lengths = np.linspace(presample_coordinates_d1__cum_norm[0],
@@ -242,7 +242,7 @@ class Waveguide(object):
         else:
             sample_coordinates_d1 = np.vstack((rotation_matrix[:, 0], np.diff(sample_coordinates, axis=0)))
 
-        sample_coordinates_d1_norm = np.apply_along_axis(linalg.norm, 1, sample_coordinates_d1)
+        sample_coordinates_d1_norm = np.linalg.norm(sample_coordinates_d1, axis=1)
         sample_coordinates_d1_normed = sample_coordinates_d1 / sample_coordinates_d1_norm[:, None]
 
         # Find the orthogonal vectors to the derivative
@@ -285,7 +285,7 @@ class Waveguide(object):
                                                           axis=-1)[..., None] / 2 * sample_coordinates_d1_normed_ortho
         outline = shapely.geometry.Polygon(np.concatenate([outline_poly_path_1, outline_poly_path_2[::-1, :]]))
 
-        length = np.sum(np.apply_along_axis(linalg.norm, 1, np.diff(sample_coordinates, axis=0)))
+        length = np.sum(np.linalg.norm(np.diff(sample_coordinates, axis=0), axis=1))
         self._segments.append((self._current_port.copy(), polygon, outline, length, sample_coordinates))
 
         self._current_port.origin = sample_coordinates[-1]
