@@ -227,9 +227,9 @@ class Waveguide(object):
             sample_coordinates = np.array(path)
             sample_t = np.linspace(0, 1, sample_coordinates.shape[0])
 
-        rotation_matrix = np.array(((np.cos(self.current_port.angle), -np.sin(self.current_port.angle)),
-                                    (np.sin(self.current_port.angle), np.cos(self.current_port.angle))))
-        sample_coordinates = self.current_port.origin + np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates)
+        rotation_matrix = np.array(((np.cos(self._current_port.angle), -np.sin(self._current_port.angle)),
+                                    (np.sin(self._current_port.angle), np.cos(self._current_port.angle))))
+        sample_coordinates = self._current_port.origin + np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates)
 
         # Calculate the derivative
         if path_derivative:
@@ -256,7 +256,7 @@ class Waveguide(object):
             else:
                 sample_width = np.array([width(x) for x in sample_t])
         else:
-            sample_width = np.array([(width if width else self.current_port.width), ])
+            sample_width = np.array([(width if width else self._current_port.width), ])
 
         if sample_width.ndim == 1:
             sample_width = sample_width[..., None]
@@ -327,11 +327,11 @@ class Waveguide(object):
 
         final_port = Port(final_coordinates, final_angle, self.width)
         p0 = (0, 0)
-        p1 = self.current_port.longitudinal_offset(bs1).origin - self.current_port.origin
-        p2 = final_port.longitudinal_offset(-bs2).origin - self.current_port.origin
-        p3 = final_coordinates - self.current_port.origin
+        p1 = self._current_port.longitudinal_offset(bs1).origin - self._current_port.origin
+        p2 = final_port.longitudinal_offset(-bs2).origin - self._current_port.origin
+        p3 = final_coordinates - self._current_port.origin
 
-        tmp_wg = Waveguide.make_at_port(self.current_port.copy().set_port_properties(angle=0))
+        tmp_wg = Waveguide.make_at_port(self._current_port.copy().set_port_properties(angle=0))
         tmp_wg.add_cubic_bezier_path(p0, p1, p2, p3, width=width, **kwargs)
 
         self._segments.append(
@@ -381,7 +381,7 @@ class Waveguide(object):
         final_angle = normalize_phase(final_angle) + np.pi
 
         # We need to to some linear algebra. We first find the intersection of the two waveguides
-        r1 = self.current_port.origin
+        r1 = self._current_port.origin
         r2 = np.array(final_coordinates)
         intersection_point, distance = find_line_intersection(r1, self.angle, r2, final_angle)
 
@@ -406,7 +406,7 @@ class Waveguide(object):
         radius = min([max_bend_strength, max_poss_radius]) if max_bend_strength is not None else max_poss_radius
         d = abs(radius * np.tan(diff_angle / 2))
 
-        tmp_wg = Waveguide.make_at_port(self.current_port)
+        tmp_wg = Waveguide.make_at_port(self._current_port)
         tmp_wg.add_straight_segment(distance[0] - d)
         tmp_wg.add_bend(-diff_angle, radius)
 
@@ -444,7 +444,7 @@ class Waveguide(object):
         :raise ArithmeticError: When there is no intersection due to being parallel or if
                                 the intersection is behind the waveguide.
         """
-        r1 = self.current_port.origin
+        r1 = self._current_port.origin
         r2 = np.array(line_origin)
 
         try:
