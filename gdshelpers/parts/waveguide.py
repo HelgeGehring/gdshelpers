@@ -132,6 +132,7 @@ class Waveguide(object):
             path_derivative=lambda t: [radius * np.cos(abs(angle) * t) * abs(angle),
                                        np.sign(angle) * radius * (np.sin(angle * t) * angle)],
             width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
+            width_function_supports_numpy=True,
             sample_points=sample_points, sample_distance=0)
 
         return self
