@@ -623,6 +623,9 @@ in the library::
     layout_cell.add_ebl_frame(layer=10, frame_generator=raith_marker_frame, n=2)
     layout_cell.show()
 
+The EBL markers are added with ``add_ebl_frame`` and the number of markers per corner can be adjusted by changing the parameter ``n``.
+In addition to the EBL markers, we added a frame around our structures with ``add_frame``.
+
 More advanced waveguide features
 ================================
 
