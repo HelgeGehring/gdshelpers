@@ -181,8 +181,7 @@ class Waveguide(object):
         :param width_function_supports_numpy:
         """
 
-        path_callable = callable(path)
-        if path_callable:
+        if callable(path):
             presample_t = np.linspace(0, 1, sample_points)
 
             if path_function_supports_numpy:
@@ -269,12 +268,13 @@ class Waveguide(object):
             stop = np.sum(sample_width[:, :(2 * i + 1)], axis=-1) - np.sum(sample_width, axis=-1) / 2
             poly_path_1 = sample_coordinates + start[..., None] * sample_coordinates_d1_normed_ortho
             poly_path_2 = sample_coordinates + stop[..., None] * sample_coordinates_d1_normed_ortho
+            poly_path = np.concatenate([poly_path_1, poly_path_2[::-1, :]])
 
-            assert shapely.geometry.LineString(np.concatenate([poly_path_1, poly_path_2[::-1, :]])).is_simple, \
+            assert shapely.geometry.LineString(poly_path).is_simple, \
                 'Outer lines of parameterized wg intersect. Try using lower bend radii or smaller a smaller wg'
 
             # Now add the shapely objects and do book keeping
-            polygon = shapely.geometry.Polygon(np.concatenate([poly_path_1, poly_path_2[::-1, :]]))
+            polygon = shapely.geometry.Polygon(poly_path)
             assert polygon.is_valid, 'Generated polygon path is not valid: %s' % \
                                      shapely.validation.explain_validity(polygon)
             polygons.append(polygon)
