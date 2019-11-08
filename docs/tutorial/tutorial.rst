@@ -552,28 +552,10 @@ Generating electron beam lithography markers
 
 When writing several layers with electron beam lithography, markers are needed to align these layers. There is a class
 in gdshelpers that will help you to generate these markers. Note that at the moment only square markers can be found
-in the library::
+in the library. However, other types of markers can easily be added by writing an own ``frame_generator`` and then using
+the same method. Here is one example how global and local markers can be added::
 
-    layout = GridLayout(title='Simple parameter sweep', frame_layer=0, text_layer=2, region_layer_type=None)
-    radii = np.linspace(10, 20, 4)
-    gaps = np.linspace(0.1, 0.5, 5)
-
-    # Add column labels
-    layout.add_column_label_row(('Gap %0.2f' % gap for gap in gaps), row_label='')
-
-    for radius in radii:
-        layout.begin_new_row('Radius\n%0.2f' % radius)
-        for gap in gaps:
-            layout.add_to_row(generate_device_cell(radius, gap))
-
-    layout_cell, mapping = layout.generate_layout()
-
-    from gdshelpers.geometry.ebl_frame_generators import raith_marker_frame
-    layout_cell.add_frame(frame_layer=9,line_width=5)
-    layout_cell.add_ebl_frame(layer=10, frame_generator=raith_marker_frame, n=2)
-    layout_cell.show()
-
-.. plot::
+    import numpy as np
 
     from math import pi
     from gdshelpers.geometry.chip import Cell
@@ -581,8 +563,7 @@ in the library::
     from gdshelpers.parts.coupler import GratingCoupler
     from gdshelpers.parts.resonator import RingResonator
     from gdshelpers.layout import GridLayout
-
-    import numpy as np
+    from gdshelpers.parts.marker import SquareMarker
 
 
     def generate_device_cell(resonator_radius, resonator_gap, origin=(25, 75)):
@@ -602,6 +583,7 @@ in the library::
 
         cell = Cell('SIMPLE_RES_DEVICE r={:.1f} g={:.1f}'.format(resonator_radius, resonator_gap))
         cell.add_to_layer(1, left_coupler, wg1, ring_res, wg2, right_coupler)
+        cell.add_ebl_marker(layer=9, SquareMarker(origin=(0, 0), size=20))
         return cell
 
 
@@ -620,11 +602,68 @@ in the library::
     layout_cell, mapping = layout.generate_layout()
 
     from gdshelpers.geometry.ebl_frame_generators import raith_marker_frame
-    layout_cell.add_frame(frame_layer=9,line_width=5)
+
+    layout_cell.add_frame(frame_layer=8, line_width=7)
     layout_cell.add_ebl_frame(layer=10, frame_generator=raith_marker_frame, n=2)
     layout_cell.show()
 
-The EBL markers are added with ``add_ebl_frame`` and the number of markers per corner can be adjusted by changing the parameter ``n``.
+.. plot::
+
+    import numpy as np
+
+    from math import pi
+    from gdshelpers.geometry.chip import Cell
+    from gdshelpers.parts.waveguide import Waveguide
+    from gdshelpers.parts.coupler import GratingCoupler
+    from gdshelpers.parts.resonator import RingResonator
+    from gdshelpers.layout import GridLayout
+    from gdshelpers.parts.marker import SquareMarker
+
+
+    def generate_device_cell(resonator_radius, resonator_gap, origin=(25, 75)):
+        left_coupler = GratingCoupler.make_traditional_coupler_from_database(origin, 1, 'sn330', 1550)
+        wg1 = Waveguide.make_at_port(left_coupler.port)
+        wg1.add_straight_segment(length=10)
+        wg1.add_bend(-pi / 2, radius=50)
+        wg1.add_straight_segment(length=75)
+
+        ring_res = RingResonator.make_at_port(wg1.current_port, gap=resonator_gap, radius=resonator_radius)
+
+        wg2 = Waveguide.make_at_port(ring_res.port)
+        wg2.add_straight_segment(length=75)
+        wg2.add_bend(-pi / 2, radius=50)
+        wg2.add_straight_segment(length=10)
+        right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg2.current_port, 'sn330', 1550)
+
+        cell = Cell('SIMPLE_RES_DEVICE r={:.1f} g={:.1f}'.format(resonator_radius, resonator_gap))
+        cell.add_to_layer(1, left_coupler, wg1, ring_res, wg2, right_coupler)
+        cell.add_ebl_marker(9, SquareMarker((0, 0), size=20))
+        return cell
+
+
+    layout = GridLayout(title='Simple parameter sweep', frame_layer=0, text_layer=2, region_layer_type=None)
+    radii = np.linspace(10, 20, 4)
+    gaps = np.linspace(0.1, 0.5, 5)
+
+    # Add column labels
+    layout.add_column_label_row(('Gap %0.2f' % gap for gap in gaps), row_label='')
+
+    for radius in radii:
+        layout.begin_new_row('Radius\n%0.2f' % radius)
+        for gap in gaps:
+            layout.add_to_row(generate_device_cell(radius, gap))
+
+    layout_cell, mapping = layout.generate_layout()
+
+    from gdshelpers.geometry.ebl_frame_generators import raith_marker_frame
+
+    layout_cell.add_frame(frame_layer=8, line_width=7)
+    layout_cell.add_ebl_frame(layer=10, frame_generator=raith_marker_frame, n=2)
+    layout_cell.show()
+
+
+First of all, we can add local EBL markers with ``add_ebl_marker`` and a defined position. Secondly, global markers are
+added with ``add_ebl_frame``, and the number of markers per corner can be adjusted by changing the parameter ``n``.
 In addition to the EBL markers, we added a frame around our structures with ``add_frame``.
 
 More advanced waveguide features
