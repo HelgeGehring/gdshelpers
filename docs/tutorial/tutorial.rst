@@ -484,13 +484,14 @@ For now, we are just after a simple standard layout, so we can use the :class:`.
 .. plot::
 
     from math import pi
+    import numpy as np
+
     from gdshelpers.geometry.chip import Cell
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.coupler import GratingCoupler
     from gdshelpers.parts.resonator import RingResonator
     from gdshelpers.layout import GridLayout
 
-    import numpy as np
 
 
     def generate_device_cell(resonator_radius, resonator_gap, origin=(25, 75)):
