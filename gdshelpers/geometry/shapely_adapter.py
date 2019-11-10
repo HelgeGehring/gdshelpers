@@ -147,7 +147,7 @@ def heal(objs, max_points, max_interior=0):
             polygon_points = _number_of_points(polygon)
 
             for j, polygon2 in enumerate(objs):
-                if polygon == polygon2:
+                if polygon is polygon2 or polygon == polygon2:
                     continue
                 if type(polygon2) != shapely.geometry.Polygon:
                     continue
