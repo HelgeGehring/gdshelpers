@@ -263,9 +263,10 @@ class Waveguide(object):
 
         # Now we have everything to calculate the polygon
         polygons = []
+        half_width = np.sum(sample_width, axis=-1) / 2
         for i in range((sample_width.shape[-1] + 1) // 2):
-            start = np.sum(sample_width[:, :(2 * i)], axis=-1) - np.sum(sample_width, axis=-1) / 2
-            stop = np.sum(sample_width[:, :(2 * i + 1)], axis=-1) - np.sum(sample_width, axis=-1) / 2
+            start = np.sum(sample_width[:, :(2 * i)], axis=-1) - half_width
+            stop = start + sample_width[:, 2 * i]
             poly_path_1 = sample_coordinates + start[..., None] * sample_coordinates_d1_normed_ortho
             poly_path_2 = sample_coordinates + stop[..., None] * sample_coordinates_d1_normed_ortho
             poly_path = np.concatenate([poly_path_1, poly_path_2[::-1, :]])
