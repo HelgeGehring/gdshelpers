@@ -121,15 +121,16 @@ def _example():
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.mode_converter import StripToSlotModeConverter
 
-    wg_1 = Waveguide.make_at_port(Port(origin=(0, 0), angle=0, width=1.2))  # array as width -> slot waveguide
+    wg_1 = Waveguide.make_at_port(Port(origin=(0, 0), angle=0, width=1.2))  # scalar as width -> strip waveguide
     wg_1.add_straight_segment(5)
 
-    mc_1 = StripToSlotModeConverter.make_at_port(wg_1.current_port, 5, [0.4, 0.2, 0.4], 2, 0.2)
+    mc_1 = StripToSlotModeConverter.make_at_port(wg_1.current_port, 5, [0.4, 0.2, 0.4], 2,
+                                                 0.2)  # array as width -> slot waveguide
 
     wg_2 = Waveguide.make_at_port(mc_1.out_port)
     wg_2.add_bend(angle=np.pi, radius=5)
 
-    mc_2 = StripToSlotModeConverter.make_at_port(wg_2.current_port, 5, 1)
+    mc_2 = StripToSlotModeConverter.make_at_port(wg_2.current_port, 5, 1, 2, 0.2)  # scalar as width -> strip waveguide
 
     wg_3 = Waveguide.make_at_port(mc_2.out_port)
     wg_3.add_straight_segment(5)

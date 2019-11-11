@@ -7,8 +7,8 @@ Unreleased
 * Direct GDSII-export is now the standard GDSII-writer
 * Added function for generating vortex traps
 * Improved shape generation performance of waveguide
-* Bugfixes
 * Strip to slot mode converter added
+* Bugfixes
 
 1.0.4
 -----
