@@ -6,7 +6,7 @@ from gdshelpers.parts import Port
 
 class StripToSlotModeConverter:
     """
-    Generates a strip to slot mode converter as presented by Palmer et. al https://ieeexplore.ieee.org/document/6412699.
+    Generates a strip to slot mode converter as presented by Palmer et. al https://doi.org/10.1109/JPHOT.2013.2239283.
     If the input port width is a scalar und the final width is an array, a strip to slot mode converter is generated.
     On the other hand, if the input port width is an array and the final width is a scaler, a slot to strip mode
     converter is generated.
