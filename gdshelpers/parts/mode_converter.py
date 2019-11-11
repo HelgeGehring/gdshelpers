@@ -15,7 +15,7 @@ class StripToSlotModeConverter:
 
     def __init__(self, origin, angle, width, taper_length, final_width, pre_taper_length, pre_taper_width):
         """
-        
+
         :param origin: origin of the mode converter
         :param angle: angle of the mode converter
         :param width: width of the mdoe converter. Scalar if strip to slot, array if slot to strip
@@ -34,13 +34,13 @@ class StripToSlotModeConverter:
     @classmethod
     def make_at_port(cls, port, taper_length, final_width, pre_taper_length, pre_taper_width):
         """
-        
+
         :param port: port of the taper (origin, angle, width)
         :param taper_length: length of the taper
         :param final_width: final width of the mode converter. Array if strip to slot, scalar if slot to strip
         :param pre_taper_length: length of the pre taper
         :param pre_taper_width:  width of the pre taper
-        :return: 
+        :return:
         """
         return cls(port.origin, port.angle, port.width, taper_length, final_width, pre_taper_length,
                    pre_taper_width)
