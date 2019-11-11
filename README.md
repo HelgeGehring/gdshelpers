@@ -31,6 +31,7 @@ So far, the following parts are implemented:
   - Tapers for hybrid 3D-integration
 * Ring and racetrack resonators
 * Mach-Zehnder interferometers
+* Strip to slot mode converter
 * Spirals
 * Superconducting nanowire single photon detectors (SNSPDs)
 * Superconducting nanoscale Transistors (NTRONs)
