@@ -546,6 +546,69 @@ Also note, that :func:`.GridLayout.generate_layout` returns `two` values. We hav
 ``layout_cell``. The value in ``mapping`` will tell you where each device was placed. To make use of this, you have to
 pass a unique id when calling ``add_to_row``.
 
+Slot waveguides and mode converters
+===================================
+So far only strip waveguides have been used. However, gdshelpers includes also slot waveguides and strip to slot mode
+converters. Some examples are shown below:
+
+.. plot::
+    :include-source:
+
+    import numpy as np
+
+    from gdshelpers.geometry.chip import Cell
+    from gdshelpers.parts.mode_converter import StripToSlotModeConverter
+    from gdshelpers.parts.waveguide import Waveguide
+    from gdshelpers.parts.port import Port
+
+    # waveguide 1: strip waveguide
+    wg_1 = Waveguide.make_at_port(Port(origin=(0, 0), angle=np.pi / 2, width=1))
+    wg_1.add_straight_segment(length=10)
+
+    # waveguide 2: slot waveguide
+    wg_2 = Waveguide.make_at_port(Port(origin=(5, 0), angle=np.pi / 2, width=[0.4, 0.2, 0.4]))
+    wg_2.add_straight_segment(length=10)
+
+    # waveguide 3: slot waveguide with tapering
+    wg_3 = Waveguide.make_at_port(Port(origin=(10, 0), angle=np.pi / 2, width=[0.5, 0.3, 0.5]))
+    wg_3.add_straight_segment(length=10, final_width=[0.2, 0.4, 0.2])
+
+    # waveguide 4: slot waveguide with three rails and two slots
+    wg_4 = Waveguide.make_at_port(Port(origin=(15, 0), angle=np.pi / 2, width=[0.2, 0.2, 0.3, 0.2, 0.4]))
+    wg_4.add_straight_segment(length=10)
+
+    # waveguide 5: slot waveguide with bends and strip to slot mode converter
+    wg_5_1 = Waveguide.make_at_port(Port(origin=(-6.5, 10), angle=-np.pi / 2, width=[0.4, 0.2, 0.4]))
+    wg_5_1.add_straight_segment(length=10)
+    wg_5_1.add_bend(angle=np.pi / 2, radius=5)
+    mc_1 = StripToSlotModeConverter.make_at_port(port=wg_5_1.current_port, taper_length=5, final_width=1)
+    wg_5_2 = Waveguide.make_at_port(port=mc_1.out_port)
+    wg_5_2.add_straight_segment(length=5)
+    mc_2 = StripToSlotModeConverter.make_at_port(port=wg_5_2.current_port, taper_length=5, final_width=[0.4, 0.2, 0.4])
+    wg_5_3 = Waveguide.make_at_port(port=mc_2.out_port)
+    wg_5_3.add_bend(angle=np.pi / 2, radius=5)
+    wg_5_3.add_straight_segment(length=10)
+
+    cell = Cell('Cell')
+    cell.add_to_layer(layer=1, wg_1)  # red
+    cell.add_to_layer(layer=2, wg_2)  # green
+    cell.add_to_layer(layer=3, wg_3)  # blue
+    cell.add_to_layer(layer=4, wg_4)  # jungle green
+    cell.add_to_layer(layer=5, wg_5_1, mc_1, wg_5_2, mc_2, wg_5_3) # pink
+    cell.show()
+
+The routing is very similar to the routing of a strip waveguide, meaning that a port (origin, angle and width) has to be
+defined, and waveguides elements can be added from this port. The only difference is that the width is not given by a scalar,
+as shown in the case of waveguide 1, but by an array, usually with an odd number of elements. In this array, each element
+with an odd number denotes the width of a rail (waveguide 2), while each element with an even number denotes the width of the slot between
+two rails. As in the case of strip waveguides, one can make use of tapering (waveguide 3), bends (waveguide 5_1 and 5_3)
+and all other kinds of routing functions that are available in the :class:`.Waveguide` class.
+
+Using the :class:`.StripToSlotModeConverter` class, strip to slot mode converters can added, which allow for a transition
+from a strip waveguide to a slot waveguide. To create this element, three parameters have to be defined: The current port
+(origin, angle and width), the length of the taper and the final width. If the current port width is a scalar and the final
+width is an array with three elements (two rails and one slot), a strip to slot mode converter is created.
+In the opposite case, a slot to strip mode converter is defined.
 
 More advanced waveguide features
 ================================
