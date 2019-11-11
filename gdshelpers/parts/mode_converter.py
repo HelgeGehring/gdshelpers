@@ -13,18 +13,37 @@ class StripToSlotModeConverter:
 
     """
 
-    def __init__(self, origin, angle, width, taper_length, final_width, front_taper_length, front_taper_width):
+    def __init__(self, origin, angle, width, taper_length, final_width, pre_taper_length, pre_taper_width):
+        """
+        
+        :param origin: origin of the mode converter
+        :param angle: angle of the mode converter
+        :param width: width of the mdoe converter. Scalar if strip to slot, array if slot to strip
+        :param taper_length: length of the taper
+        :param final_width: final width of the mode converter. Array if strip to slot, scalar if slot to strip
+        :param pre_taper_length: length of the pre taper
+        :param pre_taper_width: width of the pre taper
+        """
         self._taper_length = taper_length
         self._in_port = Port(origin, angle, width)
         self._final_width = final_width
-        self._front_taper_length = front_taper_length
-        self._front_taper_width = front_taper_width
+        self._pre_taper_length = pre_taper_length
+        self._pre_taper_width = pre_taper_width
         self._waveguide = None
 
     @classmethod
-    def make_at_port(cls, port, taper_length, final_width, front_taper_length=2, front_taper_width=0.2):
-        return cls(port.origin, port.angle, port.width, taper_length, final_width, front_taper_length,
-                   front_taper_width)
+    def make_at_port(cls, port, taper_length, final_width, pre_taper_length, pre_taper_width):
+        """
+        
+        :param port: port of the taper (origin, angle, width)
+        :param taper_length: length of the taper
+        :param final_width: final width of the mode converter. Array if strip to slot, scalar if slot to strip
+        :param pre_taper_length: length of the pre taper
+        :param pre_taper_width:  width of the pre taper
+        :return: 
+        """
+        return cls(port.origin, port.angle, port.width, taper_length, final_width, pre_taper_length,
+                   pre_taper_width)
 
     @property
     def in_port(self):
@@ -42,7 +61,7 @@ class StripToSlotModeConverter:
 
         :return: port
         """
-        port = self._in_port.longitudinal_offset(self._taper_length + self._front_taper_length)
+        port = self._in_port.longitudinal_offset(self._taper_length + self._pre_taper_length)
         port.width = self._final_width
         return port
 
@@ -57,7 +76,6 @@ class StripToSlotModeConverter:
         if self._waveguide:
             return self._waveguide.get_shapely_object()
 
-
         if np.array(self._in_port.width).size == 1:
             # strip to slot mode converter
             strip_width = self.in_port.width
@@ -69,8 +87,8 @@ class StripToSlotModeConverter:
 
         def pre_taper_width(t):
             return [
-                slot_width[0] * t + self._front_taper_width * (1 - t),
-                slot_width[1] + (slot_width[0] - self._front_taper_width) * (1 - t),
+                slot_width[0] * t + self._pre_taper_width * (1 - t),
+                slot_width[1] + (slot_width[0] - self._pre_taper_width) * (1 - t),
                 strip_width,
                 slot_width[0] + slot_width[1]
             ]
@@ -85,13 +103,13 @@ class StripToSlotModeConverter:
 
         if np.array(self._in_port.width).size == 1:
             # strip to slot mode converter
-            self._waveguide.add_parameterized_path(lambda t: [t * self._front_taper_length, 0], width=pre_taper_width)
+            self._waveguide.add_parameterized_path(lambda t: [t * self._pre_taper_length, 0], width=pre_taper_width)
             self._waveguide.add_parameterized_path(lambda t: [t * self._taper_length, 0], width=taper_width)
         else:
             # slot to strip mode converter
             self._waveguide.add_parameterized_path(lambda t: [t * self._taper_length, 0],
                                                    width=lambda t: taper_width(1 - t))
-            self._waveguide.add_parameterized_path(lambda t: [t * self._front_taper_length, 0],
+            self._waveguide.add_parameterized_path(lambda t: [t * self._pre_taper_length, 0],
                                                    width=lambda t: pre_taper_width(1 - t))
 
         return self._waveguide.get_shapely_object()
@@ -106,7 +124,7 @@ def _example():
     wg_1 = Waveguide.make_at_port(Port(origin=(0, 0), angle=0, width=1.2))  # array as width -> slot waveguide
     wg_1.add_straight_segment(5)
 
-    mc_1 = StripToSlotModeConverter.make_at_port(wg_1.current_port, 5, [0.4, 0.2, 0.4])
+    mc_1 = StripToSlotModeConverter.make_at_port(wg_1.current_port, 5, [0.4, 0.2, 0.4], 2, 0.2)
 
     wg_2 = Waveguide.make_at_port(mc_1.out_port)
     wg_2.add_bend(angle=np.pi, radius=5)

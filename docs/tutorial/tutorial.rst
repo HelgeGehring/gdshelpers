@@ -581,20 +581,22 @@ converters. Some examples are shown below:
     wg_5_1 = Waveguide.make_at_port(Port(origin=(-6.5, 10), angle=-np.pi / 2, width=[0.4, 0.2, 0.4]))
     wg_5_1.add_straight_segment(length=10)
     wg_5_1.add_bend(angle=np.pi / 2, radius=5)
-    mc_1 = StripToSlotModeConverter.make_at_port(port=wg_5_1.current_port, taper_length=5, final_width=1)
+    mc_1 = StripToSlotModeConverter.make_at_port(port=wg_5_1.current_port, taper_length=5, final_width=1,
+                                                 pre_taper_length=2, pre_taper_width=0.2)
     wg_5_2 = Waveguide.make_at_port(port=mc_1.out_port)
-    wg_5_2.add_straight_segment(length=5)
-    mc_2 = StripToSlotModeConverter.make_at_port(port=wg_5_2.current_port, taper_length=5, final_width=[0.4, 0.2, 0.4])
+    wg_5_2.add_straight_segment(5)
+    mc_2 = StripToSlotModeConverter.make_at_port(port=wg_5_2.current_port, taper_length=5, final_width=[0.4, 0.2, 0.4],
+                                                 pre_taper_length=2, pre_taper_width=0.2)
     wg_5_3 = Waveguide.make_at_port(port=mc_2.out_port)
     wg_5_3.add_bend(angle=np.pi / 2, radius=5)
     wg_5_3.add_straight_segment(length=10)
 
     cell = Cell('Cell')
-    cell.add_to_layer(layer=1, wg_1)  # red
-    cell.add_to_layer(layer=2, wg_2)  # green
-    cell.add_to_layer(layer=3, wg_3)  # blue
-    cell.add_to_layer(layer=4, wg_4)  # jungle green
-    cell.add_to_layer(layer=5, wg_5_1, mc_1, wg_5_2, mc_2, wg_5_3) # pink
+    cell.add_to_layer(1, wg_1)  # red
+    cell.add_to_layer(2, wg_2)  # green
+    cell.add_to_layer(3, wg_3)  # blue
+    cell.add_to_layer(4, wg_4)  # jungle green
+    cell.add_to_layer(5, wg_5_1, mc_1, wg_5_2, mc_2, wg_5_3) # pink
     cell.show()
 
 The routing is very similar to the routing of a strip waveguide, meaning that a port (origin, angle and width) has to be
@@ -605,10 +607,10 @@ two rails. As in the case of strip waveguides, one can make use of tapering (wav
 and all other kinds of routing functions that are available in the :class:`.Waveguide` class.
 
 Using the :class:`.StripToSlotModeConverter` class, strip to slot mode converters can added, which allow for a transition
-from a strip waveguide to a slot waveguide. To create this element, three parameters have to be defined: The current port
-(origin, angle and width), the length of the taper and the final width. If the current port width is a scalar and the final
-width is an array with three elements (two rails and one slot), a strip to slot mode converter is created.
-In the opposite case, a slot to strip mode converter is defined.
+from a strip waveguide to a slot waveguide and vice versa. To create this element, five parameters have to be defined: The current port
+(origin, angle and width), the length of the taper, the final width and the width and length of the pre taper.
+If the current port width is a scalar and the final width is an array with three elements (two rails and one slot),
+a strip to slot mode converter is created. In the opposite case, a slot to strip mode converter is defined.
 
 More advanced waveguide features
 ================================

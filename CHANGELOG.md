@@ -8,6 +8,7 @@ Unreleased
 * Added function for generating vortex traps
 * Improved shape generation performance of waveguide
 * Bugfixes
+* Strip to slot mode converter added
 
 1.0.4
 -----
