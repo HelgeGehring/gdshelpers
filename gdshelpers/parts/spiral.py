@@ -44,15 +44,15 @@ def spiral_theta(length, wg_width, gap, min_bend_radius, length_function, *args)
     b = 2*(wg_width + gap) / (2.*np.pi)
     return fsolve(lambda x: length_function(x, a, b, *args) - length, 20*np.pi)
 
-def spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0):
+def spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
     theta = min_theta + t * (max_theta - min_theta)
     r = a + b * theta
-    return r * np.array([np.sin(theta + theta_offset), -np.cos(theta + theta_offset)]) + np.array([0, a])[:, None]
+    return r * np.array([np.sin(theta + theta_offset), -direction*np.cos(theta + theta_offset)]) + np.array([0, direction*a])[:, None]
 
-def d_spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0):
+def d_spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
     theta = min_theta + t * (max_theta - min_theta)
     r = a + b * theta
-    return r * np.array([np.cos(theta + theta_offset), np.sin(theta + theta_offset)])
+    return r * np.array([np.cos(theta + theta_offset), direction*np.sin(theta + theta_offset)])
 
 
 class Spiral(object):
@@ -80,7 +80,7 @@ class Spiral(object):
         * <phi>, where phi is the angle where the output should be located
     """
 
-    def __init__(self, origin, angle, width, gap, min_bend_radius, theta, output_type='opposite', sample_distance=0.50, sample_points=100):
+    def __init__(self, origin, angle, width, gap, min_bend_radius, theta, output_type='opposite', winding_direction='right', sample_distance=0.50, sample_points=100):
         """
         Create an archimedean spiral following the spiral equation :math:`r = a + b \theta`.
         
@@ -100,6 +100,7 @@ class Spiral(object):
         self.sample_points = sample_points
         self.sample_distance = sample_distance
         self.output_type = output_type
+        self.winding_direction = -1 if winding_direction == "left" else 1
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
             self.out_theta = self.total_theta + 0.5*np.pi
@@ -175,22 +176,22 @@ class Spiral(object):
         outer_r = (a + b*self.total_theta)
 
         if self.output_type != "single_outside":
-            self._wg.add_parameterized_path(lambda x: -spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta) - np.array([0, -a + outer_r])[:, None], sample_distance=self.sample_distance, sample_points=self.sample_points,
-                                            path_derivative=lambda x: d_spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta),
+            self._wg.add_parameterized_path(lambda x: -spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction) - self.winding_direction*np.array([0, -a + outer_r])[:, None], sample_distance=self.sample_distance, sample_points=self.sample_points,
+                                            path_derivative=lambda x: d_spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction),
                                             path_function_supports_numpy=True)
 
         if self.output_type != "single_inside" and self.output_type != "single_outside":
-            self._wg.add_bend(-np.pi, self.min_bend_radius)
-            self._wg.add_bend(np.pi, self.min_bend_radius)
+            self._wg.add_bend(-self.winding_direction*np.pi, self.min_bend_radius)
+            self._wg.add_bend(self.winding_direction*np.pi, self.min_bend_radius)
 
         if self.output_type != "single_inside":
-            self._wg.add_parameterized_path(lambda x: spiral_out_path(x, a=a, b=b, max_theta=self.out_theta), sample_distance=self.sample_distance, sample_points=self.sample_points,
-                                            path_derivative=lambda x: d_spiral_out_path(x, a=a, b=b, max_theta=self.out_theta),
+            self._wg.add_parameterized_path(lambda x: spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction), sample_distance=self.sample_distance, sample_points=self.sample_points,
+                                            path_derivative=lambda x: d_spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction),
                                             path_function_supports_numpy=True)
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
             self._wg.add_straight_segment((outer_r - self.min_bend_radius))
-            self._wg.add_bend(-0.5*np.pi, self.min_bend_radius)
+            self._wg.add_bend(-0.5*self.winding_direction*np.pi, self.min_bend_radius)
 
     def get_shapely_object(self):
         return self.wg.get_shapely_object()
