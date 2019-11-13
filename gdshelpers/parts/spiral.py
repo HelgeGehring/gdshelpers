@@ -55,7 +55,7 @@ def d_spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction
     return r * np.array([np.cos(theta + theta_offset), direction*np.sin(theta + theta_offset)])
 
 
-class Spiral(object):
+class Spiral:
     """
     An archimedean spiral, where the length can be numerically calculated.
 
