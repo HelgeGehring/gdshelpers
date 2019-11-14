@@ -18,21 +18,21 @@ def _arc_length_indefinite_integral(theta, a, b):
 def _arc_length_integral(theta, a, b):
     return _arc_length_indefinite_integral(theta, a, b) - _arc_length_indefinite_integral(0, a, b)
 
-def spiral_length_angle(theta, a, b, out_angle):
+def _spiral_length_angle(theta, a, b, out_angle):
     return (_arc_length_integral(theta, a, b) + # Inward spiral
         np.pi * a + # Two semi-circles in the center
         _arc_length_integral(theta + out_angle, a, b)) # Outward spiral
 
-def spiral_length_inline(theta, a, b):
-    return (spiral_length_angle(theta, a, b, 0.5*np.pi) +
+def _spiral_length_inline(theta, a, b):
+    return (_spiral_length_angle(theta, a, b, 0.5*np.pi) +
         0.5 * np.pi * (0.5 * a) + # right bend at the end (min_bend_radius = (0.5 * a))
         ((a + b * theta) - (0.5 * a)))  # from endpoint to startpoint height
 
-def spiral_length_inline_rel(theta, a, b):
-    return (spiral_length_inline(theta, a, b) -
+def _spiral_length_inline_rel(theta, a, b):
+    return (_spiral_length_inline(theta, a, b) -
         (a + b * (theta + 0.5 * np.pi) + (0.5 * a))) # subtract the direct path from input to output
 
-def spiral_theta(length, wg_width, gap, min_bend_radius, length_function, *args):
+def _spiral_theta(length, wg_width, gap, min_bend_radius, length_function, *args):
     """
     Numerically calculate the theta that is needed for a given spiral variant (length_function) in order
     to have the desired length.
@@ -44,12 +44,12 @@ def spiral_theta(length, wg_width, gap, min_bend_radius, length_function, *args)
     b = 2*(wg_width + gap) / (2.*np.pi)
     return fsolve(lambda x: length_function(x, a, b, *args) - length, 20*np.pi)
 
-def spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
+def _spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
     theta = min_theta + t * (max_theta - min_theta)
     r = a + b * theta
     return r * np.array([np.sin(theta + theta_offset), -direction*np.cos(theta + theta_offset)]) + np.array([0, direction*a])[:, None]
 
-def d_spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
+def _d_spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
     theta = min_theta + t * (max_theta - min_theta)
     r = a + b * theta
     return r * np.array([np.cos(theta + theta_offset), direction*np.sin(theta + theta_offset)])
@@ -124,17 +124,17 @@ class Spiral:
     @classmethod
     def make_at_port_with_length(cls, port, gap, min_bend_radius, target_length, output_type='opposite', **kwargs):
         if output_type == "inline":
-            length_fn = [spiral_length_inline]
+            length_fn = [_spiral_length_inline]
         elif output_type == "inline_rel":
-            length_fn = [spiral_length_inline_rel]
+            length_fn = [_spiral_length_inline_rel]
         elif output_type == "opposite":
-            length_fn = [spiral_length_angle, 0]
+            length_fn = [_spiral_length_angle, 0]
         elif output_type == "single_inside" or output_type == "single_outside":
             length_fn = [_arc_length_integral]
         else:
-            length_fn = [spiral_length_angle, output_type]
+            length_fn = [_spiral_length_angle, output_type]
 
-        theta = float(spiral_theta(target_length, port.width, gap, min_bend_radius, *length_fn))
+        theta = float(_spiral_theta(target_length, port.width, gap, min_bend_radius, *length_fn))
         return cls.make_at_port(port, gap=gap, min_bend_radius=min_bend_radius, theta=theta, output_type=output_type, **kwargs)
 
     @property
@@ -155,20 +155,6 @@ class Spiral:
     def out_port(self):
         return self.wg.current_port
 
-    """@property
-    def port_offset(self):
-        if not self.wg:
-            self._generate()
-
-        return self._origin_port.origin - self.wg.current_port.origin
-        #return np.sqrt(diff[0]**2 + diff[1]**2)
-
-    @property
-    def relative_length(self):
-        # Return the length of the delay line with the distance between input and output subtracted (hence the real path difference when putting it in an MZI)
-        return self.length - self.port_offset
-    """
-
     def _generate(self):
         self._wg = Waveguide.make_at_port(self._origin_port)
         a = 2*self.min_bend_radius
@@ -176,8 +162,8 @@ class Spiral:
         outer_r = (a + b*self.total_theta)
 
         if self.output_type != "single_outside":
-            self._wg.add_parameterized_path(lambda x: -spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction) - self.winding_direction*np.array([0, -a + outer_r])[:, None], sample_distance=self.sample_distance, sample_points=self.sample_points,
-                                            path_derivative=lambda x: d_spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction),
+            self._wg.add_parameterized_path(lambda x: -_spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction) - self.winding_direction*np.array([0, -a + outer_r])[:, None], sample_distance=self.sample_distance, sample_points=self.sample_points,
+                                            path_derivative=lambda x: _d_spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction),
                                             path_function_supports_numpy=True)
 
         if self.output_type != "single_inside" and self.output_type != "single_outside":
@@ -185,8 +171,8 @@ class Spiral:
             self._wg.add_bend(self.winding_direction*np.pi, self.min_bend_radius)
 
         if self.output_type != "single_inside":
-            self._wg.add_parameterized_path(lambda x: spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction), sample_distance=self.sample_distance, sample_points=self.sample_points,
-                                            path_derivative=lambda x: d_spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction),
+            self._wg.add_parameterized_path(lambda x: _spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction), sample_distance=self.sample_distance, sample_points=self.sample_points,
+                                            path_derivative=lambda x: _d_spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction),
                                             path_function_supports_numpy=True)
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
