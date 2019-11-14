@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Install GEOS library
-          if: matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'
-          run: sudo apt-get install libgeos-dev
+        if: matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install libgeos-dev
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
