@@ -1,6 +1,121 @@
 import numpy as np
+
+from gdshelpers.geometry import geometric_union
 from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.parts.port import Port
+
+
+class Spiral:
+    def __init__(self, origin, angle, width, num, gap, inner_gap):
+        """
+        Creates a Spiral around the given origin
+
+        :param origin: position of the center of the spiral
+        :param angle: angle of the outer two waveguides
+        :param width: width of the waveguide
+        :param num: number of turns
+        :param gap: gap between two waveguides
+        :param inner_gap: inner radius of the spiral
+        """
+        self._origin_port = Port(origin, angle, width)
+        self.gap = gap
+        self.inner_gap = inner_gap
+        self.num = num
+        self.wg_in = None
+        self.wg_out = None
+
+    @classmethod
+    def make_at_port(cls, port, num, gap, inner_gap):
+        """
+        Creates a Spiral around the given port
+
+        :param port: port at which the spiral starts
+        :param num: number of turns
+        :param gap: gap between two waveguides
+        :param inner_gap: inner radius of the spiral
+        """
+        return cls(port.parallel_offset(-num * (port.total_width + gap) - inner_gap).origin,
+                   port.angle, port.width, num, gap, inner_gap)
+
+    ###
+    # Let's allow the user to change the values
+    # hidden in _origin_port. Hence the internal use
+    # of a Port is transparent.
+    @property
+    def origin(self):
+        return self._origin_port.origin
+
+    @origin.setter
+    def origin(self, origin):
+        self._origin_port.origin = origin
+
+    @property
+    def angle(self):
+        return self._origin_port.angle
+
+    @angle.setter
+    def angle(self, angle):
+        self._origin_port.angle = angle
+
+    @property
+    def width(self):
+        return self._origin_port.width
+
+    @width.setter
+    def width(self, width):
+        self._origin_port.width = width
+
+    @property
+    def in_port(self):
+        return self._origin_port.inverted_direction.parallel_offset(
+            -self.num * (self._origin_port.total_width + self.gap) - self.inner_gap)
+
+    @property
+    def out_port(self):
+        return self._origin_port.parallel_offset(
+            -self.num * (self._origin_port.total_width + self.gap) - self.inner_gap)
+
+    @property
+    def length(self):
+        if not self.wg_in or not self.wg_out:
+            self._generate()
+        return self.wg_in.length + self.wg_out.length
+
+    def _generate(self):
+        def path(a):
+            return (self.num * (self._origin_port.total_width + self.gap) * np.abs(1 - a) + self.inner_gap) * np.array(
+                (np.sin(np.pi * a * self.num), np.cos(np.pi * a * self.num)))
+
+        self.wg_in = Waveguide.make_at_port(self._origin_port)
+        self.wg_in.add_parameterized_path(path)
+
+        self.wg_out = Waveguide.make_at_port(self._origin_port.inverted_direction)
+        self.wg_out.add_parameterized_path(path)
+
+        self.wg_in.add_route_single_circle_to_port(self._origin_port.rotated(-np.pi * (self.num % 2)))
+        self.wg_in.add_route_single_circle_to_port(self.wg_out.port)
+
+    def get_shapely_object(self):
+        if not self.wg_in or not self.wg_out:
+            self._generate()
+        return geometric_union([self.wg_in, self.wg_out])
+
+
+def _example_old():
+    from gdshelpers.geometry.chip import Cell
+
+    wg = Waveguide((0, 0), 1, 1)
+    wg.add_straight_segment(30)
+    spiral = Spiral.make_at_port(wg.current_port, 2, 5, 50)
+    print(spiral.out_port.origin)
+    wg2 = Waveguide.make_at_port(spiral.out_port)
+    wg2.add_straight_segment(100)
+
+    print(spiral.length)
+
+    cell = Cell('Spiral')
+    cell.add_to_layer(1, wg, spiral, wg2)
+    cell.show()
 
 
 def _arc_length_indefinite_integral(theta, a, b):
@@ -55,7 +170,7 @@ def _d_spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, directio
     return r * np.array([np.cos(theta + theta_offset), direction*np.sin(theta + theta_offset)])
 
 
-class Spiral:
+class Spiral2:
     """
     An archimedean spiral, where the length can be numerically calculated.
 
@@ -191,7 +306,7 @@ if __name__ == '__main__':
     def demo_spiral(origin, output_type, target_length, gap, port_y_offset=0):
         wg = Waveguide(origin + np.array([0, port_y_offset]), 0, 1)
         wg.add_straight_segment(30)
-        spiral = Spiral.make_at_port_with_length(wg.current_port, gap=gap, min_bend_radius=35., target_length=target_length, output_type=output_type, sample_distance=1)
+        spiral = Spiral2.make_at_port_with_length(wg.current_port, gap=gap, min_bend_radius=35., target_length=target_length, output_type=output_type, sample_distance=1)
         text = Text(np.array([150, -130]) + origin, 20, "output: {}\n\nlength: {} um\nreal_length: {:.4f}um".format(output_type, target_length, spiral.length))
         spiral.wg.add_straight_segment(30)
         cell.add_to_layer(1, wg, spiral)
@@ -206,4 +321,4 @@ if __name__ == '__main__':
     demo_spiral((1*700, 3*250), 'single_outside', 2000, gap=1.5, port_y_offset=-150)
 
     cell.show()
-    #cell.save("spiral_test")
+    cell.save("spiral_test")
