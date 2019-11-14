@@ -156,7 +156,7 @@ def _spiral_theta(length, wg_width, gap, min_bend_radius, length_function, *args
     """
     from scipy.optimize import fsolve
     a = 2*min_bend_radius
-    b = 2*(wg_width + gap) / (2.*np.pi)
+    b = 2*(np.sum(wg_width) + gap) / (2.*np.pi)
     return fsolve(lambda x: length_function(x, a, b, *args) - length, 20*np.pi)
 
 def _spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
@@ -273,7 +273,7 @@ class Spiral2:
     def _generate(self):
         self._wg = Waveguide.make_at_port(self._origin_port)
         a = 2*self.min_bend_radius
-        b = 2*(self.width + self.gap) / (2.*np.pi)
+        b = 2*(np.sum(self.width) + self.gap) / (2.*np.pi)
         outer_r = (a + b*self.total_theta)
 
         if self.output_type != "single_outside":
@@ -303,8 +303,8 @@ if __name__ == '__main__':
     from gdshelpers.parts.text import Text
     cell = Cell('Spiral')
 
-    def demo_spiral(origin, output_type, target_length, gap, port_y_offset=0):
-        wg = Waveguide(origin + np.array([0, port_y_offset]), 0, 1)
+    def demo_spiral(origin, output_type, target_length, gap, port_y_offset=0, width=1):
+        wg = Waveguide(origin + np.array([0, port_y_offset]), 0, width)
         wg.add_straight_segment(30)
         spiral = Spiral2.make_at_port_with_length(wg.current_port, gap=gap, min_bend_radius=35., target_length=target_length, output_type=output_type, sample_distance=1)
         text = Text(np.array([150, -130]) + origin, 20, "output: {}\n\nlength: {} um\nreal_length: {:.4f}um".format(output_type, target_length, spiral.length))
@@ -314,7 +314,7 @@ if __name__ == '__main__':
 
     # Create normal demo spirals
     for i,output_type in enumerate(['opposite', 'inline', 'inline_rel', -0.5*np.pi, 0.25*np.pi, np.pi]):
-        demo_spiral(((i//4)*700, (i%4)*250), output_type, 2000, gap=5.)
+        demo_spiral(((i//4)*700, (i%4)*250), output_type, 2000, gap=6., width=[1, 3, 1, 3, 1])
 
     # Create spirals with single turn
     demo_spiral((1*700, 2*250), 'single_inside', 2000, gap=1.5)
