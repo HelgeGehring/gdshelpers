@@ -131,7 +131,8 @@ class Waveguide(object):
             path_function_supports_numpy=True,
             path_derivative=lambda t: [radius * np.cos(abs(angle) * t) * abs(angle),
                                        np.sign(angle) * radius * (np.sin(angle * t) * angle)],
-            width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
+            width=lambda t: np.outer(1 - t, np.array(self.width)) + np.outer(t, np.array(final_width)),
+            width_function_supports_numpy=True,
             sample_points=sample_points, sample_distance=0)
 
         return self
@@ -180,8 +181,7 @@ class Waveguide(object):
         :param width_function_supports_numpy:
         """
 
-        path_callable = callable(path)
-        if path_callable:
+        if callable(path):
             presample_t = np.linspace(0, 1, sample_points)
 
             if path_function_supports_numpy:
@@ -197,7 +197,7 @@ class Waveguide(object):
                 # else:
                 #     presample_coordinates_d1 = np.diff(presample_coordinates, axis=0)
                 presample_coordinates_d1 = np.diff(presample_coordinates, axis=0)
-                presample_coordinates_d1_norm = np.apply_along_axis(linalg.norm, 1, presample_coordinates_d1)
+                presample_coordinates_d1_norm = np.linalg.norm(presample_coordinates_d1, axis=1)
                 presample_coordinates_d1__cum_norm = np.insert(np.cumsum(presample_coordinates_d1_norm), 0, 0)
 
                 lengths = np.linspace(presample_coordinates_d1__cum_norm[0],
@@ -227,6 +227,10 @@ class Waveguide(object):
             sample_coordinates = np.array(path)
             sample_t = np.linspace(0, 1, sample_coordinates.shape[0])
 
+        rotation_matrix = np.array(((np.cos(self._current_port.angle), -np.sin(self._current_port.angle)),
+                                    (np.sin(self._current_port.angle), np.cos(self._current_port.angle))))
+        sample_coordinates = self._current_port.origin + np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates)
+
         # Calculate the derivative
         if path_derivative:
             assert callable(path_derivative), 'The derivative of the path function must be callable'
@@ -234,10 +238,11 @@ class Waveguide(object):
                 sample_coordinates_d1 = np.array(path_derivative(sample_t)).T
             else:
                 sample_coordinates_d1 = np.array([path_derivative(x) for x in sample_t])
+            sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
         else:
-            sample_coordinates_d1 = np.vstack(([1, 0], np.diff(sample_coordinates, axis=0)))
+            sample_coordinates_d1 = np.vstack((rotation_matrix[:, 0], np.diff(sample_coordinates, axis=0)))
 
-        sample_coordinates_d1_norm = np.apply_along_axis(linalg.norm, 1, sample_coordinates_d1)
+        sample_coordinates_d1_norm = np.linalg.norm(sample_coordinates_d1, axis=1)
         sample_coordinates_d1_normed = sample_coordinates_d1 / sample_coordinates_d1_norm[:, None]
 
         # Find the orthogonal vectors to the derivative
@@ -251,30 +256,30 @@ class Waveguide(object):
             else:
                 sample_width = np.array([width(x) for x in sample_t])
         else:
-            sample_width = np.array([(width if width else self.current_port.width), ])
+            sample_width = np.array([(width if width else self._current_port.width), ])
 
         if sample_width.ndim == 1:
             sample_width = sample_width[..., None]
 
         # Now we have everything to calculate the polygon
         polygons = []
+        half_width = np.sum(sample_width, axis=-1) / 2
         for i in range((sample_width.shape[-1] + 1) // 2):
-            start = np.sum(sample_width[:, :(2 * i)], axis=-1) - np.sum(sample_width, axis=-1) / 2
-            stop = np.sum(sample_width[:, :(2 * i + 1)], axis=-1) - np.sum(sample_width, axis=-1) / 2
+            start = np.sum(sample_width[:, :(2 * i)], axis=-1) - half_width
+            stop = start + sample_width[:, 2 * i]
             poly_path_1 = sample_coordinates + start[..., None] * sample_coordinates_d1_normed_ortho
             poly_path_2 = sample_coordinates + stop[..., None] * sample_coordinates_d1_normed_ortho
+            poly_path = np.concatenate([poly_path_1, poly_path_2[::-1, :]])
 
-            assert shapely.geometry.LineString(np.concatenate([poly_path_1, poly_path_2[::-1, :]])).is_simple, \
+            assert shapely.geometry.LineString(poly_path).is_simple, \
                 'Outer lines of parameterized wg intersect. Try using lower bend radii or smaller a smaller wg'
 
             # Now add the shapely objects and do book keeping
-            polygon = shapely.geometry.Polygon(np.concatenate([poly_path_1, poly_path_2[::-1, :]]))
+            polygon = shapely.geometry.Polygon(poly_path)
             assert polygon.is_valid, 'Generated polygon path is not valid: %s' % \
                                      shapely.validation.explain_validity(polygon)
             polygons.append(polygon)
         polygon = shapely.geometry.MultiPolygon(polygons)
-        polygon = shapely.affinity.rotate(polygon, self.angle, origin=[0, 0], use_radians=True)
-        polygon = shapely.affinity.translate(polygon, self.x, self.y)
 
         outline_poly_path_1 = sample_coordinates - np.sum(sample_width,
                                                           axis=-1)[..., None] / 2 * sample_coordinates_d1_normed_ortho
@@ -282,24 +287,13 @@ class Waveguide(object):
                                                           axis=-1)[..., None] / 2 * sample_coordinates_d1_normed_ortho
         outline = shapely.geometry.Polygon(np.concatenate([outline_poly_path_1, outline_poly_path_2[::-1, :]]))
 
-        outline = shapely.affinity.rotate(outline, self.angle, origin=[0, 0], use_radians=True)
-        outline = shapely.affinity.translate(outline, self.x, self.y)
+        length = np.sum(np.linalg.norm(np.diff(sample_coordinates, axis=0), axis=1))
+        self._segments.append((self._current_port.copy(), polygon, outline, length, sample_coordinates))
 
-        length = np.sum(np.apply_along_axis(linalg.norm, 1, np.diff(sample_coordinates, axis=0)))
-        R = np.array(((np.cos(self.current_port.angle), -np.sin(self.current_port.angle)),
-                      (np.sin(self.current_port.angle), np.cos(self.current_port.angle))))
-        self._segments.append(
-            (self._current_port.copy(), polygon, outline, length,
-             self.current_port.origin + np.einsum('ij,kj->ki', R, sample_coordinates)))
-
-        endpoint = shapely.geometry.Point(sample_coordinates[-1][0], sample_coordinates[-1][1])
-        endpoint = shapely.affinity.rotate(endpoint, self.angle, origin=[0, 0], use_radians=True)
-        endpoint = shapely.affinity.translate(endpoint, self.x, self.y)
-        self._current_port.origin = endpoint.coords[0]
-
+        self._current_port.origin = sample_coordinates[-1]
         # If the width does not need to be a list, convert it back to a scalar
         self._current_port.width = sample_width[-1]
-        self._current_port.angle += np.arctan2(sample_coordinates_d1[-1][1], sample_coordinates_d1[-1][0])
+        self._current_port.angle = np.arctan2(sample_coordinates_d1[-1][1], sample_coordinates_d1[-1][0])
         return self
 
     def add_cubic_bezier_path(self, p0, p1, p2, p3, width=None, **kwargs):
@@ -335,11 +329,11 @@ class Waveguide(object):
 
         final_port = Port(final_coordinates, final_angle, self.width)
         p0 = (0, 0)
-        p1 = self.current_port.longitudinal_offset(bs1).origin - self.current_port.origin
-        p2 = final_port.longitudinal_offset(-bs2).origin - self.current_port.origin
-        p3 = final_coordinates - self.current_port.origin
+        p1 = self._current_port.longitudinal_offset(bs1).origin - self._current_port.origin
+        p2 = final_port.longitudinal_offset(-bs2).origin - self._current_port.origin
+        p3 = final_coordinates - self._current_port.origin
 
-        tmp_wg = Waveguide.make_at_port(self.current_port.copy().set_port_properties(angle=0))
+        tmp_wg = Waveguide.make_at_port(self._current_port.copy().set_port_properties(angle=0))
         tmp_wg.add_cubic_bezier_path(p0, p1, p2, p3, width=width, **kwargs)
 
         self._segments.append(
@@ -389,7 +383,7 @@ class Waveguide(object):
         final_angle = normalize_phase(final_angle) + np.pi
 
         # We need to to some linear algebra. We first find the intersection of the two waveguides
-        r1 = self.current_port.origin
+        r1 = self._current_port.origin
         r2 = np.array(final_coordinates)
         intersection_point, distance = find_line_intersection(r1, self.angle, r2, final_angle)
 
@@ -414,7 +408,7 @@ class Waveguide(object):
         radius = min([max_bend_strength, max_poss_radius]) if max_bend_strength is not None else max_poss_radius
         d = abs(radius * np.tan(diff_angle / 2))
 
-        tmp_wg = Waveguide.make_at_port(self.current_port)
+        tmp_wg = Waveguide.make_at_port(self._current_port)
         tmp_wg.add_straight_segment(distance[0] - d)
         tmp_wg.add_bend(-diff_angle, radius)
 
@@ -452,7 +446,7 @@ class Waveguide(object):
         :raise ArithmeticError: When there is no intersection due to being parallel or if
                                 the intersection is behind the waveguide.
         """
-        r1 = self.current_port.origin
+        r1 = self._current_port.origin
         r2 = np.array(line_origin)
 
         try:

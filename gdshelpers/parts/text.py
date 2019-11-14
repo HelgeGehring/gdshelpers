@@ -20,9 +20,11 @@ class Text(object):
         self.line_spacing = height * line_spacing
         self.true_bbox_alignment = true_bbox_alignment
         self._bbox = None
+        self._shapely_object = None
 
     def _invalidate(self):
         self._bbox = None
+        self._shapely_object = None
 
     @property
     def origin(self):
@@ -78,6 +80,9 @@ class Text(object):
             self._bbox = None
             return shapely.geometry.Polygon()
 
+        if self._shapely_object:
+            return self._shapely_object
+
         # Let's do the actual rendering
 
         polygons = list()
@@ -131,6 +136,7 @@ class Text(object):
             final_text = shapely.affinity.translate(merged_polygon, *(offset + self.origin))
 
         self._bbox = np.array(final_text.bounds).reshape(2, 2)
+        self._shapely_object = final_text
         return final_text
 
 

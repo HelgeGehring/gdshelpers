@@ -5,7 +5,11 @@ Unreleased
 ----------
 * Added support for slot waveguides and coplanar waveguides
 * Direct GDSII-export is now the standard GDSII-writer
+* Added function for generating vortex traps
+* Improved shape generation performance of waveguide
+* Strip to slot mode converter added
 * Added meep integration
+* Bugfixes
 
 1.0.4
 -----
