@@ -139,9 +139,10 @@ def _spiral_length_angle(theta, a, b, out_angle):
         _arc_length_integral(theta + out_angle, a, b)) # Outward spiral
 
 def _spiral_length_inline(theta, a, b):
-    return (_spiral_length_angle(theta, a, b, 0.5*np.pi) +
-        0.5 * np.pi * (0.5 * a) + # right bend at the end (min_bend_radius = (0.5 * a))
-        ((a + b * theta) - (0.5 * a)))  # from endpoint to startpoint height
+    return (_spiral_length_angle(theta, a, b, 0) +
+        (a + b*(theta+0.5*np.pi)) - (0.5 * a) +
+        np.pi * (0.5 * a) + # two bends
+        (2*(a + b * theta) - 2*(0.5 * a)))  # from endpoint to startpoint height
 
 def _spiral_length_inline_rel(theta, a, b):
     return (_spiral_length_inline(theta, a, b) -
@@ -218,7 +219,7 @@ class Spiral2:
         self.winding_direction = -1 if winding_direction == "left" else 1
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
-            self.out_theta = self.total_theta + 0.5*np.pi
+            self.out_theta = self.total_theta
         elif self.output_type == "opposite":
             self.out_theta = self.total_theta
         elif self.output_type == "single_inside" or self.output_type == "single_outside":
@@ -291,7 +292,9 @@ class Spiral2:
                                             path_function_supports_numpy=True)
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
-            self._wg.add_straight_segment((outer_r - self.min_bend_radius))
+            self._wg.add_straight_segment(a + b*(self.out_theta+0.5*np.pi) - self.min_bend_radius)
+            self._wg.add_bend(0.5*self.winding_direction*np.pi, self.min_bend_radius)
+            self._wg.add_straight_segment((2*outer_r - 2 * self.min_bend_radius))
             self._wg.add_bend(-0.5*self.winding_direction*np.pi, self.min_bend_radius)
 
     def get_shapely_object(self):
