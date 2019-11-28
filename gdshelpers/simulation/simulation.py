@@ -28,7 +28,29 @@ class Simulation:
         self.center = None
         self.size = None
 
-    def add_structure(self, structure, extra_structures, material=None, refractive_index=None, z_min=None, z_max=None):
+    def add_structure(self, structure=(), extra_structures=(), material=None, refractive_index=None, z_min=None,
+                      z_max=None):
+        """
+        Adds structures to the simulation. The refractive index of the structure with is added first for a certain
+        location will be used for the simulation.
+
+        Adding a substrate/cladding is also possible by leaving structure and extra_structure empty.
+        In this case the whole area will be filled with the given refractive index/material.
+
+        :param structure: The structure which is added to the simulation. The extends of the simulation are calculated
+            by the size of these structures.
+        :param extra_structures: Additional structures which are added to the simulation. These will not be taken into
+            account for calculating the extends of the simulation. This is e.g. useful for waveguides which should go
+            into the PML
+        :param material:
+            Meep-material for the structures
+        :param refractive_index:
+            Refractive index of the structures
+        :param z_min:
+            Starting z-position for the layer-structure
+        :param z_max:
+            Ending z-position for the layer-structure
+        """
         if material is None and refractive_index is None:
             raise ValueError('Either a material or a refractive index must be provided')
         self.structures.append(
@@ -39,7 +61,7 @@ class Simulation:
     def init_sim(self, use_material=False, oversample_factor=1, **kwargs):
         z_min, z_max = [np.min([structure[z_] for structure in self.structures]) for z_ in ['z_min', 'z_max']]
 
-        bounds = geometric_union(map(lambda x: geometric_union(x['structure']), self.structures)).bounds
+        bounds = geometric_union((geometric_union(x['structure']) for x in self.structures)).bounds
         size = np.array((bounds[2] - bounds[0], bounds[3] - bounds[1], (z_max - z_min)))
         self.center = [(bounds[2] + bounds[0]) / 2, (bounds[3] + bounds[1]) / 2, (z_max + z_min) / 2]
         self.size = size + self.padding + self.pml_thickness * 2
@@ -57,8 +79,9 @@ class Simulation:
             for structure in reversed(self.structures):
                 if structure['refractive_index'] is None:
                     raise RuntimeError('Either supply an refractive index for each structure or use materials')
-                inside = contains(geometric_union(structure['structure'] + structure['extra_structures']), xyz[0],
-                                  xyz[1])
+
+                structures = structure['structure'] + structure['extra_structures']
+                inside = contains(geometric_union(structures), xyz[0], xyz[1]) if structures else True
                 if not self.reduce_to_2d:
                     inside *= (xyz[2] >= structure['z_min']) * (xyz[2] <= structure['z_max'])
                 eps = np.where(inside, structure['refractive_index'] ** 2, eps)
@@ -234,4 +257,4 @@ def example_cavity_harminv():
 
 
 if __name__ == '__main__':
-    example_cavity_harminv()
+    example_mmi()
