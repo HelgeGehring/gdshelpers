@@ -17,6 +17,16 @@ warnings.warn('\n'
 
 class Simulation:
     def __init__(self, resolution, padding=(4, 4, 1), pml_thickness=None, reduce_to_2d=False):
+        """
+        Class for simulating planar circuitry. starting with an empty simulation, the user adds structures and
+        sources/monitors, initializes the simulation itself afterwards and finally runs it.
+
+        :param resolution: Resolution used for the simulations. Defined as cells per unit.
+        :param padding: Distance between the structure and the PML
+        :param pml_thickness: Thickness of the PML, can be None for no PML, a number for the same thickness in all
+            directions or an array with three elements with the thicknesses in x-/y- and z-direction.
+        :param reduce_to_2d: Defines if the final simulation should be reduced to a 2D-simulation.
+        """
         self.structures = []
         self.resolution = resolution
         self.padding = np.array(padding)
@@ -59,6 +69,17 @@ class Simulation:
                  refractive_index=refractive_index, z_min=z_min, z_max=z_max))
 
     def init_sim(self, use_material=False, oversample_factor=1, **kwargs):
+        """
+        Initializes the simulation. This has to be done after adding all structures in order to correctly determine the
+        size of the simulation.
+
+        :param use_material: Defines if the simulation should be initialized by using the Meep-material instead of the
+            refractive indices. Way slower, but allows the usage of wavelength dependent refractive indices.
+        :param oversample_factor: Only used if use_material is false. By using this parameter, the refractive index will
+            be sampled with more points than the final simulation, which allows a slightly more accurate representation
+            of the structure
+        :param kwargs: Parameters which are directly passed to Meep
+        """
         z_min, z_max = [np.min([structure[z_] for structure in self.structures]) for z_ in ['z_min', 'z_max']]
 
         bounds = geometric_union((geometric_union(x['structure']) for x in self.structures)).bounds
@@ -114,20 +135,59 @@ class Simulation:
         plt.show()
 
     def run(self, *args, **kwargs):
+        """
+        Just forwards the parameters to Meep's run-function
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
         self.sim.run(*args, **kwargs)
 
     def add_source(self, src, component, port, z=None):
+        """
+        Adds a point source at a given port.
+
+        :param src: Meep-Source (e.g. GaussianSource or ContinuousSource)
+        :param component: The component which should be excited
+        :param port: Port at which the point source is added
+        :param z: Z-position of the source
+        :return: Added Meep-Source
+        """
         source = mp.Source(src, component, mp.Vector3(*port.origin, z))
         self.sources.append(source)
         return source
 
     def add_eigenmode_source(self, src, port, eig_band=1, z=None, height=None):
+        """
+        Adds an eigenmode source at the given port.
+
+        :param src: Meep-Source (e.g. GaussianSource or ContinuousSource)
+        :param port: Port at which the source is added
+        :param eig_band: Number of the excited mode. The mode with the highest eigenvalue has the number 1
+        :param z: Z-position of the source
+        :param height: Height of the area for calculating the eigenmode
+        :return: Added Meep-Source
+        """
+
         size = [0, port.total_width * 2] if port.angle % np.pi < np.pi / 4 else [port.total_width * 2, 0]
         source = mp.EigenModeSource(src, mp.Vector3(*port.origin, z), size=mp.Vector3(*size, height), eig_band=eig_band)
         self.sources.append(source)
         return source
 
     def add_eigenmode_monitor(self, port, wavelength, fwidth, nfreq, z=None, height=None):
+        """
+        Adds an eigenmode monitor at the given port.
+
+        :param port: Port at which the monitor is added
+        :param wavelength: Center wavelength of the monitored spectrum
+        :param fwidth: Width of the monitored spectrum
+        :param nfreq: Number of monitored wavelengths
+        :param z: Z-position of the monitor
+        :param height: Height of the area for calculating the eigenmode
+        :return: Added Meep-Monitor
+        """
+
         size = [0, port.total_width * 2] if port.angle % np.pi < np.pi / 4 else [port.total_width * 2, 0]
         monitor = self.sim.add_mode_monitor(1 / wavelength, fwidth, nfreq,
                                             mp.FluxRegion(mp.Vector3(*port.origin, z), size=mp.Vector3(*size, height)))
