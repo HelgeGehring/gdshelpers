@@ -31,6 +31,19 @@ class Port(object):
         """
         return Port(self.origin, self.angle, self.width)
 
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            start = item.start if item.start >= 0 else len(self.width[::2]) + item.start + 1
+            stop = item.stop if item.stop >= 0 else len(self.width[::2]) + item.stop + 1
+            start, stop = 2 * start, 2 * stop
+        else:
+            item = item if item >= 0 else len(self.width[::2]) + item
+            start, stop = 2 * item, 2 * item + 1
+
+        port = self.parallel_offset((np.sum(self.width[:stop]) + np.sum(self.width[:start])) / 2 - self.total_width / 2)
+        port.width = self.width[start:stop]
+        return port
+
     def get_parameters(self):
         """
         Get a dictionary representation of the port properties.
