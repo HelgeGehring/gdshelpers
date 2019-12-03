@@ -1,236 +1,119 @@
 import numpy as np
-import shapely.geometry
-import shapely.affinity
-from shapely.geometry import Polygon, Point
 
 from gdshelpers.geometry import geometric_union
 from gdshelpers.parts import Port
 from gdshelpers.parts.waveguide import Waveguide
-from gdshelpers.geometry.chip import Cell
 
 
-class SNSPD(object):
-    def __init__(self, origin, angle, width, nw_width, nw_gap, nw_length, wing_span, wing_height, electrodes_pitch,
-                 electrodes_gap, electrodes_height, waveguide_tapering, n_points=128):
-        assert nw_gap > 0., 'Nanowire gap must be a positive value'
-        assert nw_length > 0., 'Nanowire length must be a positive value'
-        assert nw_width > 0., 'Nanowire width must be a positive value'
+class SNSPD:
+    def __init__(self, origin, angle, width, nano_wire_width, nano_wire_gap, nano_wire_length, waveguide_tapering,
+                 passivation_buffer):
+        if nano_wire_width <= 0:
+            raise ValueError("The nano-wire width must be greater than 0")
+        if nano_wire_length < 0:
+            raise ValueError("The nano-wire length must be positive")
+        if nano_wire_gap <= 0:
+            raise ValueError("The nano-wire gap must be greater than 0")
+        if nano_wire_length < 0:
+            raise ValueError("The distance for the passivation layer must be positive")
 
-        # Let's directly create a port object. This simplifies later creation of the geometry
-        # as well as checking the user parameters while creating the port.
         self._origin_port = Port(origin, angle, width)
-
-        # Remember all the other stuff we got
-        self.nw_gap = nw_gap
-        self.nw_width = nw_width
-        self.points = n_points
-        self.nw_length = nw_length
-        self.wing_span = wing_span
-        self.wing_height = wing_height
-        self.electrodes_pitch = electrodes_pitch
-        self.electrodes_gap = electrodes_gap
-        self.electrodes_height = electrodes_height
+        self.nano_wire_gap = nano_wire_gap
+        self.nano_wire_width = nano_wire_width
+        self.nano_wire_length = nano_wire_length
         self.waveguide_tapering = waveguide_tapering
-        self.make_nanowire()
-        self.make_waveguide()
-        self.make_electrodes()
+        self.passivation_buffer = passivation_buffer
+
+        self._waveguide = None
+        self._nano_wire = None
+        self._wings = None
 
     @classmethod
-    def make_at_port(cls, port, nw_width, nw_gap, nw_length, wing_span, wing_height, electrodes_pitch, electrodes_gap,
-                     electrodes_height, waveguide_tapering, *kwargs):
-        default_port_param = dict(port.get_parameters())
-        default_port_param.update(kwargs)
-        del default_port_param['origin']
-        del default_port_param['angle']
-        del default_port_param['width']
-        return cls(port.origin, port.angle, port.width, nw_width, nw_gap, nw_length, wing_span, wing_height,
-                   electrodes_pitch, electrodes_gap, electrodes_height, waveguide_tapering, **default_port_param)
+    def make_at_port(cls, port, nw_width, nw_gap, nw_length, waveguide_tapering, passivation_buffer):
+        return cls(port.origin, port.angle, port.width, nw_width, nw_gap, nw_length, waveguide_tapering,
+                   passivation_buffer)
 
-    @staticmethod
-    def _cub_bezier(origin, destination, aux_orig, aux_dest, n_points=200):
-        x0, y0 = origin[0], origin[1]
-        x1, y1 = aux_orig[0], aux_orig[1]
-        x2, y2 = aux_dest[0], aux_dest[1]
-        x3, y3 = destination[0], destination[1]
+    def _generate(self):
+        tip_radius = 0.5 * (self.nano_wire_gap + self.nano_wire_width)
+        nano_wire_port = self._origin_port \
+            .longitudinal_offset(self.nano_wire_length + tip_radius + self.passivation_buffer) \
+            .parallel_offset(tip_radius)
 
-        a = x3 - 3 * x2 + 3 * x1 - x0
-        b = 3 * x2 - 6 * x1 + 3 * x0
-        c = 3 * x1 - 3 * x0
-        d = x0
+        self._nano_wire = Waveguide.make_at_port(nano_wire_port.inverted_direction, width=self.nano_wire_width)
+        self._nano_wire.add_straight_segment(self.nano_wire_length - tip_radius)
+        self._nano_wire.add_bend(np.pi, tip_radius)
+        self._nano_wire.add_straight_segment(self.nano_wire_length - tip_radius)
 
-        e = y3 - 3 * y2 + 3 * y1 - y0
-        f = 3 * y2 - 6 * y1 + 3 * y0
-        g = 3 * y1 - 3 * y0
-        h = y0
+        self._wings = []
+        for sign, port in [(1, self._nano_wire.current_port), (-1, self._nano_wire.in_port)]:
+            wing_outer_port = port.longitudinal_offset(14).parallel_offset(-sign * 10).rotated(sign * 0.75 * np.pi)
+            wing_outer_port.width = 5
+            wing_inner_port = wing_outer_port.longitudinal_offset(10)
+            wing_inner_port.width = 0.5
 
-        points = []
-        for t in range(n_points):
-            t = t / float(n_points - 1)
-            x = a * (t ** 3) + b * (t ** 2) + c * t + d
-            y = e * (t ** 3) + f * (t ** 2) + g * t + h
-            points.append([x, y])
-        return points
+            self._wings.append(Waveguide.make_at_port(port)
+                               .add_bezier_to_port(port=wing_inner_port, bend_strength=2.5)
+                               .add_bezier_to_port(port=wing_outer_port, bend_strength=6)
+                               .add_straight_segment(1))
+
+        self._waveguide = Waveguide.make_at_port(self._origin_port)
+        self._waveguide.add_straight_segment_until_level_of_port(self._wings[0].current_port.rotated(-0.75 * np.pi))
+        if self.waveguide_tapering:
+            self._waveguide.add_straight_segment(5. * self._origin_port.width, final_width=0.01)
 
     def get_shapely_object(self):
-        return self.nw
-
-    def make_nanowire(self):
-        # U-shaped nanowire
-        self.nanowire_port = Port(origin=(0, 0), angle=0, width=self.nw_width)
-        nw = Waveguide.make_at_port(self.nanowire_port, width=self.nw_width)
-        tip_radius = 0.5 * self.nw_gap + 0.5 * self.nw_width
-        nw.add_bend(0.5 * np.pi, tip_radius)
-        nw.add_straight_segment(self.nw_length - tip_radius)
-
-        # Wing Square Pads which will overlap with the contact pads
-        wing_tapering_origin = np.array(nw.current_port.origin)
-        self.wing_pad_bottom_left = wing_tapering_origin + (
-            (0.5 * self.wing_span - (self.nw_width + 0.5 * self.nw_gap)), 0.5 * self._origin_port.width)
-        self.wing_pad_bottom_right = self.wing_pad_bottom_left + (0.5 * self.wing_span, 0)
-        self.wing_pad_top_right = self.wing_pad_bottom_right + (0, self.wing_height)
-        self.wing_pad_top_left = self.wing_pad_bottom_left + (0, self.wing_height)
-        wing_pad = Polygon(
-            [self.wing_pad_bottom_left, self.wing_pad_bottom_right, self.wing_pad_top_right, self.wing_pad_top_left])
-
-        # Bezier tapering from nanowire to wing pads
-        nw_left_side_coord = wing_tapering_origin - (0.5 * self.nw_width, 0)
-        nw_right_side_coord = wing_tapering_origin + (0.5 * self.nw_width, 0)
-
-        self.aux_origin_top_line = nw_left_side_coord + np.array(
-            [0, 0.2 * (self.wing_pad_top_left[1] - nw_left_side_coord[1])])
-        self.aux_dest_top_line = nw_left_side_coord + np.array(
-            [0.8 * (self.wing_pad_top_left[0] - nw_left_side_coord[0]),
-             0.4 * (self.wing_pad_top_left[1] - nw_left_side_coord[1])])
-
-        wing_tapering_top_line = self._cub_bezier(nw_left_side_coord, self.wing_pad_top_left, self.aux_origin_top_line,
-                                                  self.aux_dest_top_line)
-
-        self.aux_origin_bottom_line = nw_right_side_coord + np.array(
-            [0.1 * (self.wing_pad_bottom_left[0] - nw_right_side_coord[0]),
-             self.wing_pad_bottom_left[1] - nw_right_side_coord[1]])
-        self.aux_dest_bottom_line = nw_right_side_coord + np.array(
-            [0, 0.5 * (self.wing_pad_bottom_left[1] - nw_right_side_coord[1])])
-        wing_tapering_bottom_line = self._cub_bezier(self.wing_pad_bottom_left, nw_right_side_coord,
-                                                     self.aux_origin_bottom_line, self.aux_dest_bottom_line)
-
-        wing_tapering = Polygon(wing_tapering_top_line + wing_tapering_bottom_line)
-
-        wing = geometric_union([wing_pad, wing_tapering])
-
-        nw = geometric_union([nw, wing])
-        nw_l = shapely.affinity.scale(nw, xfact=-1.0, yfact=1.0, zfact=1.0,
-                                      origin=[self.nanowire_port.origin[0], self.nanowire_port.origin[1], 0])
-        nw = geometric_union([nw, nw_l])
-        nw = shapely.affinity.translate(nw, yoff=0.5 * self.nw_width)
-        nw = shapely.affinity.rotate(nw, self._origin_port.angle - 0.5 * np.pi, origin=[0, 0], use_radians=True)
-        self.nw = shapely.affinity.translate(nw, xoff=self._origin_port.origin[0], yoff=self._origin_port.origin[1])
-
-        re_origin = self._origin_port.origin
-        re_angle = self._origin_port.angle - 0.5 * np.pi
-        rep = Port(origin=re_origin, angle=re_angle, width=self.wing_height)
-        self.rep = rep.longitudinal_offset(self.wing_pad_bottom_left[0] + 0.25 * self.wing_span).parallel_offset(
-            self.wing_pad_bottom_left[1] + 0.5 * self.wing_height)
-        self.lep = self.rep.longitudinal_offset(-1.5 * self.wing_span).rotated(np.pi)
-
-    def make_waveguide(self):
-        wg = Waveguide.make_at_port(self._origin_port)
-        wg.add_straight_segment(self.nw_length + 0.5 * self.nw_width + self.wing_height)
-        if self.waveguide_tapering:
-            wg.add_straight_segment(2. * self._origin_port.width, final_width=0.01)
-        self.waveguide_port = wg.current_port
-        wg = geometric_union([wg])
-        nw = self.nw.difference(wg)
-        buffer = nw.buffer(.2)
-        self.wg = geometric_union([wg, buffer])
-
-    def make_electrodes(self):
-        bottom_left = self.nanowire_port.origin + np.array([0.5 * self.electrodes_gap, self.nw_length + 25.])
-        top_left = bottom_left + (0, self.electrodes_height)
-        electrode_width = self.electrodes_pitch - self.electrodes_gap
-        top_right = top_left + (electrode_width, 0)
-        bottom_right = (top_right[0], bottom_left[1])
-        bottom_middle = np.array((bottom_right[0] - 0.5 * electrode_width, self.wing_pad_bottom_left[1]))
-        pad = Polygon(
-            [self.wing_pad_bottom_left, self.wing_pad_top_left, self.wing_pad_top_right, bottom_left, top_left,
-             top_right, bottom_right, bottom_middle])
-        pad = geometric_union([pad])
-        pad = shapely.affinity.translate(pad, yoff=0.5 * self.nw_width)
-        pad_l = shapely.affinity.scale(pad, xfact=-1.0, yfact=1.0, zfact=1.0, origin=[0, 0, 0])
-        pad = geometric_union([pad, pad_l])
-
-        pad = shapely.affinity.rotate(pad, self._origin_port.angle - 0.5 * np.pi,
-                                      origin=[0, 0],
-                                      use_radians=True)
-        self.pad = shapely.affinity.translate(pad, xoff=self._origin_port.origin[0], yoff=self._origin_port.origin[1])
+        if not self._nano_wire or not self._wings:
+            self._generate()
+        return geometric_union([self._nano_wire] + self._wings)
 
     def get_waveguide(self):
-        return self.wg
+        if not self._waveguide or not self._wings:
+            self._generate()
+        return geometric_union([self._waveguide] + [wing.get_shapely_object().buffer(.2) for wing in self._wings])
 
-    def get_electrodes(self):
-        return self.pad
-
-    def get_passivation_layer(self, passivation_buffer=0.1):
-        buffer = self.nw.buffer(passivation_buffer)
-        passivation_layer = geometric_union([buffer])
-        return passivation_layer
-
-    def get_aux_top(self):
-        return self.aux_origin_top_line, self.aux_dest_top_line
-
-    def get_aux_bottom(self):
-        return self.aux_origin_bottom_line, self.aux_dest_bottom_line
+    def get_passivation_layer(self):
+        if not self._nano_wire or not self._wings:
+            self._generate()
+        return geometric_union([self._nano_wire] + self._wings).buffer(self.passivation_buffer)
 
     @property
     def right_electrode_port(self):
-        return self.rep
+        if not self._wings:
+            self._generate()
+        return self._wings[0].current_port.longitudinal_offset(-1)
 
     @property
     def left_electrode_port(self):
-        return self.lep
+        if not self._wings:
+            self._generate()
+        return self._wings[1].current_port.longitudinal_offset(-1)
 
     @property
     def current_port(self):
-        return self.waveguide_port
-
-
-snspd_parameters = {
-    'nw_width': 0.1,
-    'nw_gap': 0.1,
-    'nw_length': 70.,
-    'wing_span': 10.,
-    'wing_height': 5.,
-    'electrodes_pitch': 125.,
-    'electrodes_gap': 45.,
-    'electrodes_height': 600.,
-    'waveguide_tapering': False,
-}
+        if not self._waveguide:
+            self._generate()
+        return self._waveguide.current_port
 
 
 def _example():
-    start_port = Port((0, 0), 0.5 * np.pi, 1.)
-    wg1 = Waveguide.make_at_port(start_port)
-    wg1.add_straight_segment(100.)
-    # wg1.add_bend(0, 60.)
-    detector = SNSPD.make_at_port(wg1.current_port, **snspd_parameters)
-    pl = detector.get_passivation_layer(passivation_buffer=0.2)
-
-    wg2 = Waveguide.make_at_port(detector.current_port)
-    wg2.add_straight_segment(50.)
+    from gdshelpers.geometry.chip import Cell
 
     cell = Cell('test')
-    cell.add_to_layer(3, Point(detector.get_aux_top()[0]).buffer(0.05))
-    cell.add_to_layer(4, Point(detector.get_aux_top()[1]).buffer(0.05))
-    cell.add_to_layer(3, Point(detector.get_aux_bottom()[0]).buffer(0.05))
-    cell.add_to_layer(4, Point(detector.get_aux_bottom()[1]).buffer(0.05))
+
+    wg1 = Waveguide((0, 0), 0.5 * np.pi, 1.)
+    wg1.add_straight_segment(10.)
     cell.add_to_layer(3, wg1)
 
+    detector = SNSPD.make_at_port(wg1.current_port, nw_width=0.1, nw_gap=0.1, nw_length=70, passivation_buffer=0.2,
+                                  waveguide_tapering=True)
     cell.add_to_layer(1, detector)
     cell.add_to_layer(2, detector.get_waveguide())
-    cell.add_to_layer(6, detector.get_electrodes())
-    cell.add_to_layer(5, pl)
+    cell.add_to_layer(5, detector.get_passivation_layer())
 
     # cell.add_to_layer(6, detector.right_electrode_port.debug_shape)
     # cell.add_to_layer(6, detector.left_electrode_port.debug_shape)
+    wg2 = Waveguide.make_at_port(detector.current_port)
+    wg2.add_straight_segment(20.)
     cell.add_to_layer(3, wg2)
     cell.save('SNSPD_test.gds')
     cell.show()
