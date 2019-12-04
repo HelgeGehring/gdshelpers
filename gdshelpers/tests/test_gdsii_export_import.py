@@ -27,7 +27,7 @@ class GdsTestCase(unittest.TestCase):
         sub_cell2.add_to_layer(3, waveguide)
         cell.add_cell(sub_cell2, origin=offset, angle=angle)
 
-        cell.save(library='gdshelpers', grid_steps_per_micron=10000)
+        cell.save(grid_steps_per_micron=10000)
 
         def assert_almost_equal_shapely(a, b, tolerance=2e-4):
             self.assertTrue(a.buffer(tolerance).contains(b))
@@ -56,7 +56,7 @@ class GdsTestCase(unittest.TestCase):
             cell.add_to_layer(waveguide)
             cells[-1].add_cell(cell, (10, 10))
 
-        cells[0].save('serial.gds', library='gdshelpers', parallel=False)
-        cells[0].save('parallel.gds', library='gdshelpers', parallel=True)
+        cells[0].save('serial.gds', parallel=False)
+        cells[0].save('parallel.gds', parallel=True)
 
         self.assertTrue(filecmp.cmp('serial.gds', 'parallel.gds'))
