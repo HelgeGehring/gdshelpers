@@ -51,7 +51,7 @@ class Cell:
             for layer in layers or self.layer_dict.keys():
                 for geo in self.layer_dict.get(layer, []):
                     geo_bounds = geo.get_shapely_object().bounds if hasattr(geo, 'get_shapely_object') else geo.bounds
-                    if geo_bounds is not ():  # Some shapely geometries (collections) can return empty bounds
+                    if geo_bounds != ():  # Some shapely geometries (collections) can return empty bounds
                         bounds.append(geo_bounds)
 
             # Cache envelope if we have the global envelope
