@@ -34,15 +34,16 @@ def create_holes_for_under_etching(underetch_parts, complete_structure, hole_rad
             while dist < interior.length:
                 if hole_length == 0:
                     hole = interior.interpolate(distance=dist)
+                    dist += hole_spacing + hole_length + 2 * hole_radius
                 else:
                     positions = [interior.interpolate(distance=d) for d in
-                                 np.arange(dist - hole_length / 2 + hole_radius, dist + hole_length / 2 - hole_radius,
-                                           0.1)]
+                                 np.linspace(dist - hole_length / 2 + hole_radius, dist + hole_length / 2 - hole_radius,
+                                             10)]
+                    dist += hole_spacing + hole_length
 
                     hole = LineString(positions)
                 if not no_hole_zone.contains(hole):
                     holes.append(hole.buffer(hole_radius, cap_style=cap_style))
-                dist += hole_spacing + hole_length + 2 * hole_radius
 
     return geometric_union(holes)
 
