@@ -17,10 +17,10 @@ def create_holes_for_under_etching(underetch_parts, complete_structure, hole_rad
     :param hole_distance: Distance between the holes edges from the the structures in microns
     :param hole_spacing: Distance between the holes in microns
     :param hole_length: Length of the holes (if 0 creates circles, else rectangle like)
-    :param cap_style: CAP_STYLE of the holes (i.e. 'round', 'flat' or 'square', see Shapely Docs)
+    :param cap_style: CAP_STYLE of the holes (i.e. 'round' or 'square', see Shapely Docs)
     :return: Geometric union of the created holes
     """
-    cap_style = {'round': CAP_STYLE.round, 'flat': CAP_STYLE.flat, 'square': CAP_STYLE.square}[cap_style]
+    cap_style = {'round': CAP_STYLE.round, 'square': CAP_STYLE.square}[cap_style]
     union = geometric_union(underetch_parts)
     no_hole_zone = complete_structure.buffer(0.9 * (hole_distance + hole_radius), resolution=32, cap_style=3)
     poly = union.buffer(hole_distance + hole_radius, resolution=32, cap_style=CAP_STYLE.square)
