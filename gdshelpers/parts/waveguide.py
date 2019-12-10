@@ -376,6 +376,7 @@ class Waveguide(object):
 
         :param final_coordinates: Final destination point.
         :param final_angle: Final angle of the waveguide.
+        :param final_width: Final width of the waveguide.
         :param max_bend_strength: The maximum allowed bending radius.
         :param on_line_only: Omit the last straight line and only route to described line.
         """
@@ -407,24 +408,25 @@ class Waveguide(object):
 
         radius = min([max_bend_strength, max_poss_radius]) if max_bend_strength is not None else max_poss_radius
         d = abs(radius * np.tan(diff_angle / 2))
-
-        tmp_wg = Waveguide.make_at_port(self._current_port)
-        tmp_wg.add_straight_segment(length=distance[0] - d)
-        tmp_wg.add_bend(-diff_angle, radius)
-        if not on_line_only:
-            tmp_wg.add_straight_segment(distance[1] - d)
         if final_width is not None:
-            tmp_segment_lengths = [segment[2] for segment in tmp_wg.get_segments()]
-            total_length = tmp_wg.length
-            tmp_segment_ratio = np.cumsum(tmp_segment_lengths / total_length)
+            if on_line_only:
+                segments = [distance[0] - d, radius * diff_angle]
+            else:
+                segments = [distance[0] - d, radius * diff_angle, distance[1] - d]
+            segment_ratio = np.cumsum(segments / sum(segments))
             segment_widths = [list((final_width - self.current_port.width) * ratio + self.current_port.width) for ratio
-                              in tmp_segment_ratio]
-            print(segment_widths[1])
+                              in segment_ratio]
             tmp_wg = Waveguide.make_at_port(self._current_port)
             tmp_wg.add_straight_segment(length=distance[0] - d, final_width=segment_widths[0])
             tmp_wg.add_bend(-diff_angle, radius, final_width=segment_widths[1])
             if not on_line_only:
                 tmp_wg.add_straight_segment(distance[1] - d, final_width=segment_widths[2])
+        else:
+            tmp_wg = Waveguide.make_at_port(self._current_port)
+            tmp_wg.add_straight_segment(length=distance[0] - d)
+            tmp_wg.add_bend(-diff_angle, radius)
+            if not on_line_only:
+                tmp_wg.add_straight_segment(distance[1] - d)
 
         self._segments.append(
             (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.get_shapely_outline(), tmp_wg.length,
