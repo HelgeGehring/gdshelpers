@@ -357,7 +357,7 @@ class Waveguide(object):
         self.add_bezier_to(port.origin, port.inverted_direction.angle, bend_strength, width, **kwargs)
         return self
 
-    def add_route_single_circle_to(self, final_coordinates, final_angle, max_bend_strength=None,
+    def add_route_single_circle_to(self, final_coordinates, final_angle, final_width=None, max_bend_strength=None,
                                    on_line_only=False):
 
         """
@@ -409,7 +409,7 @@ class Waveguide(object):
         d = abs(radius * np.tan(diff_angle / 2))
 
         tmp_wg = Waveguide.make_at_port(self._current_port)
-        tmp_wg.add_straight_segment(distance[0] - d)
+        tmp_wg.add_straight_segment(length=distance[0] - d)
         tmp_wg.add_bend(-diff_angle, radius)
 
         self._segments.append(
@@ -418,7 +418,10 @@ class Waveguide(object):
         self._current_port = tmp_wg.current_port
 
         if not on_line_only:
-            self.add_straight_segment(distance[1] - d)
+            if final_width is not None:
+                self.add_straight_segment(length=distance[1] - d, final_width=final_width)
+            else:
+                self.add_straight_segment(distance[1] - d)
 
         return self
 
@@ -431,7 +434,8 @@ class Waveguide(object):
         :param max_bend_strength: The maximum allowed bending radius.
         :param on_line_only: Omit the last straight line and only route to line described by port.
         """
-        self.add_route_single_circle_to(port.origin, port.inverted_direction.angle, max_bend_strength, on_line_only)
+        self.add_route_single_circle_to(port.origin, port.inverted_direction.angle, port.width, max_bend_strength,
+                                        on_line_only)
         return self
 
     def add_straight_segment_to_intersection(self, line_origin, line_angle, **line_kw):
