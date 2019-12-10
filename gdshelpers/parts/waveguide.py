@@ -382,7 +382,7 @@ class Waveguide(object):
         """
         # We are given an out angle, but the internal math is for inward pointing lines
         final_angle = normalize_phase(final_angle) + np.pi
-
+        final_width = final_width if final_width is not None else self.width
         # We need to to some linear algebra. We first find the intersection of the two waveguides
         r1 = self._current_port.origin
         r2 = np.array(final_coordinates)
