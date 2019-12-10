@@ -411,17 +411,25 @@ class Waveguide(object):
         tmp_wg = Waveguide.make_at_port(self._current_port)
         tmp_wg.add_straight_segment(length=distance[0] - d)
         tmp_wg.add_bend(-diff_angle, radius)
+        if not on_line_only:
+            tmp_wg.add_straight_segment(distance[1] - d)
+        if final_width is not None:
+            tmp_segment_lengths = [segment[2] for segment in tmp_wg.get_segments()]
+            total_length = tmp_wg.length
+            tmp_segment_ratio = np.cumsum(tmp_segment_lengths / total_length)
+            segment_widths = [list((final_width - self.current_port.width) * ratio + self.current_port.width) for ratio
+                              in tmp_segment_ratio]
+            print(segment_widths[1])
+            tmp_wg = Waveguide.make_at_port(self._current_port)
+            tmp_wg.add_straight_segment(length=distance[0] - d, final_width=segment_widths[0])
+            tmp_wg.add_bend(-diff_angle, radius, final_width=segment_widths[1])
+            if not on_line_only:
+                tmp_wg.add_straight_segment(distance[1] - d, final_width=segment_widths[2])
 
         self._segments.append(
             (self._current_port.copy(), tmp_wg.get_shapely_object(), tmp_wg.get_shapely_outline(), tmp_wg.length,
              tmp_wg.center_coordinates))
         self._current_port = tmp_wg.current_port
-
-        if not on_line_only:
-            if final_width is not None:
-                self.add_straight_segment(length=distance[1] - d, final_width=final_width)
-            else:
-                self.add_straight_segment(distance[1] - d)
 
         return self
 
