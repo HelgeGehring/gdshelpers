@@ -22,6 +22,11 @@ class Splitter(object):
         self._n_points = n_points
         self._implement_cadence_bug = implement_cadence_bug
 
+        if implement_cadence_bug:
+            import warnings
+            warnings.warn('The usage of implement_cadence_bug is deprecated. It will be removed in the next version.',
+                          DeprecationWarning)
+
         self._polygon = None
         self._ports = dict()
 

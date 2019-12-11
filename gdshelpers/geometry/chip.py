@@ -23,7 +23,6 @@ class Cell:
         self.dlw_data = {}
         self.desc = {'dlw': self.dlw_data, 'desc': {}, 'ebl': []}
         self.cell_gdspy = None
-        self.cell_gdscad = None
         self.cell_oasis = None
         self._bounds = None
         # Only contains the bounds of items in `layer_dict`.
@@ -51,7 +50,7 @@ class Cell:
             for layer in layers or self.layer_dict.keys():
                 for geo in self.layer_dict.get(layer, []):
                     geo_bounds = geo.get_shapely_object().bounds if hasattr(geo, 'get_shapely_object') else geo.bounds
-                    if geo_bounds is not ():  # Some shapely geometries (collections) can return empty bounds
+                    if geo_bounds != ():  # Some shapely geometries (collections) can return empty bounds
                         bounds.append(geo_bounds)
 
             # Cache envelope if we have the global envelope
@@ -248,32 +247,6 @@ class Cell:
                         self.cell_gdspy.add(convert_to_layout_objs(geometry, layer, library='gdspy'))
         return self.cell_gdspy
 
-    def get_gdscad_cell(self, executor=None):
-        import gdsCAD
-        if self.cell_gdscad is None:
-            self.cell_gdscad = gdsCAD.core.Cell(self.name)
-            for sub_cell in self.cells:
-                angle = np.rad2deg(sub_cell['angle']) if sub_cell['angle'] is not None else None
-                if sub_cell['columns'] == 1 and sub_cell['rows'] == 1 and not sub_cell['spacing']:
-                    self.cell_gdscad.add(
-                        gdsCAD.core.CellReference(sub_cell['cell'].get_gdscad_cell(executor), origin=sub_cell['origin'],
-                                                  rotation=angle, magnification=sub_cell['magnification'],
-                                                  x_reflection=sub_cell['x_reflection']))
-                else:
-                    self.cell_gdscad.add(
-                        gdsCAD.core.CellArray(sub_cell['cell'].get_gdscad_cell(executor), origin=sub_cell['origin'],
-                                              rotation=angle, magnification=sub_cell['magnification'],
-                                              x_reflection=sub_cell['x_reflection'], cols=sub_cell['columns'],
-                                              rows=sub_cell['rows'], spacing=sub_cell['spacing']))
-            for layer, geometries in self.layer_dict.items():
-                for geometry in geometries:
-                    if executor:
-                        executor.submit(convert_to_layout_objs, geometry, layer, library='gdscad') \
-                            .add_done_callback(lambda future: self.cell_gdscad.add(future.result()))
-                    else:
-                        self.cell_gdscad.add(convert_to_layout_objs(geometry, layer, library='gdscad'))
-        return self.cell_gdscad
-
     def get_oasis_cells(self, grid_steps_per_micron=1000, executor=None):
         import fatamorgana
         import fatamorgana.records
@@ -379,16 +352,6 @@ class Cell:
                 binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
 
             self.get_gdspy_lib().write_gds(name + '.gds', cells=[], binary_cells=binary_cells)
-        elif library == 'gdscad':
-            import gdsCAD
-            layout = gdsCAD.core.Layout(precision=1e-6 / grid_steps_per_micron)
-            if parallel:
-                from concurrent.futures import ProcessPoolExecutor
-                with ProcessPoolExecutor() as pool:
-                    layout.add(self.get_gdscad_cell(pool))
-            else:
-                layout.add(self.get_gdscad_cell())
-            layout.save(name + '.gds')
         elif library == 'fatamorgana':
             import fatamorgana
             layout = fatamorgana.OasisLayout(grid_steps_per_micron)
@@ -427,7 +390,7 @@ class Cell:
             with open(name + '.gds', 'wb') as f:
                 write_cell_to_dxf_file(f, self, grid_steps_per_micron, parallel=parallel)
         else:
-            raise ValueError('library must be either "gdscad", "gdspy" or "fatamorgana"')
+            raise ValueError('library must be either "gdspy" or "fatamorgana"')
 
         dlw_data = self.get_dlw_data()
         if dlw_data:
@@ -617,7 +580,7 @@ if __name__ == '__main__':
     from gdshelpers.parts.waveguide import Waveguide
 
     # Create a cell-like object that offers a save output command '.save' which creates the .gds or .oas file by using
-    # gdsCAD,gdspy or fatamorgana
+    # gdspy or fatamorgana
     device_cell = Cell('my_cell')
     # Create a port to connect waveguide structures to
     start_port = Port(origin=(0, 0), width=1, angle=0)
@@ -631,7 +594,7 @@ if __name__ == '__main__':
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()
     device_cell.save_image('chip.pdf')
-    # Creates the output file by using gdspy, gdscad or fatamorgana. To use the implemented parallel processing, set
+    # Creates the output file by using gdspy or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
     device_cell.save(name='my_design', parallel=True)
     device_cell.export_mesh('my_design.stl', layer_defs={1: (0, 1)})
