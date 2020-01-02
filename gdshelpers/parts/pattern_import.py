@@ -3,6 +3,9 @@ from shapely.geometry.multipolygon import MultiPolygon
 from shapely.affinity import translate, rotate, scale
 import gdspy
 
+# Don't use global libraries, otherwise importing multiple gds-files which contain cells with equal names will fail
+gdspy.library.use_current_library = False
+
 
 class GDSIIImport:
     def __init__(self, filename, cell_name, layer=None, datatype=None):
@@ -14,7 +17,7 @@ class GDSIIImport:
     def get_as_shapely(self, cell, layer=None, datatype=None):
         geometry = []
 
-        gdspy_cell = self.gdslib.cell_dict[cell] if isinstance(cell, str) else cell
+        gdspy_cell = self.gdslib.cells[cell] if isinstance(cell, str) else cell
         for polygon in gdspy_cell.polygons:
             if self.layer is not None and layer != polygon.layers[0]:
                 continue
