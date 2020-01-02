@@ -1,8 +1,12 @@
 Changelog
 =========
 
-1.1.0
+Unreleased
 ----------
+* Removed __future__ imports for Python 2
+
+1.1.0
+-----
 * Added support for slot waveguides and coplanar waveguides
 * Direct GDSII-export is now the standard GDSII-writer
 * Added function for generating vortex traps

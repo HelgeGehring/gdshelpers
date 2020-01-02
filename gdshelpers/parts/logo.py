@@ -1,5 +1,3 @@
-from __future__ import division
-
 from math import sqrt
 import numpy as np
 from shapely.affinity import rotate, translate, scale
