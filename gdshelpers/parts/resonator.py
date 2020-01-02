@@ -10,7 +10,7 @@ from gdshelpers.parts import Port
 from gdshelpers.parts.waveguide import Waveguide
 
 
-class RingResonator(object):
+class RingResonator:
     """
     A simple Ring / Race track resonator.
 

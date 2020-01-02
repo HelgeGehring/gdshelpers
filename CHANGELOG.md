@@ -3,7 +3,7 @@ Changelog
 
 Unreleased
 ----------
-* Removed __future__ imports for Python 2
+* Removed \_\_future\_\_ imports and (object) in class definitions for Python 2
 
 1.1.0
 -----

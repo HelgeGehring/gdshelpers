@@ -8,7 +8,7 @@ from gdshelpers.parts.text import Text
 from gdshelpers.helpers.alignment import Alignment
 
 
-class GridLayout(object):
+class GridLayout:
     """
     A grid layout class.
 

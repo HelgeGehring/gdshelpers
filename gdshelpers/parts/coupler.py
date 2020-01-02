@@ -10,7 +10,7 @@ from gdshelpers.parts.text import Text
 from gdshelpers.helpers import StandardLayers
 
 
-class GratingCoupler(object):
+class GratingCoupler:
     """
     A standard style radial grating coupler.
 

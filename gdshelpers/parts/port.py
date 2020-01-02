@@ -4,7 +4,7 @@ import numpy as np
 from gdshelpers.helpers import normalize_phase
 
 
-class Port(object):
+class Port:
     """
     Abstraction of a waveguide port.
 

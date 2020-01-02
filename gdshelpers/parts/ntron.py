@@ -10,7 +10,7 @@ from gdshelpers.parts.port import Port
 from gdshelpers.parts.waveguide import Waveguide
 
 
-class Ntron(object):
+class Ntron:
     def __init__(self, origin, angle, gate_width_1, gate_width_2, choke_width_1, choke_width_2, choke_length_2,
                  choke_length_3, choke_point_2=(1.0 / 2, 0), choke_point_3=(1, 1.0 / 2), points_per_curve=1000,
                  gate_start=0, gate_point_2=(1.0 / 3, 0), gate_point_3=(2.0 / 3, 1), channel_point_2=(1.0 / 3, 0),

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class _Configuration(object):
+class _Configuration:
     DefaultDatatype = Enum('DefaultDatatype', 'zero aslayer dose_factor')
 
     _datatype = DefaultDatatype.aslayer

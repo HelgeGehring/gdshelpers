@@ -14,7 +14,7 @@ from gdshelpers.helpers.bezier import CubicBezierCurve
 from gdshelpers.helpers.positive_resist import convert_to_positive_resist
 
 
-class Waveguide(object):
+class Waveguide:
     def __init__(self, origin, angle, width):
         self._current_port = Port(origin, angle, width)
         self._in_port = self._current_port.inverted_direction.copy()

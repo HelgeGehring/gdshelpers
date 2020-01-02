@@ -9,7 +9,7 @@ except ImportError:
     raise ImportError('python-imageio package needed for QR code generation')
 
 
-class GdsImage(object):
+class GdsImage:
     """
     An image represented as GDS parts.
 

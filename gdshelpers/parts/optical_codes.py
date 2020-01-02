@@ -56,7 +56,7 @@ class ShapelyImageFactory(qrcode.image.base.BaseImage):
         return shapely.ops.cascaded_union(self._idr)
 
 
-class QRCode(object):
+class QRCode:
     """
     Quick Response (QR) code part.
 

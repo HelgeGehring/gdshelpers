@@ -8,7 +8,7 @@ from gdshelpers.geometry import geometric_union
 from gdshelpers.parts.waveguide import Waveguide
 
 
-class CNT(object):
+class CNT:
     """
     Creates a CNT source (Electrodes + tapered waveguide) at waveguide port.
 

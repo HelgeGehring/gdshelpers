@@ -7,7 +7,7 @@ from gdshelpers.parts.splitter import Splitter, MMI
 from gdshelpers.geometry import geometric_union
 
 
-class MachZehnderInterferometer(object):
+class MachZehnderInterferometer:
     """
     A simple Mach-Zehnder interferometer based on Y-splitters.
 
@@ -86,7 +86,7 @@ class MachZehnderInterferometer(object):
         return self.dev_width
 
 
-class MachZehnderInterferometerMMI(object):
+class MachZehnderInterferometerMMI:
     """
         A simple Mach-Zehnder interferometer based on Y-splitters.
 

@@ -8,7 +8,7 @@ from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.geometry import geometric_union
 
 
-class Splitter(object):
+class Splitter:
     def __init__(self, origin, angle, total_length, wg_width_root, sep, wg_width_branches=None, n_points=50,
                  implement_cadence_bug=False):
         self._origin = origin
@@ -180,7 +180,7 @@ class Splitter(object):
         return self._polygon
 
 
-class DirectionalCoupler(object):
+class DirectionalCoupler:
     def __init__(self, origin, angle, wg_width, length, gap, bend_radius, bend_angle=np.pi / 5.):
         """
         Creates a directional coupler

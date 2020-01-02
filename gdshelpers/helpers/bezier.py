@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class CubicBezierCurve(object):
+class CubicBezierCurve:
     def __init__(self, p0, p1, p2, p3):
         self._p0, self._p1, self._p2, self._p3 = [np.asarray(p) for p in (p0, p1, p2, p3)]
 
