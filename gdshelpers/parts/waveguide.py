@@ -180,7 +180,7 @@ class Waveguide:
         """
 
         if callable(path):
-            presample_t = np.linspace(0, 1, int(sample_points))
+            presample_t = np.linspace(0, 1, sample_points)
 
             if path_function_supports_numpy:
                 presample_coordinates = np.array(path(presample_t)).T
@@ -223,7 +223,7 @@ class Waveguide:
         else:
             # If we do not have a sample function, we need to "invent a sampling parameter"
             sample_coordinates = np.array(path)
-            sample_t = np.linspace(0, 1, int(sample_coordinates.shape[0]))
+            sample_t = np.linspace(0, 1, sample_coordinates.shape[0])
 
         rotation_matrix = np.array(((np.cos(self._current_port.angle), -np.sin(self._current_port.angle)),
                                     (np.sin(self._current_port.angle), np.cos(self._current_port.angle))))
