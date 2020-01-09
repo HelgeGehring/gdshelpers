@@ -200,7 +200,7 @@ class Waveguide:
 
                 lengths = np.linspace(presample_coordinates_d1__cum_norm[0],
                                       presample_coordinates_d1__cum_norm[-1],
-                                      presample_coordinates_d1__cum_norm[-1] // sample_distance)
+                                      int(presample_coordinates_d1__cum_norm[-1] / sample_distance))
 
                 # First get the spline representation. This is needed since we manipulate these directly for roots
                 # finding.
