@@ -4,6 +4,8 @@ Changelog
 Unreleased
 ----------
 * Removed \_\_future\_\_ imports and (object) in class definitions for Python 2
+* create_holes_for_under_etching now allows ovals and rectangles
+* Bugfixes
 
 1.1.0
 -----
