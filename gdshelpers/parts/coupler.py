@@ -121,6 +121,10 @@ class GratingCoupler:
         if not implement_cadence_ff_bug:
             apodized_ffs = np.linspace(ap_max_ff, grating_ff, n_ap_gratings)
         else:
+            import warnings
+            warnings.warn(
+                'The usage of implement_cadence_ff_bug is deprecated. It will be removed in the next version.',
+                DeprecationWarning)
             apodized_ffs = np.linspace(ap_max_ff, grating_ff, n_ap_gratings + 1)[1:]
 
         for ap_ff in apodized_ffs:
