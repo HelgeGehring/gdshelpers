@@ -16,7 +16,7 @@ Anaconda as Python distribution
 
 While you can basically use any Python interpreter (preferably Python 3), there are distribution which include a lot of nice
 extra modules for Python out of the box. This guide uses Anaconda by continuum.io. Head there now and
-`download <http://continuum.io/downloads>`_ the Windows installer.
+`download <https://www.anaconda.com/distribution/>`_ the Windows installer.
 But **install Anaconda as local user**, which allows you to update and install more Python modules. When asked to add
 Anaconda to PATH and as default Python, make sure these options are checked.
 
