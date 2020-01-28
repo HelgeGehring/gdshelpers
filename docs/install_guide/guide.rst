@@ -44,14 +44,6 @@ The right path should be already in the form.
 PyCharm will then parse all the installed modules of that Python installation. Since Anaconda comes with a lot of stuff
 this will take its time.
 
-Installing Shapely
-^^^^^^^^^^^^^^^^^^
-Normally new Python can be installed easily from command line or directly from an IDE such as PyCharm. In case of
-Shapely, the library which handles all the polygon stuff, needs the GEOS library installed as well.
-You can install both via the Conda Prompt (look for it in the start menu) using the command::
-
-    conda install shapely
-
 Installing the gdshelpers and optional dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
