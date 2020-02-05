@@ -1,10 +1,11 @@
 Changelog
 =========
 
-Unreleased
-----------
+1.1.1
+-----
 * Removed \_\_future\_\_ imports and (object) in class definitions for Python 2
 * create_holes_for_under_etching now allows ovals and rectangles
+* add_route_single_circle_to_port now tapers the waveguide to match the width of the port
 * Bugfixes
 
 1.1.0
