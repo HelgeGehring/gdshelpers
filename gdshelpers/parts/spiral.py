@@ -130,45 +130,67 @@ def _arc_length_indefinite_integral(theta, a, b):
     return np.sqrt( np.square((a + b * theta)) + np.square(b) ) * (a+b*theta) / (2*b) + \
         0.5 * b * np.log(np.sqrt( np.square(a + b*theta) + np.square(b) ) + a + b*theta )
 
-def _arc_length_integral(theta, a, b):
+def _arc_length_integral(theta, a, b, offset):
     return _arc_length_indefinite_integral(theta, a, b) - _arc_length_indefinite_integral(0, a, b)
 
-def _spiral_length_angle(theta, a, b, out_angle):
-    return (_arc_length_integral(theta, a, b) + # Inward spiral
-        np.pi * a + # Two semi-circles in the center
-        _arc_length_integral(theta + out_angle, a, b)) # Outward spiral
+def _spiral_length_angle(theta, a, b, offset, out_angle):
+    _, _, circle_length = _circle_segment_params(a, b)
+    return (_arc_length_integral(theta, a - offset, b, offset) + # Inward spiral
+        2*circle_length + #2 *np.pi * a + # Two semi-circles in the center
+        _arc_length_integral(theta + out_angle, a + offset, b, offset)) # Outward spiral
 
-def _spiral_length_inline(theta, a, b):
-    return (_spiral_length_angle(theta, a, b, 0) +
+def _spiral_length_inline(theta, a, b, offset):
+    return (_spiral_length_angle(theta, a, b, 0, offset) +
         (a + b*(theta+0.5*np.pi)) - (0.5 * a) +
         np.pi * (0.5 * a) + # two bends
         (2*(a + b * theta) - 2*(0.5 * a)))  # from endpoint to startpoint height
 
-def _spiral_length_inline_rel(theta, a, b):
-    return (_spiral_length_inline(theta, a, b) -
+def _spiral_length_inline_rel(theta, a, b, offset):
+    return (_spiral_length_inline(theta, a, b, offset) -
         (a + b * (theta + 0.5 * np.pi) + (0.5 * a))) # subtract the direct path from input to output
 
-def _spiral_theta(length, wg_width, gap, min_bend_radius, length_function, *args):
+def _spiral_theta(length, wg_width, gap, min_bend_radius, offset, length_function, *args):
     """
     Numerically calculate the theta that is needed for a given spiral variant (length_function) in order
     to have the desired length.
 
-    :param length_function: A function which takes theta, a, b plus arbitrary *args.
+    :param length_function: A function which takes theta, a, b, offset plus arbitrary *args.
     """
     from scipy.optimize import fsolve
     a = 2*min_bend_radius
     b = 2*(np.sum(wg_width) + gap) / (2.*np.pi)
-    return fsolve(lambda x: length_function(x, a, b, *args) - length, 20*np.pi)
+    return fsolve(lambda x: length_function(x, a, b, offset, *args) - length, 20*np.pi)
 
-def _spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
-    theta = min_theta + t * (max_theta - min_theta)
-    r = a + b * theta
-    return r * np.array([np.sin(theta + theta_offset), -direction*np.cos(theta + theta_offset)]) + np.array([0, direction*a])[:, None]
+def _circle_segment_params(a, b):
+    """
+    Calculate the inner semi-circle segments.
+    Since the facet of the spiral in the center has a slightly different angle than the tangent of a circle with the min_bend_radius
+    we don't use a full semi circle, but only start the part of the semi circle at the point where the tangent matches the spiral tangent.
+    This semi-circle segment needs to be extended in height by a straight piece (missing_height) to connect the spiral with it's center point.
 
-def _d_spiral_out_path(t, a, b, max_theta, min_theta=0, theta_offset=0, direction=-1):
-    theta = min_theta + t * (max_theta - min_theta)
+    Returns circ_angle, missing_height, circ_length
+    """
+    rot_in_1 = np.arctan2(b, a)
+    circ_angle = 0.5 * np.pi - rot_in_1
+    circ_seg_height = a * np.sin(circ_angle) # = 2 * min_bend_radius * sin(angle / 2), since full_angle = 2*circ_angle
+    missing_height = a - circ_seg_height
+    return circ_angle, missing_height, circ_angle * a + missing_height
+
+def _spiral_out_path(t, a, b, max_theta, theta_offset=0, direction=-1):
+    theta = t * max_theta
     r = a + b * theta
-    return r * np.array([np.cos(theta + theta_offset), direction*np.sin(theta + theta_offset)])
+    #return np.array([r*np.sin(theta + theta_offset), -r*direction*np.cos(theta + theta_offset) + direction*a])# + np.array([0, direction*a])[:, None]
+    return np.array([r*np.sin(theta + theta_offset), -r*direction*np.cos(theta + theta_offset)])# + np.array([0, direction*a])[:, None]
+
+def _d_spiral_out_path(t, a, b, max_theta, theta_offset=0, direction=-1):
+    """
+    The derivative of the spiral.
+    Note that, unlike a circle, the y-component is not 0 for theta = n*2pi
+    """
+    theta = t * max_theta
+    r = a + b * theta
+    return r * max_theta * np.array([np.cos(theta + theta_offset), direction*np.sin(theta + theta_offset)]) +\
+            b * max_theta * np.array([np.sin(theta + theta_offset), -direction*np.cos(theta + theta_offset)])
 
 
 class Spiral2:
@@ -196,7 +218,7 @@ class Spiral2:
         * <phi>, where phi is the angle where the output should be located
     """
 
-    def __init__(self, origin, angle, width, gap, min_bend_radius, theta, output_type='opposite', winding_direction='right', sample_distance=0.50, sample_points=100):
+    def __init__(self, origin, angle, width, gap, min_bend_radius, theta, output_type='opposite', offset=0, winding_direction='right', sample_distance=0.50, sample_points=100):
         """
         Create an archimedean spiral following the spiral equation :math:`r = a + b \theta`.
         
@@ -217,6 +239,7 @@ class Spiral2:
         self.sample_distance = sample_distance
         self.output_type = output_type
         self.winding_direction = -1 if winding_direction == "left" else 1
+        self.offset = offset
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
             self.out_theta = self.total_theta
@@ -238,7 +261,7 @@ class Spiral2:
         return cls(port.origin, port.angle, port.width, **default_port_param)
 
     @classmethod
-    def make_at_port_with_length(cls, port, gap, min_bend_radius, target_length, output_type='opposite', **kwargs):
+    def make_at_port_with_length(cls, port, gap, min_bend_radius, target_length, output_type='opposite', offset=0, **kwargs):
         if output_type == "inline":
             length_fn = [_spiral_length_inline]
         elif output_type == "inline_rel":
@@ -250,8 +273,8 @@ class Spiral2:
         else:
             length_fn = [_spiral_length_angle, output_type]
 
-        theta = float(_spiral_theta(target_length, port.width, gap, min_bend_radius, *length_fn))
-        return cls.make_at_port(port, gap=gap, min_bend_radius=min_bend_radius, theta=theta, output_type=output_type, **kwargs)
+        theta = float(_spiral_theta(target_length, port.width, gap, min_bend_radius, offset, *length_fn))
+        return cls.make_at_port(port, gap=gap, min_bend_radius=min_bend_radius, theta=theta, output_type=output_type, offset=offset, **kwargs)
 
     @property
     def width(self):
@@ -274,24 +297,53 @@ class Spiral2:
     def _generate(self):
         self._wg = Waveguide.make_at_port(self._origin_port)
         a = 2*self.min_bend_radius
+        a_in, a_out = a - self.winding_direction * self.offset, a + self.winding_direction * self.offset
         b = 2*(np.sum(self.width) + self.gap) / (2.*np.pi)
-        outer_r = (a + b*self.total_theta)
+        
+        # Rotate the spiral such that the input facet of the spiral has an [1,0] normal vector
+        in_args = dict(a=a_in, b=b, max_theta=self.total_theta, theta_offset=0, direction=self.winding_direction)
+        d_in_args = dict(a=a, b=b, max_theta=self.total_theta, theta_offset=0, direction=self.winding_direction)
+        d_in_0 = _d_spiral_out_path(1, **d_in_args)
+        rot_in = np.arctan2(d_in_0[1], d_in_0[0])
+        in_args['theta_offset'] -= rot_in
+        d_in_args['theta_offset'] -= rot_in
+        in_offset = -_spiral_out_path(1, **in_args)
 
+        # ...same for the output spiral
+        out_args = dict(a=a_out, b=b, max_theta=self.out_theta, theta_offset=0, direction=self.winding_direction)
+        dout_args = dict(a=a, b=b, max_theta=self.out_theta, theta_offset=0, direction=self.winding_direction)
+        d_out_0 = _d_spiral_out_path(0, **dout_args)
+        rot_out = np.arctan2(d_out_0[1], d_out_0[0])
+        out_args['theta_offset'] -= rot_out
+        dout_args['theta_offset'] -= rot_out
+        out_offset = _spiral_out_path(0, **out_args)
+
+        # Generate the spiral
         if self.output_type != "single_outside":
-            self._wg.add_parameterized_path(lambda x: -_spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction) - self.winding_direction*np.array([0, -a + outer_r])[:, None], sample_distance=self.sample_distance, sample_points=self.sample_points,
-                                            path_derivative=lambda x: _d_spiral_out_path(1-x, a=a, b=b, max_theta=self.total_theta, theta_offset=-self.total_theta, direction=self.winding_direction),
+            self._wg.add_parameterized_path(lambda x: -_spiral_out_path(1-x, **in_args) - in_offset[:, None], sample_distance=self.sample_distance, sample_points=self.sample_points,
+                                            path_derivative=lambda x: _d_spiral_out_path(1-x, **d_in_args),
                                             path_function_supports_numpy=True)
 
         if self.output_type != "single_inside" and self.output_type != "single_outside":
-            self._wg.add_bend(-self.winding_direction*np.pi, self.min_bend_radius)
-            self._wg.add_bend(self.winding_direction*np.pi, self.min_bend_radius)
+            r = self.min_bend_radius - self.winding_direction*self.offset
+            circ_angle, missing_height, _ = _circle_segment_params(a, b)
+            self._wg.add_bend(-self.winding_direction*circ_angle, r)
+            self._wg.add_straight_segment(missing_height)
+            self._wg.add_bend(-self.winding_direction*circ_angle, r)
+
+            r = self.min_bend_radius + self.winding_direction*self.offset
+            circ_angle, missing_height, _ = _circle_segment_params(a, b)
+            self._wg.add_bend(self.winding_direction*circ_angle, r)
+            self._wg.add_straight_segment(missing_height)
+            self._wg.add_bend(self.winding_direction*circ_angle, r)
 
         if self.output_type != "single_inside":
-            self._wg.add_parameterized_path(lambda x: _spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction), sample_distance=self.sample_distance, sample_points=self.sample_points,
-                                            path_derivative=lambda x: _d_spiral_out_path(x, a=a, b=b, max_theta=self.out_theta, direction=self.winding_direction),
+            self._wg.add_parameterized_path(lambda x: _spiral_out_path(x, **out_args) - out_offset[:, None], sample_distance=self.sample_distance, sample_points=self.sample_points,
+                                            path_derivative=lambda x: _d_spiral_out_path(x, **dout_args),
                                             path_function_supports_numpy=True)
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
+            outer_r = (a + b*self.total_theta)
             self._wg.add_straight_segment(a + b*(self.out_theta+0.5*np.pi) - self.min_bend_radius)
             self._wg.add_bend(0.5*self.winding_direction*np.pi, self.min_bend_radius)
             self._wg.add_straight_segment((2*outer_r - 2 * self.min_bend_radius))
@@ -316,12 +368,26 @@ if __name__ == '__main__':
         cell.add_to_layer(2, text)
 
     # Create normal demo spirals
+    
     for i,output_type in enumerate(['opposite', 'inline', 'inline_rel', -0.5*np.pi, 0.25*np.pi, np.pi]):
-        demo_spiral(((i//4)*700, (i%4)*250), output_type, 2000, gap=6., width=[1, 3, 1, 3, 1])
+        demo_spiral(((i//4)*700, (i%4)*250), output_type, 5000, gap=3., width=1)
 
     # Create spirals with single turn
     demo_spiral((1*700, 2*250), 'single_inside', 2000, gap=1.5)
     demo_spiral((1*700, 3*250), 'single_outside', 2000, gap=1.5, port_y_offset=-150)
+    
+
+    """wg = Waveguide(np.array([0, 0]), 0, 1.3)
+    wg.add_straight_segment(30)
+    spiral = Spiral2.make_at_port_with_length(wg.current_port, gap=80., min_bend_radius=35., target_length=20000, output_type='opposite', sample_distance=10)
+    #spiral.wg.add_straight_segment(30)
+    cell.add_to_layer(1, wg, spiral)"""
+
+    demo_spiral((2000, 0), 'inline', 11000, gap=10., width=1)
+    demo_spiral((2000, 600), 'inline', 11000, gap=18., width=1)
+    demo_spiral((2000, 1200), 'inline', 11000, gap=20., width=1)
+    demo_spiral((2000, 3*800), 'inline', 11000, gap=21., width=[1,5,1,5,1])
+    demo_spiral((2000, 4*800), 'inline', 11000, gap=54., width=1)
 
     cell.show()
     cell.save("spiral_test")
