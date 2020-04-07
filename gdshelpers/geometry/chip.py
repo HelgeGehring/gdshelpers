@@ -542,7 +542,7 @@ class Cell:
         self.add_to_layer(layer, DLWMarker(origin))
         self.add_to_layer(std_layers.parnamelayer1, Text(origin, 2, label, alignment='center-center'))
 
-        self.add_dlw_data('marker', label, {'origin': origin.tolist()})
+        self.add_dlw_data('marker', label, {'origin': list(origin)})
 
     def add_dlw_taper_at_port(self, label, layer, port, taper_length, tip_width=.01, with_markers=True):
         """
