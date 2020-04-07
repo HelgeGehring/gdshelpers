@@ -821,6 +821,49 @@ the connecting lines will be. But take care: For big values the Bézier curve mi
 give you an error. In short, Bézier curves can be very useful to connect to non-trivial points - but they might give you
 errors on self intersection and are generally quite slow to calculate.
 
+Interfacing 3D-hybrid structures
+==========================================
+For interfacing integrated planar circuitry with 3D-hybrid structures, tapers need to be included into the design.
+In the vicinity of each taper alignment markers need to be included as well, allowing determination of the taper
+positions using computer vision.
+
+This can simply be done by using the method :func:`.Cell.add_dlw_taper_at_port`. The first parameter defines the name of
+the taper within the cell. In order to assure unique names, the complete name of the Cell includes the names of the
+surrounding cells separated by dots (but not the topmost cell, as there's anyway just one). E.g. in the following
+example, the name of the tapers are defined as `A0.L` and `A0.R`.
+For each taper four alignment markers are generated automatically around the taper. Each marker name is composed by the
+name of the taper and an postfix `-X`, where X is a number from 0-3. The exact naming is shown in the layout on the
+comments layer.
+
+.. plot::
+
+    import numpy as np
+    from math import pi
+    from gdshelpers.geometry.chip import Cell
+    from gdshelpers.parts.waveguide import Waveguide
+
+    chip = Cell('chip')
+
+    cell = Cell('A0')
+    wg = Waveguide([0,0], np.pi/2, 1)
+    wg.add_bend(np.deg2rad(-180), 50)
+    cell.add_to_layer(1, wg)
+    cell.add_dlw_taper_at_port('L', 1, wg.in_port, 20)
+    cell.add_dlw_taper_at_port('R', 1, wg.current_port, 20)
+
+    chip.add_cell(cell)
+
+    chip.add_dlw_marker('0', 1, [50,0])
+    chip.show()
+
+Besides automatically generated markers, the user can also directly add markers to the layout using
+:func:`add_dlw_marker` as shown in the example.
+This is on the one side handy for adding reference markers on the topmost level of the design, allowing for simple names
+(The marker in the example is just called "0", as it's on the topmost level, there are no cell names as prefixes).
+On the other hand, manual adding of the tapers is required, if the standard locations of the markers are already used by
+other elements in the design. By passing `with_tapers=False` as an parameter to :func:`.Cell.add_dlw_taper_at_port`,
+automatic generation of the markers can be suppressed and the user is required to place the markers.
+
 Fonts
 =====
 
