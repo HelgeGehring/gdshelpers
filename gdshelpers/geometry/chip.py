@@ -1,17 +1,19 @@
 import itertools
 import json
 import numpy as np
+from typing import List, Optional
 from shapely.affinity import translate, rotate
 from shapely.geometry import box
 
 from gdshelpers.geometry.shapely_adapter import convert_to_layout_objs, bounds_union, transform_bounds
 from gdshelpers.export.gdsii_export import write_cell_to_gdsii_file
 from gdshelpers.geometry import geometric_union
+from gdshelpers.parts.port import Port
 import gdshelpers.helpers.layers as std_layers
 
 
 class Cell:
-    def __init__(self, name):
+    def __init__(self, name: str):
         """
         Creates a new Cell named `name` at `origin`
 
@@ -37,7 +39,7 @@ class Cell:
         """
         return self.get_bounds(layers=None)
 
-    def get_bounds(self, layers=None):
+    def get_bounds(self, layers: Optional[List[int]] = None):
         """
         Calculates and returns the envelope for the given layers.
         Returns `None` if it is empty.
@@ -76,7 +78,7 @@ class Cell:
         else:
             return bounds[2] - bounds[0], bounds[3] - bounds[1]
 
-    def add_to_layer(self, layer, *geometry):
+    def add_to_layer(self, layer: int, *geometry):
         """
         Adds a shapely geometry to a the layer
 
@@ -102,7 +104,7 @@ class Cell:
             raise ValueError('ID "{:s}" already used'.format(dlw_id))
         self.dlw_data[dlw_type][dlw_id] = data
 
-    def add_cell(self, cell, origin=(0, 0), angle=None, columns=1, rows=1, spacing=None):
+    def add_cell(self, cell, origin=(0, 0), angle: Optional[float] = None, columns=1, rows=1, spacing=None):
         """
         Adds a Cell to this cell
 
@@ -122,14 +124,14 @@ class Cell:
             dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False, columns=columns,
                  rows=rows, spacing=spacing))
 
-    def add_region_layer(self, region_layer=std_layers.regionlayer, layers=None):
+    def add_region_layer(self, region_layer: int = std_layers.regionlayer, layers: Optional[List[int]] = None):
         """
         Generate a region layer around all objects on `layers` and place it on layer `region_layer`.
         If `layers` is None, all layers are used.
         """
         self.add_to_layer(region_layer, box(*self.get_bounds(layers)))
 
-    def add_frame(self, padding=30., line_width=1., frame_layer=std_layers.framelayer, bounds=None):
+    def add_frame(self, padding=30., line_width=1., frame_layer: int = std_layers.framelayer, bounds=None):
         """
         Generates a rectangular frame around the contents of the cell.
 
@@ -146,7 +148,7 @@ class Cell:
         frame = frame.difference(frame.buffer(-line_width))
         self.add_to_layer(frame_layer, frame)
 
-    def add_ebl_marker(self, layer, marker):
+    def add_ebl_marker(self, layer: int, marker):
         """
         Adds an Marker to the layout
 
@@ -156,7 +158,7 @@ class Cell:
         self.add_to_layer(layer, marker)
         self.desc['ebl'].append(list(marker.origin))
 
-    def add_ebl_frame(self, layer, frame_generator, bounds=None, **kwargs):
+    def add_ebl_frame(self, layer: int, frame_generator, bounds=None, **kwargs):
         """
         Adds global markers to the layout
 
@@ -397,7 +399,7 @@ class Cell:
             with open(name + '.dlw', 'w') as f:
                 json.dump(dlw_data, f, indent=True)
 
-    def save_desc(self, filename):
+    def save_desc(self, filename: str):
         """
         Saves a description file for the layout. The file format is not final yet and might change in a future release.
 
@@ -408,7 +410,7 @@ class Cell:
         with open(filename + '.desc', 'w') as f:
             json.dump(self.get_desc(), f, indent=True)
 
-    def get_reduced_layer(self, layer):
+    def get_reduced_layer(self, layer: int):
         """
         Returns a single shapely object containing the structures on a certain layer from this cell and all added cells.
 
@@ -426,7 +428,7 @@ class Cell:
             [translate_and_rotate(cell['cell'].get_reduced_layer(layer), cell['origin'], cell['angle'])
              for cell in self.cells])
 
-    def export_mesh(self, filename, layer_defs):
+    def export_mesh(self, filename: str, layer_defs):
         """
         Saves the current geometry as a mesh-file.
 
@@ -443,7 +445,7 @@ class Cell:
                                     for geometry in (lambda x: x if hasattr(x, '__iter__') else [x, ])(
             self.get_reduced_layer(layer)))).export(filename)
 
-    def get_patches(self, origin=(0, 0), angle_sum=0, angle=0, layers=None):
+    def get_patches(self, origin=(0, 0), angle_sum=0, angle=0, layers: Optional[List[int]] = None):
         from descartes import PolygonPatch
 
         def rotate_pos(pos, rotation_angle):
@@ -472,13 +474,15 @@ class Cell:
 
         return own_patches + sub_cells_patches
 
-    def save_image(self, filename, layers=None, antialiased=True, resolution=1., ylim=(None, None), xlim=(None, None)):
+    def save_image(self, filename: str, layers: Optional[List[int]] = None, antialiased=True, resolution=1.,
+                   ylim=(None, None), xlim=(None, None)):
         """
            Save cell object as an image.
 
            You can either use a rasterized file format such as png but also formats such as SVG or PDF.
 
            :param filename: Name of the image file.
+           :param layers: Layers to show im the image
            :param resolution: Rasterization resolution in GDSII units.
            :param antialiased: Whether to use a anti-aliasing or not.
            :param ylim: Tuple of (min_x, max_x) to export.
@@ -509,7 +513,7 @@ class Cell:
         plt.savefig(filename, transparent=True, bbox_inches='tight', dpi=1 / resolution)
         plt.close()
 
-    def show(self, layers=None, padding=5):
+    def show(self, layers: Optional[List[int]] = None, padding=5):
         """
         Shows the current cell
 
@@ -528,7 +532,7 @@ class Cell:
         ax.set_aspect(1)
         fig.show()
 
-    def add_dlw_marker(self, label, layer, origin):
+    def add_dlw_marker(self, label: str, layer: int, origin):
         """
         Adds a marker for 3D-hybrid integration
 
@@ -544,7 +548,8 @@ class Cell:
 
         self.add_dlw_data('marker', label, {'origin': list(origin)})
 
-    def add_dlw_taper_at_port(self, label, layer, port, taper_length, tip_width=.01, with_markers=True):
+    def add_dlw_taper_at_port(self, label: str, layer: int, port: Port, taper_length: float, tip_width=.01,
+                              with_markers=True):
         """
         Adds a taper for 3D-hybrid-integration at a certain port
 
