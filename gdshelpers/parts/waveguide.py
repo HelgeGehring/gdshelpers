@@ -236,11 +236,12 @@ class Waveguide:
             else:
                 sample_coordinates_d1 = np.array([path_derivative(x) for x in sample_t])
             sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
-        elif path_derivative is None:
-            sample_coordinates_d1 = np.vstack((rotation_matrix[:, 0], np.diff(sample_coordinates, axis=0)))
         else:
-            sample_coordinates_d1 = np.array(path_derivative)
-            sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
+            if path_derivative is None:
+                sample_coordinates_d1 = np.vstack((rotation_matrix[:, 0], np.diff(sample_coordinates, axis=0)))
+            else:
+                sample_coordinates_d1 = np.array(path_derivative)
+                sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
 
 
         sample_coordinates_d1_norm = np.linalg.norm(sample_coordinates_d1, axis=1)
@@ -258,11 +259,10 @@ class Waveguide:
                 sample_width = np.array([width(x) for x in sample_t])
         else:
             if width is None:
-                sample_width = np.array([ self._current_port.width, ])
+                sample_width = np.atleast_1d(self._current_port.width)
             else:
-                sample_width = np.array(width)
-                if sample_width.ndim==0:
-                    sample_width = np.array([ sample_width, ])
+                sample_width = np.atleast_1d(width)
+
         if sample_width.ndim == 1:
             sample_width = sample_width[..., None]
         # Now we have everything to calculate the polygon
