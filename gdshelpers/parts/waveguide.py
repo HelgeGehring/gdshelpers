@@ -243,7 +243,6 @@ class Waveguide:
                 sample_coordinates_d1 = np.array(path_derivative)
                 sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
 
-
         sample_coordinates_d1_norm = np.linalg.norm(sample_coordinates_d1, axis=1)
         sample_coordinates_d1_normed = sample_coordinates_d1 / sample_coordinates_d1_norm[:, None]
 
