@@ -154,9 +154,10 @@ class Waveguide:
         approach might be wasteful for paths like (x**2, y). You can suppress resampling for length by passing zero or
         none as sample_distance parameter.
 
-        The width of the generated waveguide may either be constant when passing a number or also be a callable
-        function, using the same parameter as the path. For generating slot/coplanar/... waveguides it is also possible
-        to pass an array of the form `[rail_width_1, gap_width_1, rail_width_2, ...]` which defines the width of each
+        The width of the generated waveguide may be constant when passing a number, or variable along the path
+        when passing an array or a callable function, using the same parameter as the path.
+        For generating slot/coplanar/... waveguides it is also possible to pass an array of the form
+        `[rail_width_1, gap_width_1, rail_width_2, ...]` which defines the width of each
         rail and the gaps between the rails. This array is also allowed to end with a gap_width for positioning the
         rails asymmetrically to the path which can be useful e.g. for strip-to-slot mode converters.
 
