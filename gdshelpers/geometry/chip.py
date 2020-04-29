@@ -475,7 +475,7 @@ class Cell:
         return own_patches + sub_cells_patches
 
     def save_image(self, filename: str, layers: Optional[List[int]] = None, antialiased=True, resolution=1.,
-                   ylim=(None, None), xlim=(None, None)):
+                   ylim=(None, None), xlim=(None, None), scale=1.):
         """
            Save cell object as an image.
 
@@ -487,12 +487,13 @@ class Cell:
            :param antialiased: Whether to use a anti-aliasing or not.
            :param ylim: Tuple of (min_x, max_x) to export.
            :param xlim: Tuple of (min_y, max_y) to export.
+           :param scale: Defines the scale of the image
            """
         import matplotlib.pyplot as plt
 
         # For vector graphics, map 1um to {resolution} mm instead of inch.
         is_vector = filename.split('.')[-1] in ('svg', 'svgz', 'eps', 'ps', 'emf', 'pdf')
-        scale = 5 / 127. if is_vector else 1.
+        scale *= 5 / 127. if is_vector else 1.
 
         fig, ax = plt.subplots()
         for patch in self.get_patches(layers=layers):
