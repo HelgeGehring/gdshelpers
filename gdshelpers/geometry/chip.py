@@ -322,7 +322,7 @@ class Cell:
             library = library or 'fatamorgana'
         elif name.endswith('.dxf'):
             name = name[:-4]
-            library = library or 'ezwriter'
+            library = library or 'ezdxf'
 
         library = library or 'gdshelpers'
 
