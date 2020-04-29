@@ -389,7 +389,7 @@ class Cell:
                 layout.write(f)
         elif library == 'ezdxf':
             from gdshelpers.export.dxf_export import write_cell_to_dxf_file
-            with open(name + '.gds', 'wb') as f:
+            with open(name + '.dxf', 'w') as f:
                 write_cell_to_dxf_file(f, self, grid_steps_per_micron, parallel=parallel)
         else:
             raise ValueError('library must be either "gdshelpers", "gdspy", "fatamorgana" or "ezdxf"')
