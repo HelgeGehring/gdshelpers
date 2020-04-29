@@ -392,7 +392,7 @@ class Cell:
             with open(name + '.gds', 'wb') as f:
                 write_cell_to_dxf_file(f, self, grid_steps_per_micron, parallel=parallel)
         else:
-            raise ValueError('library must be either "gdspy" or "fatamorgana"')
+            raise ValueError('library must be either "gdshelpers", "gdspy", "fatamorgana" or "ezdxf"')
 
         dlw_data = self.get_dlw_data()
         if dlw_data:
