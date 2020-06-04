@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.1.2
+-----
+* Added scale-parameter to save_image
+* fixed .dxf-export in Cell
+* Waveguide.add_parameterized_path now also supports an array as path_derivative
+* fixed add_dlw_marker, origin can now also be a list
+
 1.1.1
 -----
 * Removed \_\_future\_\_ imports and (object) in class definitions for Python 2
