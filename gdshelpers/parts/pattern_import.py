@@ -9,12 +9,28 @@ gdspy.library.use_current_library = False
 
 class GDSIIImport:
     def __init__(self, filename, cell_name, layer=None, datatype=None):
+        """
+        Imports a GDSII-pattern and makes it usable like a gdshelpers part.
+
+        :param filename: Name of the GDSII-file
+        :param cell_name: Name of the cell
+        :param layer: Layer which should be imported, ´None´ means all layers
+        :param datatype: Datatype which should be imported, ´None´ means all datatypes
+        """
         self.gdslib = gdspy.GdsLibrary(infile=filename)
         self.cell_name = cell_name
         self.layer = layer
         self.datatype = datatype
 
     def get_as_shapely(self, cell, layer=None, datatype=None):
+        """
+        Returns a shapely object imported from the GDSII-file.
+
+        :param cell: Name of the cell or a cell
+        :param layer: Layer which should be imported, ´None´ means all layers
+        :param datatype: Datatype which should be imported, ´None´ means all datatypes
+        :return: A shapely object
+        """
         geometry = []
 
         gdspy_cell = self.gdslib.cells[cell] if isinstance(cell, str) else cell
