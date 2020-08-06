@@ -1,5 +1,6 @@
 """
-For documentation of GDSII see: http://www.buchanan1.net/stream_description.html
+For documentation of GDSII see:
+http://bitsavers.informatik.uni-stuttgart.de/pdf/calma/GDS_II_Stream_Format_Manual_6.0_Feb87.pdf
 """
 
 import math
