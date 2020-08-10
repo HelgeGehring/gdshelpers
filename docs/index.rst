@@ -110,7 +110,7 @@ OSA Continuum 2, 3091-3101 (2019)
 Support
 _______
 If you have problems using GDSHelpers don't hesitate to contact us using
-[Discussions](https://github.com/HelgeGehring/gdshelpers/discussions) or [send me a mail](https://github.com/HelgeGehring)
+`Discussions <https://github.com/HelgeGehring/gdshelpers/discussions>`_ or `send me a mail <https://github.com/HelgeGehring>`_
 
 Table of contents
 _________________
