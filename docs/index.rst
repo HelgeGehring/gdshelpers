@@ -107,6 +107,11 @@ Helge Gehring, Matthias Blaicher, Wladick Hartmann, and Wolfram H. P. Pernice,
 `"Python based open source design framework for integrated nanophotonic and superconducting circuitry with 2D-3D-hybrid integration" <https://www.osapublishing.org/osac/abstract.cfm?uri=osac-2-11-3091>`_
 OSA Continuum 2, 3091-3101 (2019)
 
+Support
+_______
+If you have problems using GDSHelpers don't hesitate to contact us using
+[Discussions](https://github.com/HelgeGehring/gdshelpers/discussions) or [send me a mail](https://github.com/HelgeGehring)
+
 Table of contents
 _________________
 

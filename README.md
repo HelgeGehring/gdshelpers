@@ -72,7 +72,9 @@ Helge Gehring, Matthias Blaicher, Wladick Hartmann, and Wolfram H. P. Pernice,
 OSA Continuum 2, 3091-3101 (2019)
 
 ## Documentation
-You can find the [documentation on readthedocs](https://gdshelpers.readthedocs.io)
+You can find the [documentation on readthedocs](https://gdshelpers.readthedocs.io).
+If you have problems using GDSHelpers don't hesitate to contact us using
+[Discussions](https://github.com/HelgeGehring/gdshelpers/discussions) or [send me a mail](https://github.com/HelgeGehring).
 
 ## Installation
 The GDSHelpers can be installed via pip using
