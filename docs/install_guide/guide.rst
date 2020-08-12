@@ -14,7 +14,7 @@ Download and install Python
 CPython as Python distribution
 -------------------------------
 
-While you can basically use any Python interpreter (preferably Python 3), in this guide we use CPython by python.org. Head there now and
+While you can basically use any Python 3 interpreter (at least Python 3.5, preferably the newest version), in this guide we use CPython by python.org. Head there now and
 `download <https://www.python.org/downloads/>`_ the Windows installer. Make sure that the installer **adds CPython to PATH** and installs the Python package managment **pip**.
 
 
