@@ -201,10 +201,9 @@ class RingResonator:
 
 
 def _example():
-    from gdshelpers.geometry import convert_to_gdscad
-    import gdsCAD
+    from gdshelpers.geometry.chip import Cell
 
-    cell = gdsCAD.core.Cell('test')
+    cell = Cell('test')
 
     wg1 = Waveguide.make_at_port(Port((0, 0), 0, 1.))
     wg1.add_straight_segment(100)
@@ -221,7 +220,7 @@ def _example():
     ring3 = RingResonator.make_at_port(wg3.current_port, -1., 50., vertical_race_length=30, straight_feeding=True,
                                        draw_opposite_side_wg=True)
 
-    cell.add(convert_to_gdscad([wg1, ring1, wg2, ring2, wg3, ring3], layer=1))
+    cell.add_to_layer(1, wg1, ring1, wg2, ring2, wg3, ring3)
     cell.show()
 
 

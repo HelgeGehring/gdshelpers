@@ -262,6 +262,9 @@ def convert_to_gdscad(objs, layer=1, datatype=None, path_width=1.0, path_pathtyp
                                  When *over_fracture_factor* is set to 0, no additional healing is done.
     :type over_fracture_factor: int
     """
+    import warnings
+    warnings.warn('The usage of gdscad is deprecated as gdscad is not installable under python 3 from pypi.'
+                  'Please switch to the built-in gds-export or gdspy.', DeprecationWarning)
 
     return convert_to_layout_objs(objs, layer, datatype, path_width, path_pathtype, max_points, over_fracture_factor,
                                   max_points_line, library='gdscad')
@@ -306,13 +309,16 @@ def convert_to_layout_objs(objs, layer=1, datatype=None, path_width=1.0, path_pa
     :type grid_steps_per_micron: int
     """
     if library == 'gdscad':
+        import warnings
+        warnings.warn('The usage of gdscad is deprecated as gdscad is not installable under python 3 from pypi.'
+                      'Please switch to the built-in gds-export or gdspy.', DeprecationWarning)
         import gdsCAD
     elif library == 'gdspy':
         import gdspy
     elif library == 'oasis':
         import fatamorgana.records
     else:
-        raise AssertionError('library must be either "gdscad" or "gdspy"')
+        raise AssertionError('library must be "gdscad", "gdspy" or "oasis"')
 
     # If number of maximum points is not specified, default to the current profile default
     max_points = max_points if max_points is not None else gdshelpers.configuration.point_limit

@@ -387,19 +387,17 @@ class MMI:
 
 
 def _example_mmi():
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
     mmi = MMI((80, 0), 0, 1, 20, 10, 2, 2)
 
-    cell = gdsCAD.core.Cell('Splitter')
-    cell.add(convert_to_gdscad(geometric_union([mmi])))
+    cell = Cell('Splitter')
+    cell.add_to_layer(1, mmi)
     cell.show()
 
 
 def _example():
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
     dc = DirectionalCoupler((0, 0), np.pi / 4, 1, 10, 1, 10)
     dc2 = DirectionalCoupler.make_at_port(dc.right_ports[1], 5, 2, 10, which=0)
@@ -411,8 +409,8 @@ def _example():
     mmi = MMI((80, 0), 0, 1, 20, 10, 2, 1)
     mmi2 = MMI.make_at_port(dc2.right_ports[1], 10, 10, 2, 2, 'i1')
 
-    cell = gdsCAD.core.Cell('Splitter')
-    cell.add(convert_to_gdscad(geometric_union((dc, dc2, wg, wg2, mmi, mmi2))))
+    cell = Cell('Splitter')
+    cell.add_to_layer(1, geometric_union((dc, dc2, wg, wg2, mmi, mmi2)))
     cell.show()
 
 

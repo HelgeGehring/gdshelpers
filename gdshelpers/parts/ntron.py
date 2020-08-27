@@ -3,7 +3,6 @@ from shapely.affinity import rotate, translate
 from shapely.geometry import Polygon
 from itertools import chain
 
-from gdshelpers.geometry import convert_to_gdscad
 from gdshelpers.helpers.bezier import CubicBezierCurve
 from gdshelpers.geometry import geometric_union
 from gdshelpers.parts.port import Port
@@ -250,7 +249,7 @@ class Ntron:
 
 
 if __name__ == '__main__':
-    import gdsCAD.core
+    from gdshelpers.geometry.chip import Cell
 
     part1 = Ntron(origin=(5, -5), angle=0, gate_width_1=0.3, gate_width_2=0.06, choke_width_1=0.06, choke_width_2=0.015,
                   choke_length_2=0.06, choke_length_3=0.03)
@@ -260,6 +259,6 @@ if __name__ == '__main__':
     wggate.add_straight_segment(0.5)
     wgsource = Waveguide.make_at_port(part1.port_source)
     wgsource.add_straight_segment(0.5)
-    cell = gdsCAD.core.Cell('_channel')
-    cell.add(convert_to_gdscad([part1], layer=1))
+    cell = Cell('_channel')
+    cell.add_to_layer(1, part1)
     cell.show()

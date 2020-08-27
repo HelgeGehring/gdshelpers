@@ -1,7 +1,6 @@
 import numpy as np
 
 from gdshelpers.parts import Port
-from gdshelpers.geometry import convert_to_gdscad
 from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.parts.splitter import Splitter, MMI
 from gdshelpers.geometry import geometric_union
@@ -169,7 +168,7 @@ class MachZehnderInterferometerMMI:
 
 
 def _example():
-    import gdsCAD
+    from gdshelpers.geometry.chip import Cell
 
     devicename = 'MZI'
 
@@ -184,15 +183,12 @@ def _example():
     wg = Waveguide.make_at_port(mzi_mmi.port)
     wg.add_straight_segment(length=50)
 
-    cell = gdsCAD.core.Cell(devicename)
-    cell.add(convert_to_gdscad(mzi, layer=1))
-    cell.add(convert_to_gdscad(mzi_mmi, layer=1))
-    cell.add(convert_to_gdscad(wg, layer=1))
+    cell = Cell(devicename)
+    cell.add_to_layer(1, mzi)
+    cell.add_to_layer(1, mzi_mmi)
+    cell.add_to_layer(1, wg)
 
-    layout = gdsCAD.core.Layout()
-    layout.add(cell=cell)
-    layout.save('%s.gds' % devicename)
-    layout.show()
+    cell.save('%s.gds' % devicename)
 
 
 if __name__ == '__main__':

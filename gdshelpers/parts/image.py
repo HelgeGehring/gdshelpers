@@ -38,13 +38,12 @@ class GdsImage:
 
 
 def _example():
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
     img = GdsImage([0, 0], "wolfram_monochrome_100.png", 10)
 
-    cell = gdsCAD.core.Cell('TEST_IMAGE')
-    cell.add(convert_to_gdscad(img))
+    cell = Cell('TEST_IMAGE')
+    cell.add_to_layer(1, img)
     cell.show()
     return cell
 
