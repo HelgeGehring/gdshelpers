@@ -76,8 +76,8 @@ class GratingCoupler:
         to generate all kinds of couplers, including:
 
             - constant fill factor couplers
-            - apodized couplers (where the fill factor is varied from ap_max_ff to grating_ff over
-                                 n_ap_gratings gratings.)
+            - apodized couplers (where the fill factor is varied from ap_max_ff to grating_ff and the grating period
+                                 is varied from ap_start_period to grating_period over n_ap_gratings gratings.)
 
         All couplers can have the taper triangle separated onto its own layer for better e-beam dose.
 
