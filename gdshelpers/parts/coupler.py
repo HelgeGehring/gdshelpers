@@ -70,14 +70,14 @@ class GratingCoupler:
     @classmethod
     def make_traditional_coupler(cls, origin, width, full_opening_angle, grating_period, grating_ff, n_gratings,
                                  ap_max_ff=1.0, n_ap_gratings=0, taper_length=None, extra_triangle_layer=False,
-                                 angle=-np.pi / 2, n_points=394, implement_cadence_ff_bug=True):
+                                 angle=-np.pi / 2, n_points=394, implement_cadence_ff_bug=True, ap_start_period=None):
         """
         Generate a traditional coupler as the ``lib/coupler/`` functions did. But this version is versatile enough
         to generate all kinds of couplers, including:
 
             - constant fill factor couplers
-            - apodized couplers (where the fill factor is varied from ap_max_ff to grating_ff over
-                                 n_ap_gratings gratings.)
+            - apodized couplers (where the fill factor is varied from ap_max_ff to grating_ff and the grating period
+                                 is varied from ap_start_period to grating_period over n_ap_gratings gratings.)
 
         All couplers can have the taper triangle separated onto its own layer for better e-beam dose.
 
@@ -106,6 +106,9 @@ class GratingCoupler:
                       upwards.
         :parameter implement_cadence_ff_bug:
         :type implement_cadence_ff_bug: bool
+        :param ap_start_period: The starting period in the apodized region. If a value is passed, the period will
+                                be swept from `ap_start_period` to `grating_period` over the apodized gratings.
+                                If None, the period will be constant.
 
         :return: The constructed traditional grating coupler.
         :rtype: GratingCoupler
@@ -127,9 +130,13 @@ class GratingCoupler:
                 DeprecationWarning)
             apodized_ffs = np.linspace(ap_max_ff, grating_ff, n_ap_gratings + 1)[1:]
 
-        for ap_ff in apodized_ffs:
-            radii.append(grating_period * (1 - ap_ff))
-            radii.append(grating_period * ap_ff)
+        # Period in the apodized region
+        ap_periods = np.linspace(
+            ap_start_period if ap_start_period is not None else grating_period, grating_period, n_ap_gratings)
+
+        for ap_period, ap_ff in zip(ap_periods, apodized_ffs):
+            radii.append(ap_period * (1 - ap_ff))
+            radii.append(ap_period * ap_ff)
 
         # Add simple gratings with constant ff
         radii.extend([grating_period * (1 - grating_ff), grating_period * grating_ff] * n_gratings)
@@ -148,7 +155,8 @@ class GratingCoupler:
             'n_ap_gratings': n_ap_gratings,
             'taper_length': taper_length,
             'implement_cadence_ff_bug': implement_cadence_ff_bug,
-            'full_opening_angle': full_opening_angle
+            'full_opening_angle': full_opening_angle,
+            'ap_start_period': ap_start_period
         }
 
         return obj
