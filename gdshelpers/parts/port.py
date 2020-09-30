@@ -190,6 +190,19 @@ class Port:
         port.angle += angle
         return port
 
+    def with_width(self, width):
+        """
+        Returns a new port, of which the width is set to the new value
+
+        :param width: Width of the resulting port
+        :return: The new port
+        :rtype: Port
+        """
+
+        port = self.copy()
+        port.width = width
+        return port
+
     @property
     def debug_shape(self):
         from gdshelpers.parts.waveguide import Waveguide
