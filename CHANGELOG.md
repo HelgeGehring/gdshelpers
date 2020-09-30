@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Unreleased
+----------
+* Grating coupler: make_traditional_coupler now allows to apodize the period of the grating
+* Port: added with_width function to generate a copy of the Port with a certain width
+* Stopped testing with Python 3.5, as it reached it's end-of-life and added a warning
+* Deprecated gdsCAD, as it isn't compatible with Python 3
+
 1.1.2
 -----
 * Added scale-parameter to save_image
