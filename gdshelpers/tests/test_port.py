@@ -37,7 +37,7 @@ class PortTestCase(unittest.TestCase):
         widths2 = [1,2,3]
 
         port1 = Port(origin, 0, widths)
-        port2 = port1.with_width([1,2,3])
+        port2 = port1.with_width(widths2)
         np.testing.assert_almost_equal(port1.origin, port2.origin)
         np.testing.assert_almost_equal(port1.angle, port2.angle)
         np.testing.assert_almost_equal(port1.width, widths)
