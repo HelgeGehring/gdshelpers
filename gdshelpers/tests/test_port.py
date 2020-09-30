@@ -34,7 +34,7 @@ class PortTestCase(unittest.TestCase):
     def test_with_width(self):
         origin = (1, 1)
         widths = [2, 1, 2, 1, 2]
-        widths2 = [1,2,3]
+        widths2 = [1, 2, 3]
 
         port1 = Port(origin, 0, widths)
         port2 = port1.with_width(widths2)
