@@ -28,3 +28,14 @@ class WaveguideTestCase(unittest.TestCase):
         self.assertAlmostEqual(wg.current_port.origin[0], 10)
         self.assertAlmostEqual(wg.current_port.origin[1], 10)
         self.assertAlmostEqual(abs(wg.current_port.angle), math.pi)
+
+    def test_waveguide_multiple_widths(self):
+        widths = [1, 2, 1]
+        
+        some_path = lambda t: [10 * t, t]
+        # some_path_d = lambda t: [10, 10]
+        
+        wg = Waveguide([0, 0], 0, widths)
+        wg.add_straight_segment(100)
+        wg.add_parameterized_path(some_path)
+        wg.get_shapely_object()
