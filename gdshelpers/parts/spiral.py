@@ -300,7 +300,9 @@ class Spiral2:
         a_in, a_out = a - self.winding_direction * self.offset, a + self.winding_direction * self.offset
         b = 2*(np.sum(self.width) + self.gap) / (2.*np.pi)
         
-        # Rotate the spiral such that the input facet of the spiral has an [1,0] normal vector
+        # Rotate the spiral such that the input facet of the spiral has an [1,0] normal vector.
+        # (The tangent of a archimedean spiral is slightly different to that of a circle, so at the top it has a normal vector slightly
+        # different that [1,0].)
         in_args = dict(a=a_in, b=b, max_theta=self.total_theta, theta_offset=0, direction=self.winding_direction)
         d_in_args = dict(a=a, b=b, max_theta=self.total_theta, theta_offset=0, direction=self.winding_direction)
         d_in_0 = _d_spiral_out_path(1, **d_in_args)
@@ -343,10 +345,10 @@ class Spiral2:
                                             path_function_supports_numpy=True)
 
         if self.output_type == "inline" or self.output_type == "inline_rel":
-            outer_r = (a + b*self.total_theta)
+            y_diff = self._origin_port.origin[1]-self._wg.port.origin[1]
             self._wg.add_straight_segment(a + b*(self.out_theta+0.5*np.pi) - self.min_bend_radius)
             self._wg.add_bend(0.5*self.winding_direction*np.pi, self.min_bend_radius)
-            self._wg.add_straight_segment((2*outer_r - 2 * self.min_bend_radius))
+            self._wg.add_straight_segment((y_diff - 2 * self.min_bend_radius))
             self._wg.add_bend(-0.5*self.winding_direction*np.pi, self.min_bend_radius)
 
     def get_shapely_object(self):
