@@ -177,6 +177,9 @@ def _circle_segment_params(a, b):
     return circ_angle, missing_height, circ_angle * a + missing_height
 
 def _spiral_out_path(t, a, b, max_theta, theta_offset=0, direction=-1):
+    """
+    :param theta_offset: This basically rotates the spiral by the given angle, but doesn't change the length of the spiral.
+    """
     theta = t * max_theta
     r = a + b * theta
     #return np.array([r*np.sin(theta + theta_offset), -r*direction*np.cos(theta + theta_offset) + direction*a])# + np.array([0, direction*a])[:, None]
@@ -193,29 +196,29 @@ def _d_spiral_out_path(t, a, b, max_theta, theta_offset=0, direction=-1):
             b * max_theta * np.array([np.sin(theta + theta_offset), -direction*np.cos(theta + theta_offset)])
 
 
-class Spiral2:
+class ArchSpiral:
     """
     An archimedean spiral, where the length can be numerically calculated.
 
     Options for the output position are:
 
-        * `inline`
+        * `"inline"`
             Output on the same height and direction as input.
 
-        * `inline_rel`
+        * `"inline_rel"`
             Output on the same height and direction as input, but the considered length is only the difference of the spiral compared to a straight path.
             This is useful when building MZIs, where the other path is parallel to the spiral.
 
-        * `opposite`
+        * `"opposite"`
             Output at opposite direction as input
 
-        * `single_inside`
+        * `"single_inside"`
             The spiral will only do a single turn and stop in the inside
 
-        * `single_outside`
+        * `"single_outside"`
             The spiral will only do a single turn, but start in the inside and stop at the outside
 
-        * <phi>, where phi is the angle where the output should be located
+        * `<phi>`, where phi is the angle where the output should be located
     """
 
     def __init__(self, origin, angle, width, gap, min_bend_radius, theta, output_type='opposite', offset=0, winding_direction='right', sample_distance=0.50, sample_points=100):
@@ -363,33 +366,27 @@ if __name__ == '__main__':
     def demo_spiral(origin, output_type, target_length, gap, port_y_offset=0, width=1):
         wg = Waveguide(origin + np.array([0, port_y_offset]), 0, width)
         wg.add_straight_segment(30)
-        spiral = Spiral2.make_at_port_with_length(wg.current_port, gap=gap, min_bend_radius=35., target_length=target_length, output_type=output_type, sample_distance=1)
+        spiral = ArchSpiral.make_at_port_with_length(wg.current_port, gap=gap, min_bend_radius=35., target_length=target_length, output_type=output_type, sample_distance=1)
         text = Text(np.array([150, -130]) + origin, 20, "output: {}\n\nlength: {} um\nreal_length: {:.4f}um".format(output_type, target_length, spiral.length))
         spiral.wg.add_straight_segment(30)
         cell.add_to_layer(1, wg, spiral)
         cell.add_to_layer(2, text)
 
     # Create normal demo spirals
-    
     for i,output_type in enumerate(['opposite', 'inline', 'inline_rel', -0.5*np.pi, 0.25*np.pi, np.pi]):
         demo_spiral(((i//4)*700, (i%4)*250), output_type, 5000, gap=3., width=1)
 
     # Create spirals with single turn
     demo_spiral((1*700, 2*250), 'single_inside', 2000, gap=1.5)
     demo_spiral((1*700, 3*250), 'single_outside', 2000, gap=1.5, port_y_offset=-150)
-    
 
-    """wg = Waveguide(np.array([0, 0]), 0, 1.3)
-    wg.add_straight_segment(30)
-    spiral = Spiral2.make_at_port_with_length(wg.current_port, gap=80., min_bend_radius=35., target_length=20000, output_type='opposite', sample_distance=10)
-    #spiral.wg.add_straight_segment(30)
-    cell.add_to_layer(1, wg, spiral)"""
-
-    demo_spiral((2000, 0), 'inline', 11000, gap=10., width=1)
+    """demo_spiral((2000, 0), 'inline', 11000, gap=10., width=1)
     demo_spiral((2000, 600), 'inline', 11000, gap=18., width=1)
     demo_spiral((2000, 1200), 'inline', 11000, gap=20., width=1)
     demo_spiral((2000, 3*800), 'inline', 11000, gap=21., width=[1,5,1,5,1])
-    demo_spiral((2000, 4*800), 'inline', 11000, gap=54., width=1)
+    demo_spiral((2000, 4*800), 'inline', 11000, gap=54., width=1)"""
+
+
 
     cell.show()
     cell.save("spiral_test")
