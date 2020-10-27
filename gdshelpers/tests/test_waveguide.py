@@ -32,7 +32,7 @@ class WaveguideTestCase(unittest.TestCase):
     def test_waveguide_multiple_widths(self):
         widths = [1, 2, 1]
         
-        some_path = lambda t: [10*t, 10*t]
+        some_path = lambda t: [10 * t, t]
         # some_path_d = lambda t: [10, 10]
         
         wg = Waveguide([0, 0], 0, widths)

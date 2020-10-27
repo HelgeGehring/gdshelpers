@@ -258,14 +258,15 @@ class Waveguide:
                 sample_width = width(sample_t)
             else:
                 sample_width = np.array([width(x) for x in sample_t])
+            if sample_width.ndim == 1:  # -> width returned a scalar for each x
+                sample_width = sample_width[..., np.newaxis]
         else:
             if width is None:
                 sample_width = np.atleast_1d(self._current_port.width)
             else:
                 sample_width = np.atleast_1d(width)
+            sample_width = sample_width[np.newaxis, ...]  # width constant -> new axis along path
 
-        if sample_width.ndim == 1:
-            sample_width = sample_width[..., None]
         # Now we have everything to calculate the polygon
         polygons = []
         half_width = np.sum(sample_width, axis=-1) / 2
