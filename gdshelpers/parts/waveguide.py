@@ -470,9 +470,9 @@ class Waveguide:
         end_deriv = np.array([np.cos(angle_diff), np.sin(angle_diff)])
 
         self.add_parameterized_path(path=lambda t: np.array([0, 0]) * (1 - t) + end_point * t,
-                                        width=lambda t: start_width * (1 - t) + final_width * t,
-                                        path_derivative=lambda t: start_deriv * (1 - t) + end_deriv * t,
-                                        sample_points=2, sample_distance=0)
+                                    width=lambda t: start_width * (1 - t) + final_width * t,
+                                    path_derivative=lambda t: start_deriv * (1 - t) + end_deriv * t,
+                                    sample_points=2, sample_distance=0)
 
         return self
 

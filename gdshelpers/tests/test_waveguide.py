@@ -32,44 +32,39 @@ class WaveguideTestCase(unittest.TestCase):
 
     def test_waveguide_multiple_widths(self):
         widths = [1, 2, 1]
-        
-        some_path = lambda t: [10 * t, t]
-        # some_path_d = lambda t: [10, 10]
-        
+
         wg = Waveguide([0, 0], 0, widths)
         wg.add_straight_segment(100)
-        wg.add_parameterized_path(some_path)
+        wg.add_parameterized_path(lambda t: [10 * t, t])
         wg.get_shapely_object()
 
     def test_waveguide_add_route_straight_to_port(self):
         import numpy as np
         start_port = Port([0, 0], 0.5*np.pi, 1)
-        end_port = Port([10, 10], 0.5*np.pi, 3)
 
-        wg = Waveguide.make_at_port(start_port)
-        wg.add_straight_segment(2)
-        wg.add_route_straight_to_port(end_port)
-        wg.add_straight_segment(2)
+        test_data = [
+            (Port([10, 10], 0.5*np.pi, 3), (10, 12)),
+            (Port([10, 10], 0, 3), (12, 10)),
+            (Port([10, 10], 0.25*np.pi, 3), (10+np.sqrt(2), 10+np.sqrt(2)))
+        ]
 
-        self.assertAlmostEqual(wg.current_port.angle, 0.5*np.pi)
-        self.assertAlmostEqual(wg.current_port.width, 3)
-        self.assertAlmostEqual(wg.current_port.origin[0], 10)
-        self.assertAlmostEqual(wg.current_port.origin[1], 12)
+        waveguides = []
+        for end_port, target_pos in test_data:
+            wg = Waveguide.make_at_port(start_port)
+            wg.add_straight_segment(2)
+            wg.add_route_straight_to_port(end_port)
+            wg.add_straight_segment(2)
 
-        end_port2 = Port([10, 10], 0, 3)
-        wg2 = Waveguide.make_at_port(start_port)
-        wg2.add_straight_segment(2)
-        wg2.add_route_straight_to_port(end_port2)
-        wg2.add_straight_segment(2)
+            waveguides.append(wg)
 
-        self.assertAlmostEqual((wg2.current_port.angle + 0.5) % (2*np.pi), 0.5)
-        self.assertAlmostEqual(wg2.current_port.width, 3)
-        self.assertAlmostEqual(wg2.current_port.origin[0], 12)
-        self.assertAlmostEqual(wg2.current_port.origin[1], 10)
+            self.assertAlmostEqual(wg.current_port.angle, end_port.angle)
+            self.assertAlmostEqual(wg.current_port.width, end_port.width)
+            self.assertAlmostEqual(wg.current_port.origin[0], target_pos[0])
+            self.assertAlmostEqual(wg.current_port.origin[1], target_pos[1])
 
-        """ # Enable to generate output
-        from gdshelpers.geometry.chip import Cell
+        # Enable to generate output
+        """from gdshelpers.geometry.chip import Cell
         cell = Cell("test")
-        cell.add_to_layer(11, wg)
-        cell.add_to_layer(12, wg2)
+        for i, wg in enumerate(waveguides):
+            cell.add_to_layer(1+i, wg)
         cell.save("wgtest.gds")"""
