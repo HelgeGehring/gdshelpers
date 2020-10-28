@@ -447,6 +447,35 @@ class Waveguide:
                                         on_line_only)
         return self
 
+    def add_route_straight_to_port(self, port):
+        """
+        Add a straight segment to a given port. The added segment will keep
+        the angle of the current port at the start and use the angle of the
+        target port at the end. If the ports are laterally shifted, this
+        will result in a trapezoidal shape.
+
+        The width will be linearly tapered to that of the target port.
+
+        :param port: Target port.
+        """
+        start_width = np.array(self.current_port.width)
+        final_width = np.array(port.width)
+
+        c, s = np.cos(-self.current_port.angle), np.sin(-self.current_port.angle)
+        R = np.array([[c, -s], [s, c]])
+        end_point = R @ (np.array(port.origin) - np.array(self.current_port.origin))
+
+        angle_diff = port.angle - self.current_port.angle
+        start_deriv = np.array([1, 0])
+        end_deriv = np.array([np.cos(angle_diff), np.sin(angle_diff)])
+
+        self.add_parameterized_path(path=lambda t: np.array([0, 0]) * (1 - t) + end_point * t,
+                                        width=lambda t: start_width * (1 - t) + final_width * t,
+                                        path_derivative=lambda t: start_deriv * (1 - t) + end_deriv * t,
+                                        sample_points=2, sample_distance=0)
+
+        return self
+
     def add_straight_segment_to_intersection(self, line_origin, line_angle, **line_kw):
         """
         Add a straight line until it intersects with an other line.
