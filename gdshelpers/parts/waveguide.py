@@ -157,8 +157,8 @@ class Waveguide:
 
         The width of the generated waveguide may be constant when passing a number, or variable along the path
         when passing an array or a callable function, using the same parameter as the path.
-        For generating slot/coplanar/... waveguides it is also possible to pass an array of the form
-        `[rail_width_1, gap_width_1, rail_width_2, ...]` which defines the width of each
+        For generating slot/coplanar/... waveguides, start with a `Port` which has an array of the form
+        `[rail_width_1, gap_width_1, rail_width_2, ...]` set as `width` and which defines the width of each
         rail and the gaps between the rails. This array is also allowed to end with a gap_width for positioning the
         rails asymmetrically to the path which can be useful e.g. for strip-to-slot mode converters.
 
@@ -263,9 +263,11 @@ class Waveguide:
         else:
             if width is None:
                 sample_width = np.atleast_1d(self._current_port.width)
+                sample_width = sample_width[np.newaxis, ...]  # width constant -> new axis along path
             else:
                 sample_width = np.atleast_1d(width)
-            sample_width = sample_width[np.newaxis, ...]  # width constant -> new axis along path
+                if sample_width.ndim == 1:  # -> width is a scalar for each x
+                    sample_width = sample_width[..., np.newaxis]
 
         # Now we have everything to calculate the polygon
         polygons = []

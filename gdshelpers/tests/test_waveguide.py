@@ -38,6 +38,22 @@ class WaveguideTestCase(unittest.TestCase):
         wg.add_parameterized_path(lambda t: [10 * t, t])
         wg.get_shapely_object()
 
+    def test_waveguide_width_array(self):
+        from shapely.geometry import Polygon
+
+        wg = Waveguide.make_at_port(Port([0, 0], 0, 1))
+        # passing a list of widths to add_parameterized_path should be
+        # interpreded as sample points, not as a slot waveguide
+        wg.add_parameterized_path(path=[[0, 0], [2, 0], [4, 0], [7, 0]],
+                                  width=[1, 1, 2, 3],
+                                  sample_distance=None)
+
+        test_poly = Polygon([(0.0, 0.5), (2.0, 0.5), (4.0, 1.0),
+                             (7.0, 1.5), (7.0, -1.5), (4.0, -1.0),
+                             (2.0, -0.5), (0.0, -0.5), (0.0, 0.5)])
+        diff = test_poly - wg.get_shapely_object()
+        self.assertAlmostEqual(0, diff.area)
+
     def test_waveguide_add_route_straight_to_port(self):
         import numpy as np
         start_port = Port([0, 0], 0.5*np.pi, 1)
