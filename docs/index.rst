@@ -121,6 +121,7 @@ _________________
    install_guide/guide
    tutorial/tutorial
    parts/parts
+   modifier/modifier
    api/modules
 
 
