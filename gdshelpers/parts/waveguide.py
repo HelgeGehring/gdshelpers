@@ -157,8 +157,8 @@ class Waveguide:
 
         The width of the generated waveguide may be constant when passing a number, or variable along the path
         when passing an array or a callable function, using the same parameter as the path.
-        For generating slot/coplanar/... waveguides it is also possible to pass an array of the form
-        `[rail_width_1, gap_width_1, rail_width_2, ...]` which defines the width of each
+        For generating slot/coplanar/... waveguides, start with a `Port` which has an array of the form
+        `[rail_width_1, gap_width_1, rail_width_2, ...]` set as `width` and which defines the width of each
         rail and the gaps between the rails. This array is also allowed to end with a gap_width for positioning the
         rails asymmetrically to the path which can be useful e.g. for strip-to-slot mode converters.
 
@@ -263,9 +263,11 @@ class Waveguide:
         else:
             if width is None:
                 sample_width = np.atleast_1d(self._current_port.width)
+                sample_width = sample_width[np.newaxis, ...]  # width constant -> new axis along path
             else:
                 sample_width = np.atleast_1d(width)
-            sample_width = sample_width[np.newaxis, ...]  # width constant -> new axis along path
+                if sample_width.ndim == 1:  # -> width is a scalar for each x
+                    sample_width = sample_width[..., np.newaxis]
 
         # Now we have everything to calculate the polygon
         polygons = []
@@ -445,6 +447,35 @@ class Waveguide:
         """
         self.add_route_single_circle_to(port.origin, port.inverted_direction.angle, port.width, max_bend_strength,
                                         on_line_only)
+        return self
+
+    def add_route_straight_to_port(self, port):
+        """
+        Add a straight segment to a given port. The added segment will keep
+        the angle of the current port at the start and use the angle of the
+        target port at the end. If the ports are laterally shifted, this
+        will result in a trapezoidal shape.
+
+        The width will be linearly tapered to that of the target port.
+
+        :param port: Target port.
+        """
+        start_width = np.array(self.current_port.width)
+        final_width = np.array(port.width)
+
+        c, s = np.cos(-self.current_port.angle), np.sin(-self.current_port.angle)
+        R = np.array([[c, -s], [s, c]])
+        end_point = R @ (np.array(port.origin) - np.array(self.current_port.origin))
+
+        angle_diff = port.angle - self.current_port.angle
+        start_deriv = np.array([1, 0])
+        end_deriv = np.array([np.cos(angle_diff), np.sin(angle_diff)])
+
+        self.add_parameterized_path(path=lambda t: np.array([0, 0]) * (1 - t) + end_point * t,
+                                    width=lambda t: start_width * (1 - t) + final_width * t,
+                                    path_derivative=lambda t: start_deriv * (1 - t) + end_deriv * t,
+                                    sample_points=2, sample_distance=0)
+
         return self
 
     def add_straight_segment_to_intersection(self, line_origin, line_angle, **line_kw):
