@@ -80,20 +80,29 @@ Our first device is going to be two grating couplers connected via a waveguide. 
 .. plot::
     :include-source:
 
+    import numpy as np
     from math import pi
     from gdshelpers.geometry.chip import Cell
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.coupler import GratingCoupler
 
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
 
-    left_coupler = GratingCoupler.make_traditional_coupler_from_database([0, 0], 1, 'sn330', 1550)
-    wg = Waveguide.make_at_port(left_coupler.port)
+    left_coupler = GratingCoupler.make_traditional_coupler(origin=(0, 0), **coupler_params)
+    wg = Waveguide.make_at_port(port=left_coupler.port)
     wg.add_straight_segment(length=10)
-    wg.add_bend(-pi/2, radius=50)
+    wg.add_bend(angle=-pi / 2, radius=50)
     wg.add_straight_segment(length=150)
-    wg.add_bend(-pi/2, radius=50)
+    wg.add_bend(angle=-pi / 2, radius=50)
     wg.add_straight_segment(length=10)
-    right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg.current_port, 'sn330', 1550)
+    right_coupler = GratingCoupler.make_traditional_coupler_at_port(port=wg.current_port, **coupler_params)
 
     cell = Cell('SIMPLE_DEVICE')
     cell.add_to_layer(1, left_coupler, wg, right_coupler)
@@ -108,19 +117,17 @@ The imports
 The first paragraph contains import statements. These tell python which packages it should now in this program.
 While the ``import`` statement just imports the whole package path, the ``from ... import ...`` statement imports an
 object to the local namespace. So instead of writing ``math.pi`` all the time, ``from math import pi`` allows us to
-just use ``pi`` since Python now knows where the ``pi`` object came from.
-
-Several modules are listed here:
+just use ``pi`` since Python now knows where the ``pi`` object came from. Several modules are listed here:
 
 * ``math`` which is part of the Python standard library and also contains stuff such as ``sin()`` etc.
 * ``gdshelpers`` which is what this tutorial is primarily about.
+
 
 The part objects
 """"""""""""""""
 
 We use two parts here: :class:`gdshelpers.parts.coupler.GratingCoupler` and
 :class:`gdshelpers.parts.waveguide.Waveguide` follow the links to get more information on them.
-
 When you look again at the source code creating the parts, you will see a ``Port`` mentioned. This port is just a
 construct designed to help the user. It bundles three properties inherent to any waveguide:
 
@@ -135,28 +142,22 @@ Output to GDS
 """""""""""""
 
 We previously created our part objects (``left_coupler``, ``wg`` and ``right_coupler``) but we need to add it to
-our GDS file somehow.
-
-A bit of background might be in order here:
-
-GDS files are really really old file formats. They have quite a lot of restrictions -- the most serious of them is
+our GDS file somehow. A bit of background might be in order here: GDS files are really really old file formats.
+They have quite a lot of restrictions -- the most serious of them is
 the limit of 200 points per line or polygon. The device we have just created has definitely more points, so it has to
 be sliced or 'fractured'. But fear not, the ``gdshelpers`` will take care of that for you.
-
 One of the nicer features of GDS files is their concept of CELLs. A layout can have several cells, each cell can contain
 other cells. If the cells are identical, GDS will just use a reference to the cell, saving time and space.
-
 In the code above we created a cell ``SIMPLE_DEVICE`` and added it to our layout.
-
 If you are a `Cadence EDA`_ user, you might be a bit confused now. This is because in Cadence most users just use one
 big cell for painting. But `Cadence EDA`_ actually supports cells.
 
 Finish the chip
 """""""""""""""
 
-Now, lets run that code by clicking on that green play icon in the top toolbar, which we used before in the 'Hello INT'
-example. You will see a new window showing you what you just designed. Additionally, a new file called ``chip.gds``
-appears in your project folder. The is the GDS file we wanted to create. You can open it in KLayout now:
+Now, lets run that code by clicking on that green play icon in the top toolbar. You will see a new window showing you
+what you just designed. Additionally, a new file called ``chip.gds`` appears in your project folder.
+The is the GDS file we wanted to create. You can open it in KLayout now.
 
 
 Exercises
@@ -323,9 +324,8 @@ Naturally, this also works for ``Points``::
 Boolean operations
 """"""""""""""""""
 Shapely_ includes a lot of boolean operations like ``a.difference(b)``, ``a.intersection(b)``,
-``a.symmetric_difference(b)`` as well as ``a.union(b)``. The names should be self-explanatory, right?
-
-So let's cut a hole into our triangle:
+``a.symmetric_difference(b)`` as well as ``a.union(b)``. The names should be self-explanatory, right? So let's cut a
+hole into our triangle:
 
 .. plot::
     :include-source:
@@ -345,8 +345,6 @@ So let's cut a hole into our triangle:
     cell.add_to_layer(1, cut_polygon)
     cell.show()
 
-Yeehaw!
-
 Using parts for polygon operation
 """""""""""""""""""""""""""""""""
 
@@ -364,7 +362,16 @@ When you go back to `Software design and intended usage`_ you will see that all 
     from gdshelpers.parts.coupler import GratingCoupler
     from gdshelpers.parts.resonator import RingResonator
 
-    coupler = GratingCoupler.make_traditional_coupler_from_database([0,0], 1, 'sn330', 1550)
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
+
+    coupler = GratingCoupler.make_traditional_coupler(origin=(0, 0), **coupler_params)
     coupler_shapely = coupler.get_shapely_object()
 
     # Do the manipulation
@@ -384,8 +391,17 @@ Now, most of the times you will have to deal with `multiple` parts and maybe Sha
 :func:`gdshelpers.geometry.geometric_union` function provides a fast way of merging a *list*
 (or other kind of iterable) into one big Shapely container::
 
-    coupler1 = GratingCoupler.make_traditional_coupler_from_database([0,0], 1, 'sn330', 1550)
-    coupler2 = GratingCoupler.make_traditional_coupler_from_database([250,0], 1, 'sn330', 1550)
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
+
+    coupler1 = GratingCoupler.make_traditional_coupler(origin=(0, 0), **coupler_params)
+    coupler2 = GratingCoupler.make_traditional_coupler(origin=(250, 0), **coupler_params)
 
 
     both_coupler_shapely = geometric_union([coupler1, coupler2])
@@ -402,8 +418,16 @@ Now, most of the times you will have to deal with `multiple` parts and maybe Sha
     from gdshelpers.parts.coupler import GratingCoupler
     from gdshelpers.parts.resonator import RingResonator
 
-    coupler1 = GratingCoupler.make_traditional_coupler_from_database([0,0], 1, 'sn330', 1550)
-    coupler2 = GratingCoupler.make_traditional_coupler_from_database([250,0], 1, 'sn330', 1550)
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
+    coupler1 = GratingCoupler.make_traditional_coupler(origin=(0, 0), **coupler_params)
+    coupler2 = GratingCoupler.make_traditional_coupler(origin=(250, 0), **coupler_params)
 
 
     both_coupler_shapely = geometric_union([coupler1, coupler2])
@@ -420,21 +444,29 @@ Sweeping a parameter space
 ==========================
 
 When you start designing your first chips you will probably have a simple chip design like the one introduced in
-`A simple chip`_.
-
-Let's say you already got a nice program which generates a cell with your device:
+`A simple chip`_.  Let's say you already got a nice program which generates a cell with your device:
 
 .. plot::
     :include-source:
 
+    import numpy as np
     from math import pi
     from gdshelpers.geometry.chip import Cell
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.coupler import GratingCoupler
     from gdshelpers.parts.resonator import RingResonator
 
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
+
     def generate_device_cell(resonator_radius, resonator_gap, origin=(25, 75)):
-        left_coupler = GratingCoupler.make_traditional_coupler_from_database(origin, 1, 'sn330', 1550)
+        left_coupler = GratingCoupler.make_traditional_coupler(origin, **coupler_params)
         wg1 = Waveguide.make_at_port(left_coupler.port)
         wg1.add_straight_segment(length=10)
         wg1.add_bend(-pi/2, radius=50)
@@ -446,25 +478,22 @@ Let's say you already got a nice program which generates a cell with your device
         wg2.add_straight_segment(length=75)
         wg2.add_bend(-pi/2, radius=50)
         wg2.add_straight_segment(length=10)
-        right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg2.current_port, 'sn330', 1550)
+        right_coupler = GratingCoupler.make_traditional_coupler_at_port(wg2.current_port, **coupler_params)
 
         cell = Cell('SIMPLE_RES_DEVICE')
         cell.add_to_layer(1, left_coupler, wg1, ring_res, wg2, right_coupler)
         return cell
 
-    example_device = generate_device_cell(20., 1.)
+    example_device = generate_device_cell(40., 1.)
     example_device.show()
 
 
 Note, how the ``generate_device_cell`` creates one single gdsCAD cell per device. For now we just picked two random
-values for the resonator radius and the gap between the waveguides.
-
-Now, how do we sweep over several parameters and add them to those nice layouts with labels and a frame around it?
-You could create a new cell and add a reference to the device cells to it. While adding a cell reference in gdsCAD you
-can also specify transformations like translation and/or rotation.
-
-For now, we are just after a simple standard layout, so we can use the :class:`.GridLayout` included in
-``gdshelpers``::
+values for the resonator radius and the gap between the waveguides. Now, how do we sweep over several parameters and
+add them to those nice layouts with labels and a frame around it? You could create a new cell and add a reference
+to the device cells to it. While adding a cell reference in gdsCAD you can also specify transformations like
+translation and/or rotation. For now, we are just after a simple standard layout, so we can use the :class:`.GridLayout`
+included in ``gdshelpers``::
 
     layout = GridLayout(title='Simple parameter sweep')
     radii = np.linspace(10, 20, 4)
@@ -513,7 +542,7 @@ For now, we are just after a simple standard layout, so we can use the :class:`.
 
 
     layout = GridLayout(title='Simple parameter sweep', frame_layer=0, text_layer=2, region_layer_type=None)
-    radii = np.linspace(10, 20, 4)
+    radii = np.linspace(20, 50, 4)
     gaps = np.linspace(0.1, 0.5, 5)
 
     # Add column labels
@@ -531,19 +560,14 @@ By default :class:`.GridLayout` will place all devices on a regular grid as clos
 maintaining a minimum spacing and aligning to write fields. If your original cell was optimized to write fields
 (this one was not), your generated layout will also be within the write fields. To profit from this, assume your
 write field starts at ``(0, 0)``. This is valid, even if your electron beam write starts its write field at the top left
-structure. The frame of the layout will force a correct write field in this case.
-
-If you worked with older versions of gdshelper, you might have used :class:`.TiledLayout` which was the initial attempt
-on a device layout manager. Unfortunately, it proved to be unflexible. If you want to pack your devices as close as
-possible in the x-direction. Pass ``tight=True`` to the GridLayout constructor.
-
-Region layers can either be placed per cell, or per layout. The region layer behaviour can be changed with the
-``region_layer_type`` and ``region_layer_on_labels`` parameters. Refere to the :class:`.TiledLayout` documentation for
-more details.
-
-Also note, that :func:`.GridLayout.generate_layout` returns `two` values. We have only used the first value
-``layout_cell``. The value in ``mapping`` will tell you where each device was placed. To make use of this, you have to
-pass a unique id when calling ``add_to_row``.
+structure. The frame of the layout will force a correct write field in this case. If you worked with older versions
+of gdshelper, you might have used :class:`.TiledLayout` which was the initial attempt on a device layout manager.
+Unfortunately, it proved to be unflexible. If you want to pack your devices as close as possible in the x-direction.
+Pass ``tight=True`` to the GridLayout constructor. Region layers can either be placed per cell, or per layout.
+The region layer behaviour can be changed with the ``region_layer_type`` and ``region_layer_on_labels`` parameters.
+Refere to the :class:`.TiledLayout` documentation for more details. Also note, that :func:`.GridLayout.generate_layout`
+returns `two` values. We have only used the first value ``layout_cell``. The value in ``mapping`` will tell you where
+each device was placed. To make use of this, you have to pass a unique id when calling ``add_to_row``.
 
 Generating electron beam lithography markers
 ============================================
@@ -565,10 +589,19 @@ the same method. Here is one example how global and local markers can be added:
     from gdshelpers.parts.resonator import RingResonator
     from gdshelpers.layout import GridLayout
     from gdshelpers.parts.marker import SquareMarker
+    from gdshelpers.geometry.ebl_frame_generators import raith_marker_frame
 
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
 
     def generate_device_cell(resonator_radius, resonator_gap, origin=(25, 75)):
-        left_coupler = GratingCoupler.make_traditional_coupler_from_database(origin, 1, 'sn330', 1550)
+        left_coupler = GratingCoupler.make_traditional_coupler(origin, **coupler_params)
         wg1 = Waveguide.make_at_port(left_coupler.port)
         wg1.add_straight_segment(length=10)
         wg1.add_bend(-pi / 2, radius=50)
@@ -580,7 +613,7 @@ the same method. Here is one example how global and local markers can be added:
         wg2.add_straight_segment(length=75)
         wg2.add_bend(-pi / 2, radius=50)
         wg2.add_straight_segment(length=10)
-        right_coupler = GratingCoupler.make_traditional_coupler_from_database_at_port(wg2.current_port, 'sn330', 1550)
+        right_coupler = GratingCoupler.make_traditional_coupler_at_port(wg2.current_port, **coupler_params)
 
         cell = Cell('SIMPLE_RES_DEVICE r={:.1f} g={:.1f}'.format(resonator_radius, resonator_gap))
         cell.add_to_layer(1, left_coupler, wg1, ring_res, wg2, right_coupler)
@@ -589,7 +622,7 @@ the same method. Here is one example how global and local markers can be added:
 
 
     layout = GridLayout(title='Simple parameter sweep', frame_layer=0, text_layer=2, region_layer_type=None)
-    radii = np.linspace(10, 20, 4)
+    radii = np.linspace(20, 50, 4)
     gaps = np.linspace(0.1, 0.5, 5)
 
     # Add column labels
@@ -601,9 +634,6 @@ the same method. Here is one example how global and local markers can be added:
             layout.add_to_row(generate_device_cell(radius, gap))
 
     layout_cell, mapping = layout.generate_layout()
-
-    from gdshelpers.geometry.ebl_frame_generators import raith_marker_frame
-
     layout_cell.add_frame(frame_layer=8, line_width=7)
     layout_cell.add_ebl_frame(layer=10, frame_generator=raith_marker_frame, n=2)
     layout_cell.show()
@@ -614,7 +644,7 @@ In addition to the EBL markers, we added a frame around our structures with ``ad
 
 Slot waveguides and mode converters
 ===================================
-So far only strip waveguides have been used. However, gdshelpers includes also slot waveguides and strip to slot mode
+So far, only strip waveguides have been used. However, gdshelpers includes also slot waveguides and strip-to-slot mode
 converters. Some examples are shown below:
 
 .. plot::
@@ -666,8 +696,8 @@ converters. Some examples are shown below:
     cell.show()
 
 The routing is very similar to the routing of a strip waveguide, meaning that a port (origin, angle and width) has to be
-defined, and waveguides elements can be added from this port. The only difference is that the width is not given by a scalar,
-as shown in the case of waveguide 1, but by an array, usually with an odd number of elements. In this array, each element
+defined, and waveguides elements can be added from this port. The only difference is that the width of the waveguide
+is not given by a scalar, as shown in the case of waveguide 1, but by an array, usually with an odd number of elements. In this array, each element
 with an odd number denotes the width of a rail (waveguide 2), while each element with an even number denotes the width of the slot between
 two rails. As in the case of strip waveguides, one can make use of tapering (waveguide 3), bends (waveguide 5_1 and 5_3)
 and all other kinds of routing functions that are available in the :class:`.Waveguide` class.
@@ -682,13 +712,12 @@ More advanced waveguide features
 ================================
 
 In the previous chapter, the waveguide part was already introduced and commonly used. While you might already be
-satisfied with what you got there - there are still a lot more useful hidden features.
+satisfied with what you got there, there are still a lot more useful hidden features.
 
 Chaining of ``add_`` calls
 """"""""""""""""""""""""""
 
 You will find yourself often calling several successive ``add_`` type methods which will use lots of source code space.
-
 Code such as this::
 
     wg = Waveguide.make_at_port(left_coupler.port)
@@ -718,9 +747,7 @@ Automatic routing
 
 Lot's of times you will want to connect two points, but you always have to calculate the distance and factor in the
 bending radius etc. Since this is boring work and prone to error, a lot of useful routing functions are include in the
-:class:`.Waveguide` class.
-
-Available functions are:
+:class:`.Waveguide` class. Available functions are:
 
  * :func:`.Waveguide.add_bezier_to` and :func:`.Waveguide.add_bezier_to_port`
  * :func:`.Waveguide.add_route_single_circle_to` and :func:`.Waveguide.add_route_single_circle_to_port`
@@ -740,9 +767,17 @@ documentation:
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.coupler import GratingCoupler
 
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
 
-    left_coupler = GratingCoupler.make_traditional_coupler_from_database([0, 0], 1, 'sn330', 1550)
-    right_coupler = GratingCoupler.make_traditional_coupler_from_database([250, 0], 1, 'sn330', 1550)
+    left_coupler = GratingCoupler.make_traditional_coupler((0,0), **coupler_params)
+    right_coupler = GratingCoupler.make_traditional_coupler((250,0), **coupler_params)
 
     wg = Waveguide.make_at_port(left_coupler.port)
     wg.add_straight_segment_until_y(50)
@@ -768,9 +803,17 @@ possible bend radius if no maximal bend radius is specified::
     from gdshelpers.parts.waveguide import Waveguide
     from gdshelpers.parts.coupler import GratingCoupler
 
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
 
-    left_coupler = GratingCoupler.make_traditional_coupler_from_database([0, 0], 1, 'sn330', 1550)
-    right_coupler = GratingCoupler.make_traditional_coupler_from_database([250, 0], 1, 'sn330', 1550)
+    left_coupler = GratingCoupler.make_traditional_coupler((0,0), **coupler_params)
+    right_coupler = GratingCoupler.make_traditional_coupler((250,0), **coupler_params)
 
     wg = Waveguide.make_at_port(left_coupler.port)
     wg.add_straight_segment_until_y(50)
@@ -798,8 +841,16 @@ smooth lines only. There will basically be no straight lines or circles. An exam
     from gdshelpers.parts.coupler import GratingCoupler
 
 
-    coupler = GratingCoupler.make_traditional_coupler_from_database([0, 0], 1, 'sn330', 1550)
+    coupler_params = {
+        'width': 1.3,
+        'full_opening_angle': np.deg2rad(40),
+        'grating_period': 1.155,
+        'grating_ff': 0.85,
+        'n_gratings': 20,
+        'taper_length': 16.
+    }
 
+    coupler = GratingCoupler.make_traditional_coupler((0,0), **coupler_params)
     wgs = list()
     for angle in np.linspace(-np.pi/2, np.pi/2, 10):
         # Calculate the target port
