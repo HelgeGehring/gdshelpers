@@ -84,3 +84,33 @@ class WaveguideTestCase(unittest.TestCase):
         for i, wg in enumerate(waveguides):
             cell.add_to_layer(1+i, wg)
         cell.save("wgtest.gds")"""
+
+    def test_route_to_port_functions(self):
+        """
+        Test consistency of route functions of the Waveguide class.
+        Verify that the port to be routed to points in the direction
+        of the waveguide to route from.
+        """
+        import numpy as np
+
+        xmax = 200
+
+        start_port = Port([0, 0], 0.5*np.pi, 1)
+        target_port = Port([xmax, 200], 0, 1)
+
+        wg1 = Waveguide.make_at_port(start_port)
+        wg1.add_route_single_circle_to_port(target_port.inverted_direction)
+
+        wg2 = Waveguide.make_at_port(start_port)
+        wg2.add_bezier_to_port(target_port.inverted_direction, bend_strength=50)
+
+        wg3 = Waveguide.make_at_port(start_port)
+        wg3.add_route_straight_to_port(target_port.inverted_direction)
+
+        # Check that they are all within the bounding box (to prevent routing from the wrong side)
+        # (This would fail, for example, for add_bezier_to_port if routed to target_port instead of
+        # target_port.inverted_direction, which both works)
+        for wg in [wg1, wg2, wg3]:
+            bounds = wg.get_shapely_object().bounds
+            print(bounds)
+            self.assertLessEqual(bounds[2], xmax)
