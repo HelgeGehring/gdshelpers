@@ -68,7 +68,7 @@ class WaveguideTestCase(unittest.TestCase):
         for end_port, target_pos in test_data:
             wg = Waveguide.make_at_port(start_port)
             wg.add_straight_segment(2)
-            wg.add_route_straight_to_port(end_port)
+            wg.add_route_straight_to_port(end_port.inverted_direction)
             wg.add_straight_segment(2)
 
             waveguides.append(wg)

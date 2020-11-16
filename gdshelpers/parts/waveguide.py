@@ -467,7 +467,7 @@ class Waveguide:
         R = np.array([[c, -s], [s, c]])
         end_point = R @ (np.array(port.origin) - np.array(self.current_port.origin))
 
-        angle_diff = port.angle - self.current_port.angle
+        angle_diff = port.inverted_direction.angle - self.current_port.angle
         start_deriv = np.array([1, 0])
         end_deriv = np.array([np.cos(angle_diff), np.sin(angle_diff)])
 
