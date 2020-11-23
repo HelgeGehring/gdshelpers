@@ -5,6 +5,9 @@ Unreleased
 ----------
 * Grating coupler: make_traditional_coupler now allows to apodize the period of the grating
 * Port: added with_width function to generate a copy of the Port with a certain width
+* Increased precision in add_straight_segment by evaluating derivative
+* Added add_route_straight_to_port to Waveguide
+* Fixed evaluation of width-parameter in add_parametrized_path
 * Stopped testing with Python 3.5, as it reached it's end-of-life and added a warning
 * Deprecated gdsCAD, as it isn't compatible with Python 3
 
