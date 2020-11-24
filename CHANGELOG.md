@@ -10,6 +10,7 @@ Unreleased
 * Fixed evaluation of width-parameter in add_parametrized_path
 * Stopped testing with Python 3.5, as it reached it's end-of-life and added a warning
 * Deprecated gdsCAD, as it isn't compatible with Python 3
+* Fixed cell.show
 
 1.1.2
 -----

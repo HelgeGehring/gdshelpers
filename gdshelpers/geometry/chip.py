@@ -531,7 +531,7 @@ class Cell:
         ax.set_xlim(bounds[0] - padding, bounds[2] + padding)
         ax.set_ylim(bounds[1] - padding, bounds[3] + padding)
         ax.set_aspect(1)
-        fig.show()
+        plt.show()
 
     def add_dlw_marker(self, label: str, layer: int, origin):
         """
