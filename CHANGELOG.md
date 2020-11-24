@@ -3,6 +3,9 @@ Changelog
 
 Unreleased
 ----------
+
+1.1.3
+-----
 * Grating coupler: make_traditional_coupler now allows to apodize the period of the grating
 * Port: added with_width function to generate a copy of the Port with a certain width
 * Increased precision in add_straight_segment by evaluating derivative
