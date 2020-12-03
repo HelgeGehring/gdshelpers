@@ -546,6 +546,18 @@ class Waveguide:
         self.add_straight_segment_to_intersection(port.origin, port.angle - np.pi / 2, **line_kw)
         return self
 
+    def add_left_bend(self, radius, angle=np.pi/2):
+        """
+        Add a left turn (90° or as defined by angle) with the given bend radius
+        """
+        return self.add_bend(angle, radius)
+
+    def add_right_bend(self, radius, angle=np.pi/2):
+        """
+        Add a right turn (90° or as defined by angle) with the given bend radius
+        """
+        return self.add_bend(-angle, radius)
+
 
 def _example():
     from gdshelpers.geometry.chip import Cell
