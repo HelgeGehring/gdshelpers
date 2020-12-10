@@ -48,17 +48,15 @@ def id_to_alphanumeric(column, row):
     return int_to_alphabet(row) + str(int(column))
 
 
-def parse_alphanumeric(text):
+def alphanumeric_to_id(text):
     """
     Do the reverse of `id_to_alphanumeric`.
-    Returns the (column, row) tuple.
+    :return: (column, row) tuple.
     """
-    regex = "([A-Z]*)[^0-9]*([0-9]*)"
-    m = re.match(regex, text.strip(), re.I)
+    regex = "([A-Z]*)([0-9]*)"
+    m = re.match(regex, text, re.I)
     letters, number = m.group(1), int(m.group(2))
-    letter_num = 0
-    for i in range(len(letters)):
-        letter_num += (ord(letters[i]) - 64) * (26 ** (len(letters) - i - 1))
+    letter_num = sum((ord(letter) - ord('A') + 1) * 26 ** i for i, letter in enumerate(letters[::-1]))
     return number, letter_num - 1
 
 
