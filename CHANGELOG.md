@@ -3,6 +3,8 @@ Changelog
 
 Unreleased
 ----------
+* Waveguide: added add_left_bend and add_right_bend to make code easier readable
+* added alphanumeric_to_id as an inverse of id_to_alphanumeric
 
 1.1.3
 -----
