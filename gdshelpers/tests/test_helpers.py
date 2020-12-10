@@ -16,7 +16,7 @@ class HelpersTestCase(unittest.TestCase):
     def test_id_to_alphanumeric(self):
         self.assertEqual(id_to_alphanumeric(4, 26 + 25), 'AZ4')
 
-    def test_parse_alphanumeric(self):
+    def test_alphanumeric_to_id(self):
         self.assertEqual((4, 26 + 25), alphanumeric_to_id('AZ4'))
 
         for pair in [(0, 0), (0, 10), (0, 100), (100, 0), (100, 100)]:
