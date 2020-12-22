@@ -84,7 +84,7 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
 
 
 def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000, max_points=4000, max_line_points=4000,
-                             timestamp=None, parallel=False):
+                             timestamp=None, parallel=False, max_workers=None):
     name = 'gdshelpers_exported_library'
     grid_step_unit = unit / grid_steps_per_unit
     timestamp = datetime.datetime.now() if timestamp is None else timestamp
@@ -113,7 +113,7 @@ def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000,
     # UNITS REAL_8 1/grid_steps_per_unit grid_step_unit
     if parallel:
         from concurrent.futures import ProcessPoolExecutor
-        with ProcessPoolExecutor() as pool:
+        with ProcessPoolExecutor(max_workers=max_workers) as pool:
             num = len(cells)
             for binary in pool.map(_cell_to_gdsii_binary, cells, (grid_steps_per_unit,) * num, (max_points,) * num,
                                    (max_line_points,) * num, (timestamp,) * num):

@@ -292,7 +292,7 @@ class Cell:
         import gdspy
         gdspy.LayoutViewer(library=self.get_gdspy_lib(), depth=10)
 
-    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False):
+    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False, max_workers=None):
         """
         Exports the layout and creates an DLW-file, if DLW-features are used.
 
@@ -305,6 +305,8 @@ class Cell:
         :param parallel: Defines if parallelization is used (only supported in Python 3).
             Standard value will be changed to True in a future version.
             Deactivating can be useful for debugging reasons.
+        :param max_workers: If parallel is True, this can be used to limit the number of parallel processes.
+            This can be useful if you run into out-of-memory errors otherwise.
         """
 
         if library is not None:
@@ -331,7 +333,8 @@ class Cell:
             import shutil
 
             with NamedTemporaryFile('wb', delete=False) as tmp:
-                write_cell_to_gdsii_file(tmp, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel)
+                write_cell_to_gdsii_file(tmp, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel,
+                                         max_workers=max_workers)
             shutil.move(tmp.name, name + '.gds')
 
         elif library == 'gdspy':
@@ -339,7 +342,7 @@ class Cell:
 
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
-                with ProcessPoolExecutor() as pool:
+                with ProcessPoolExecutor(max_workers=max_workers) as pool:
                     self.get_gdspy_cell(pool)
             else:
                 self.get_gdspy_cell()
@@ -348,7 +351,7 @@ class Cell:
             gdspy_cells = self.get_gdspy_lib().cell_dict.values()
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
-                with ProcessPoolExecutor() as pool:
+                with ProcessPoolExecutor(max_workers=max_workers) as pool:
                     binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
             else:
                 binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
@@ -360,7 +363,7 @@ class Cell:
 
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
-                with ProcessPoolExecutor() as pool:
+                with ProcessPoolExecutor(max_workers=max_workers) as pool:
                     cells = self.get_oasis_cells(grid_steps_per_micron, pool)
             else:
                 cells = self.get_oasis_cells(grid_steps_per_micron)
