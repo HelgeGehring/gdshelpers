@@ -101,7 +101,7 @@ class Simulation:
     def plot(self, fields):
         self.sim.plot2D(fields=fields, field_parameters={'alpha': 0.5, 'cmap': 'RdBu', 'interpolation': 'none'},
                         boundary_parameters={'hatch': 'o', 'linewidth': 1.5, 'facecolor': 'y', 'edgecolor': 'b',
-                                             'alpha': 0.3})
+                                             'alpha': 0.3}, frequency=0)
         plt.xlabel(r'$x$ [$\mathrm{\mu m}$]')
         plt.ylabel(r'$y$ [$\mathrm{\mu m}$]')
         plt.savefig('plot.pdf', transparent=True, bbox_inches='tight')
