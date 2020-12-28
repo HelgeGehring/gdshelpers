@@ -2,7 +2,8 @@ import numpy as np
 import meep as mp
 import matplotlib.pyplot as plt
 
-from gdshelpers.geometry.shapely_adapter import geometric_union, fracture_intelligently
+from gdshelpers.geometry.shapely_adapter import geometric_union, fracture_intelligently, \
+    shapely_collection_to_basic_objs
 
 import warnings
 
@@ -77,13 +78,18 @@ class Simulation:
         structures = []
         for structure in self.structures:
             polygon = geometric_union(structure['structure'] + structure['extra_structures'])
+            objs = shapely_collection_to_basic_objs(polygon)
 
-            for polygon in fracture_intelligently(polygon, np.inf, np.inf):
-                structures += [
-                    mp.Prism(vertices=[
-                        mp.Vector3(*point, 0 if self.reduce_to_2d else (structure['z_max'] + structure['z_min']) / 2)
-                        for point in polygon.exterior.coords[:-1]],
-                        material=structure['material'], height=structure['z_max'] - structure['z_min'])]
+            for obj in objs:
+                if obj.is_empty:
+                    continue
+                for polygon in fracture_intelligently(obj, np.inf, np.inf):
+                    structures += [
+                        mp.Prism(vertices=[
+                            mp.Vector3(*point,
+                                       0 if self.reduce_to_2d else (structure['z_max'] + structure['z_min']) / 2)
+                            for point in polygon.exterior.coords[:-1]],
+                            material=structure['material'], height=structure['z_max'] - structure['z_min'])]
 
         self.sim = mp.Simulation(mp.Vector3(*self.size), self.resolution,
                                  geometry=structures,
