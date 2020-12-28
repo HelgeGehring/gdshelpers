@@ -407,7 +407,7 @@ class Cell:
         """
         if not filename.endswith('.desc'):
             filename += '.desc'
-        with open(filename + '.desc', 'w') as f:
+        with open(filename, 'w') as f:
             json.dump(self.get_desc(), f, indent=True)
 
     def get_reduced_layer(self, layer: int):
