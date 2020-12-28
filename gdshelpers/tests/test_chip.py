@@ -180,3 +180,16 @@ class DeviceTestCase(unittest.TestCase):
         top.add_cell(child2, [0, 0])
         with self.assertRaises(ValueError):
             top.add_cell(child2, [100, 0])
+
+    def test_desc(self):
+        cell = Cell("desctest")
+        c1 = Cell("child1")
+        c1.add_to_desc("foo", 123)
+        cell.add_cell(c1, origin=(0, 0))
+        cell.add_cell(c1, origin=(100, 0), angle=2)
+
+        d = cell.get_desc()
+        self.assertTrue("child1" in d["cells"])
+        self.assertTrue("desctest" in d["cells"])
+        self.assertEqual("desctest", d["root"])
+        self.assertEqual(2, len(d["cells"]["desctest"]["cells"]))
