@@ -1,8 +1,38 @@
 Changelog
 =========
 
-1.1.0
+Unreleased
 ----------
+* Waveguide: added add_left_bend and add_right_bend to make code easier readable
+* added alphanumeric_to_id as an inverse of id_to_alphanumeric
+
+1.1.3
+-----
+* Grating coupler: make_traditional_coupler now allows to apodize the period of the grating
+* Port: added with_width function to generate a copy of the Port with a certain width
+* Increased precision in add_straight_segment by evaluating derivative
+* Added add_route_straight_to_port to Waveguide
+* Fixed evaluation of width-parameter in add_parametrized_path
+* Stopped testing with Python 3.5, as it reached it's end-of-life and added a warning
+* Deprecated gdsCAD, as it isn't compatible with Python 3
+* Fixed cell.show
+
+1.1.2
+-----
+* Added scale-parameter to save_image
+* fixed .dxf-export in Cell
+* Waveguide.add_parameterized_path now also supports an array as path_derivative
+* fixed add_dlw_marker, origin can now also be a list
+
+1.1.1
+-----
+* Removed \_\_future\_\_ imports and (object) in class definitions for Python 2
+* create_holes_for_under_etching now allows ovals and rectangles
+* add_route_single_circle_to_port now tapers the waveguide to match the width of the port
+* Bugfixes
+
+1.1.0
+-----
 * Added support for slot waveguides and coplanar waveguides
 * Direct GDSII-export is now the standard GDSII-writer
 * Added function for generating vortex traps

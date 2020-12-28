@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Alignment(object):
+class Alignment:
     """
     Alignment helper class.
 

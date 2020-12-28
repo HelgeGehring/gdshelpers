@@ -8,7 +8,7 @@ from gdshelpers.helpers import normalize_phase
 from gdshelpers.helpers.alignment import Alignment
 
 
-class Text(object):
+class Text:
     def __init__(self, origin, height, text='', alignment='left-bottom', angle=0., font='stencil', line_spacing=1.5,
                  true_bbox_alignment=False):
         self.origin = origin

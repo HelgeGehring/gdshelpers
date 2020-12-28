@@ -1,6 +1,7 @@
 import string
 import numpy as np
 import numpy.linalg as linalg
+import re
 
 
 def raith_eline_dosefactor_to_datatype(dose_factor):
@@ -45,6 +46,18 @@ def id_to_alphanumeric(column, row):
     :rtype: str
     """
     return int_to_alphabet(row) + str(int(column))
+
+
+def alphanumeric_to_id(text):
+    """
+    Do the reverse of `id_to_alphanumeric`.
+    :return: (column, row) tuple.
+    """
+    regex = "([A-Z]*)([0-9]*)"
+    m = re.match(regex, text, re.I)
+    letters, number = m.group(1), int(m.group(2))
+    letter_num = sum((ord(letter) - ord('A') + 1) * 26 ** i for i, letter in enumerate(letters[::-1]))
+    return number, letter_num - 1
 
 
 def normalize_phase(phase, zero_to_two_pi=False):

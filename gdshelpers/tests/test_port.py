@@ -30,3 +30,15 @@ class PortTestCase(unittest.TestCase):
             np.testing.assert_almost_equal(port[1:3].width, port[1:-1].width)
             np.testing.assert_almost_equal(port[2:3].origin, port[-2:-1].origin)
             np.testing.assert_almost_equal(port[2:3].width, port[-2:-1].width)
+
+    def test_with_width(self):
+        origin = (1, 1)
+        widths = [2, 1, 2, 1, 2]
+        widths2 = [1, 2, 3]
+
+        port1 = Port(origin, 0, widths)
+        port2 = port1.with_width(widths2)
+        np.testing.assert_almost_equal(port1.origin, port2.origin)
+        np.testing.assert_almost_equal(port1.angle, port2.angle)
+        np.testing.assert_almost_equal(port1.width, widths)
+        np.testing.assert_almost_equal(port2.width, widths2)

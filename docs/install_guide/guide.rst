@@ -11,16 +11,11 @@ need it. Download it from `git-scm.com <http://git-scm.com/downloads>`_. Keep th
 Download and install Python
 ===========================
 
-Anaconda as Python distribution
+CPython as Python distribution
 -------------------------------
 
-While you can basically use any Python interpreter (preferably Python 3), there are distribution which include a lot of nice
-extra modules for Python out of the box. This guide uses Anaconda by continuum.io. Head there now and
-`download <http://continuum.io/downloads>`_ the Windows installer.
-But **install Anaconda as local user**, which allows you to update and install more Python modules. When asked to add
-Anaconda to PATH and as default Python, make sure these options are checked.
-
-The installation will run for quite some time, go and get yourself a nice cup of creme coffee.
+While you can basically use any Python 3 interpreter (at least Python 3.5, preferably the newest version), in this guide we use CPython by python.org. Head there now and
+`download <https://www.python.org/downloads/>`_ the Windows installer. Make sure that the installer **adds CPython to PATH** and installs the Python package managment **pip**.
 
 
 PyCharm as IDE
@@ -38,27 +33,19 @@ Setting up Python in PyCharm
 
 Before doing any real work you will have to tell PyCharm which Python it should use. On the welcome screen, select
 ``Configure``, then ``Settings``. Add the Python interpreter in ``Project Interpreters`` and click
-on the gear in the upper right and then ``Add``. There you can add the Anaconda Python Interpreter by selecting ``System Interpreter``.
+on the gear in the upper right and then ``Add``. There you can add the Python Interpreter by selecting ``System Interpreter``.
 The right path should be already in the form.
 
-PyCharm will then parse all the installed modules of that Python installation. Since Anaconda comes with a lot of stuff
-this will take its time.
-
-Installing Shapely
-^^^^^^^^^^^^^^^^^^
-Normally new Python can be installed easily from command line or directly from an IDE such as PyCharm. In case of
-Shapely, the library which handles all the polygon stuff, needs the GEOS library installed as well.
-You can install both via the Conda Prompt (look for it in the start menu) using the command::
-
-    conda install shapely
+PyCharm will then parse all the installed modules of that Python installation.
 
 Installing the gdshelpers and optional dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Even under Windows, the command line is sometimes useful. In our case we use `pip`, which is the Python package
-managment. First install gdshelpers by executing::
+Even under Windows, the command line is sometimes useful. In our case we use `pip` to install gdshelpers with image-export directly by using the single command::
 
-    pip install gdshelpers
+    pip install gdshelpers[image_export]
+    
+For most users this configuration should be sufficient.
 
 Alternatively, you can also add the gdshelpers to your project using ``VCS --> Checkout from Version Control --> Git`` (the link is https://github.com/HelgeGehring/gdshelpers.git)
 and then ``Attach`` to add it to your project. Using this way, it is also possible to modify the gdshelpers and to contribute to the development.
@@ -68,11 +55,6 @@ For exporting the design to the OASIS-format you should install the library `fat
 In order to create GDSII-files, you can use the included GDSII-export or decide between `gdspy` (fully python 3 compatible, ``pip install gdspy``) and `gdsCAD` (also working under python 3, but not installable using `pip`).
 For directly generating pictures from the designs the package `descartes` needs to be installed (``pip install descartes``).
 
-Alternatively, installing the gdshelpers e.g. with image-export can directly be done using the single command::
-
-    pip install gdshelpers[image_export]
-
-For most users this configuration should be sufficient.
 
 Updating gdshelpers
 ^^^^^^^^^^^^^^^^^^^

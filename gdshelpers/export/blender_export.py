@@ -3,7 +3,7 @@ import os
 from gdshelpers.geometry import shapely_adapter
 
 
-class Shapely3d(object):
+class Shapely3d:
     """
     This class saves the values which will be given to blender
     and it also provides a method for output these values

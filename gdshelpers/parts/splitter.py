@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import math
 import numpy as np
 import shapely.geometry
@@ -10,7 +8,7 @@ from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.geometry import geometric_union
 
 
-class Splitter(object):
+class Splitter:
     def __init__(self, origin, angle, total_length, wg_width_root, sep, wg_width_branches=None, n_points=50,
                  implement_cadence_bug=False):
         self._origin = origin
@@ -182,7 +180,7 @@ class Splitter(object):
         return self._polygon
 
 
-class DirectionalCoupler(object):
+class DirectionalCoupler:
     def __init__(self, origin, angle, wg_width, length, gap, bend_radius, bend_angle=np.pi / 5.):
         """
         Creates a directional coupler
@@ -389,19 +387,17 @@ class MMI:
 
 
 def _example_mmi():
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
     mmi = MMI((80, 0), 0, 1, 20, 10, 2, 2)
 
-    cell = gdsCAD.core.Cell('Splitter')
-    cell.add(convert_to_gdscad(geometric_union([mmi])))
+    cell = Cell('Splitter')
+    cell.add_to_layer(1, mmi)
     cell.show()
 
 
 def _example():
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
     dc = DirectionalCoupler((0, 0), np.pi / 4, 1, 10, 1, 10)
     dc2 = DirectionalCoupler.make_at_port(dc.right_ports[1], 5, 2, 10, which=0)
@@ -413,8 +409,8 @@ def _example():
     mmi = MMI((80, 0), 0, 1, 20, 10, 2, 1)
     mmi2 = MMI.make_at_port(dc2.right_ports[1], 10, 10, 2, 2, 'i1')
 
-    cell = gdsCAD.core.Cell('Splitter')
-    cell.add(convert_to_gdscad(geometric_union((dc, dc2, wg, wg2, mmi, mmi2))))
+    cell = Cell('Splitter')
+    cell.add_to_layer(1, geometric_union((dc, dc2, wg, wg2, mmi, mmi2)))
     cell.show()
 
 

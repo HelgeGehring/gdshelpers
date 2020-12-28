@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import collections
 
 import numpy as np
@@ -16,7 +14,7 @@ from gdshelpers.helpers.bezier import CubicBezierCurve
 from gdshelpers.helpers.positive_resist import convert_to_positive_resist
 
 
-class Waveguide(object):
+class Waveguide:
     def __init__(self, origin, angle, width):
         self._current_port = Port(origin, angle, width)
         self._in_port = self._current_port.inverted_direction.copy()
@@ -104,6 +102,7 @@ class Waveguide(object):
             assert length >= 0, 'Length of straight segment must not be negative'
 
             self.add_parameterized_path(path=lambda t: [t * length, 0],
+                                        path_derivative=lambda t: [1, 0],
                                         width=lambda t: np.array(self.width) * (1 - t) + np.array(final_width) * t,
                                         sample_points=2, sample_distance=0)
         return self
@@ -156,9 +155,10 @@ class Waveguide(object):
         approach might be wasteful for paths like (x**2, y). You can suppress resampling for length by passing zero or
         none as sample_distance parameter.
 
-        The width of the generated waveguide may either be constant when passing a number or also be a callable
-        function, using the same parameter as the path. For generating slot/coplanar/... waveguides it is also possible
-        to pass an array of the form `[rail_width_1, gap_width_1, rail_width_2, ...]` which defines the width of each
+        The width of the generated waveguide may be constant when passing a number, or variable along the path
+        when passing an array or a callable function, using the same parameter as the path.
+        For generating slot/coplanar/... waveguides, start with a `Port` which has an array of the form
+        `[rail_width_1, gap_width_1, rail_width_2, ...]` set as `width` and which defines the width of each
         rail and the gaps between the rails. This array is also allowed to end with a gap_width for positioning the
         rails asymmetrically to the path which can be useful e.g. for strip-to-slot mode converters.
 
@@ -202,7 +202,7 @@ class Waveguide(object):
 
                 lengths = np.linspace(presample_coordinates_d1__cum_norm[0],
                                       presample_coordinates_d1__cum_norm[-1],
-                                      presample_coordinates_d1__cum_norm[-1] // sample_distance)
+                                      int(presample_coordinates_d1__cum_norm[-1] / sample_distance))
 
                 # First get the spline representation. This is needed since we manipulate these directly for roots
                 # finding.
@@ -232,15 +232,18 @@ class Waveguide(object):
         sample_coordinates = self._current_port.origin + np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates)
 
         # Calculate the derivative
-        if path_derivative:
-            assert callable(path_derivative), 'The derivative of the path function must be callable'
+        if callable(path_derivative):
             if path_function_supports_numpy:
                 sample_coordinates_d1 = np.array(path_derivative(sample_t)).T
             else:
                 sample_coordinates_d1 = np.array([path_derivative(x) for x in sample_t])
             sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
         else:
-            sample_coordinates_d1 = np.vstack((rotation_matrix[:, 0], np.diff(sample_coordinates, axis=0)))
+            if path_derivative is None:
+                sample_coordinates_d1 = np.vstack((rotation_matrix[:, 0], np.diff(sample_coordinates, axis=0)))
+            else:
+                sample_coordinates_d1 = np.array(path_derivative)
+                sample_coordinates_d1 = np.einsum('ij,kj->ki', rotation_matrix, sample_coordinates_d1)
 
         sample_coordinates_d1_norm = np.linalg.norm(sample_coordinates_d1, axis=1)
         sample_coordinates_d1_normed = sample_coordinates_d1 / sample_coordinates_d1_norm[:, None]
@@ -255,11 +258,16 @@ class Waveguide(object):
                 sample_width = width(sample_t)
             else:
                 sample_width = np.array([width(x) for x in sample_t])
+            if sample_width.ndim == 1:  # -> width returned a scalar for each x
+                sample_width = sample_width[..., np.newaxis]
         else:
-            sample_width = np.array([(width if width else self._current_port.width), ])
-
-        if sample_width.ndim == 1:
-            sample_width = sample_width[..., None]
+            if width is None:
+                sample_width = np.atleast_1d(self._current_port.width)
+                sample_width = sample_width[np.newaxis, ...]  # width constant -> new axis along path
+            else:
+                sample_width = np.atleast_1d(width)
+                if sample_width.ndim == 1:  # -> width is a scalar for each x
+                    sample_width = sample_width[..., np.newaxis]
 
         # Now we have everything to calculate the polygon
         polygons = []
@@ -441,6 +449,35 @@ class Waveguide(object):
                                         on_line_only)
         return self
 
+    def add_route_straight_to_port(self, port):
+        """
+        Add a straight segment to a given port. The added segment will keep
+        the angle of the current port at the start and use the angle of the
+        target port at the end. If the ports are laterally shifted, this
+        will result in a trapezoidal shape.
+
+        The width will be linearly tapered to that of the target port.
+
+        :param port: Target port.
+        """
+        start_width = np.array(self.current_port.width)
+        final_width = np.array(port.width)
+
+        c, s = np.cos(-self.current_port.angle), np.sin(-self.current_port.angle)
+        R = np.array([[c, -s], [s, c]])
+        end_point = R @ (np.array(port.origin) - np.array(self.current_port.origin))
+
+        angle_diff = port.inverted_direction.angle - self.current_port.angle
+        start_deriv = np.array([1, 0])
+        end_deriv = np.array([np.cos(angle_diff), np.sin(angle_diff)])
+
+        self.add_parameterized_path(path=lambda t: np.array([0, 0]) * (1 - t) + end_point * t,
+                                    width=lambda t: start_width * (1 - t) + final_width * t,
+                                    path_derivative=lambda t: start_deriv * (1 - t) + end_deriv * t,
+                                    sample_points=2, sample_distance=0)
+
+        return self
+
     def add_straight_segment_to_intersection(self, line_origin, line_angle, **line_kw):
         """
         Add a straight line until it intersects with an other line.
@@ -508,6 +545,18 @@ class Waveguide(object):
 
         self.add_straight_segment_to_intersection(port.origin, port.angle - np.pi / 2, **line_kw)
         return self
+
+    def add_left_bend(self, radius, angle=np.pi/2):
+        """
+        Add a left turn (90° or as defined by angle) with the given bend radius
+        """
+        return self.add_bend(angle, radius)
+
+    def add_right_bend(self, radius, angle=np.pi/2):
+        """
+        Add a right turn (90° or as defined by angle) with the given bend radius
+        """
+        return self.add_bend(-angle, radius)
 
 
 def _example():

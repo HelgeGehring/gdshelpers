@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import math
 import numpy as np
 import shapely.geometry
@@ -10,7 +8,7 @@ from gdshelpers.geometry import geometric_union
 from gdshelpers.parts.waveguide import Waveguide
 
 
-class CNT(object):
+class CNT:
     """
     Creates a CNT source (Electrodes + tapered waveguide) at waveguide port.
 

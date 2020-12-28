@@ -1,5 +1,3 @@
-from __future__ import division
-
 from math import sqrt
 import numpy as np
 from shapely.affinity import rotate, translate, scale
@@ -7,7 +5,7 @@ from shapely.geometry import Polygon, box
 from shapely.ops import cascaded_union
 
 
-class KITLogo(object):
+class KITLogo:
     """
     A simplified logo of the Karlsruhe Institute of Technology (KIT).
 
@@ -57,7 +55,7 @@ class KITLogo(object):
         return translate(logo, *self.origin)
 
 
-class WWULogo(object):
+class WWULogo:
     """
     WWU Logo with WWU written next to it
 
@@ -190,15 +188,14 @@ class WWULogo(object):
 
 
 def _example():
-    import gdsCAD.core
-    from gdshelpers.geometry import convert_to_gdscad
+    from gdshelpers.geometry.chip import Cell
 
     kit_logo = KITLogo([0, 0], 1)
     wwu_logo = WWULogo([0, 0], 1, 1)
 
-    cell = gdsCAD.core.Cell('LOGOS')
-    cell.add(convert_to_gdscad(kit_logo))
-    cell.add(convert_to_gdscad(translate(wwu_logo.get_shapely_object(), 2.5)))
+    cell = Cell('LOGOS')
+    cell.add_to_layer(1, kit_logo)
+    cell.add_to_layer(1, translate(wwu_logo.get_shapely_object(), 2.5))
     cell.show()
 
 

@@ -4,7 +4,7 @@ import numpy as np
 from gdshelpers.helpers import normalize_phase
 
 
-class Port(object):
+class Port:
     """
     Abstraction of a waveguide port.
 
@@ -188,6 +188,19 @@ class Port(object):
 
         port = self.copy()
         port.angle += angle
+        return port
+
+    def with_width(self, width):
+        """
+        Returns a new port, of which the width is set to the new value
+
+        :param width: Width of the resulting port
+        :return: The new port
+        :rtype: Port
+        """
+
+        port = self.copy()
+        port.width = width
         return port
 
     @property

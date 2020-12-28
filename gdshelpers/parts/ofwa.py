@@ -12,7 +12,7 @@ from gdshelpers.geometry import geometric_union
 from gdshelpers.helpers import normalize_phase
 
 
-class MultiPortSwitch(object):
+class MultiPortSwitch:
     def __init__(self, origin, angle, in_ports, out_ports, port_spacing, taper_length, taper_function, radius,
                  wg_bend_radius, displacement=0., minimal_final_spacing=None):
         self._origin = origin

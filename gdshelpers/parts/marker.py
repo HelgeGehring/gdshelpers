@@ -5,7 +5,7 @@ import shapely.affinity
 from gdshelpers.geometry import geometric_union
 
 
-class SquareMarker(object):
+class SquareMarker:
     def __init__(self, origin, size):
         """
         Creates a square marker
@@ -30,7 +30,7 @@ class SquareMarker(object):
         return shapely.affinity.translate(box, x - size / 2, y - size / 2)
 
 
-class CrossMarker(object):
+class CrossMarker:
     """
     Simple cross type marker with support for paddles.
 
@@ -76,7 +76,7 @@ class CrossMarker(object):
         return shapely.geometry.Polygon(points)
 
 
-class DLWMarker(object):
+class DLWMarker:
     def __init__(self, origin, box_size=2.5):
         self.origin = np.asarray(origin)
         self.box_size = box_size
@@ -88,7 +88,7 @@ class DLWMarker(object):
         return shapely.geometry.MultiPolygon([upper_box, lower_box])
 
 
-class DLWPrecisionMarker(object):
+class DLWPrecisionMarker:
     """
     A specific marker to test the writing accuracy/alignment of the Nanoscribe DLW machine.
 
@@ -116,7 +116,7 @@ class DLWPrecisionMarker(object):
         return shapely.affinity.translate(marker, self.origin[0], self.origin[1])
 
 
-class AutoStigmationMarker(object):
+class AutoStigmationMarker:
     def __init__(self, origin, maximum_feature_size=3., minimum_feature_size=0.1, reduction_factor=1.2, resolution=16):
         self.origin = origin
         self.maximum_feature_size = maximum_feature_size
