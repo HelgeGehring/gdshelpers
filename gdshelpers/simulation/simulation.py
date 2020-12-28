@@ -77,8 +77,8 @@ class Simulation:
 
         structures = []
         for structure in self.structures:
-            polygon = geometric_union(structure['structure'] + structure['extra_structures']).buffer(
-                np.finfo(np.float32).eps, resolution=0)
+            polygon = geometric_union(structure['structure'] + structure['extra_structures']) \
+                .buffer(np.finfo(np.float32).eps, resolution=0).simplify(np.finfo(np.float32).eps)
             objs = shapely_collection_to_basic_objs(polygon)
 
             for obj in objs:
