@@ -220,11 +220,13 @@ class Cell:
         """
         def walk_cells(cell, out_dict):
             if cell.name not in out_dict:
-                out_dict[cell.name] = {
-                    'cells': {child['cell'].name: dict(offset=tuple(child['origin']),
-                                                       angle=child['angle'] or 0) for child in cell.cells},
-                    **cell.desc
-                }
+                cellrefs = []
+                for child in cell.cells:
+                    child_dict = child.copy()
+                    child_dict['cell'] = child_dict['cell'].name
+                    cellrefs.append(child_dict)
+
+                out_dict[cell.name] = {'cells': cellrefs, **cell.desc}
 
                 for child in cell.cells:
                     walk_cells(child['cell'], out_dict)

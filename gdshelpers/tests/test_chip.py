@@ -193,3 +193,4 @@ class DeviceTestCase(unittest.TestCase):
         self.assertTrue("desctest" in d["cells"])
         self.assertEqual("desctest", d["root"])
         self.assertEqual(2, len(d["cells"]["desctest"]["cells"]))
+        self.assertEqual("child1", d["cells"]["desctest"]["cells"][0]["cell"])
