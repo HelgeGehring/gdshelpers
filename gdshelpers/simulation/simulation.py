@@ -66,8 +66,8 @@ class Simulation:
 
         :param kwargs: Parameters which are directly passed to Meep
         """
-        z_min = np.min([structure['z_min'] for structure in self.structures])
-        z_max = np.max([structure['z_max'] for structure in self.structures])
+        z_min = np.min([structure['z_min'] for structure in self.structures if structure['structure']])
+        z_max = np.max([structure['z_max'] for structure in self.structures if structure['structure']])
 
         bounds = geometric_union((geometric_union(x['structure']) for x in self.structures)).bounds
         size = np.array((bounds[2] - bounds[0], bounds[3] - bounds[1], (z_max - z_min)))
