@@ -66,7 +66,8 @@ class Simulation:
 
         :param kwargs: Parameters which are directly passed to Meep
         """
-        z_min, z_max = [np.min([structure[z_] for structure in self.structures]) for z_ in ['z_min', 'z_max']]
+        z_min = np.min([structure['z_min'] for structure in self.structures])
+        z_max = np.max([structure['z_max'] for structure in self.structures])
 
         bounds = geometric_union((geometric_union(x['structure']) for x in self.structures)).bounds
         size = np.array((bounds[2] - bounds[0], bounds[3] - bounds[1], (z_max - z_min)))
@@ -87,8 +88,7 @@ class Simulation:
                 for polygon in fracture_intelligently(obj, np.inf, np.inf):
                     structures += [
                         mp.Prism(vertices=[
-                            mp.Vector3(*point,
-                                       0 if self.reduce_to_2d else (structure['z_max'] + structure['z_min']) / 2)
+                            mp.Vector3(*point, 0 if self.reduce_to_2d else structure['z_min'])
                             for point in polygon.exterior.coords[:-1]],
                             material=structure['material'], height=structure['z_max'] - structure['z_min'])]
 
