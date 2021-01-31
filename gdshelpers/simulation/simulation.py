@@ -177,12 +177,10 @@ def example_mmi():
 
     # mp.quiet(True)
 
-    dc = DirectionalCoupler((0, 0), 0, 1.3, length=52, gap=.45, bend_radius=20, bend_angle=np.pi / 10)
-    dc.input_ports = [dc.left_ports[0]]
-    dc.output_ports = [dc.right_ports[0], dc.right_ports[1]]
-
-    mmi = dc
-
+    mmi = MMI((0, 0), 0, 1.3, length=42, width=7.7, num_inputs=2, num_outputs=2)  # , taper_width=3)
+    # mmi = Splitter((0, 0), 0, wg_width_root=1.15, sep=5, total_length=40)
+    mmi.input_ports = [mmi.input_ports[0]]
+    mmi.output_ports = [mmi.left_branch_port, mmi.right_branch_port]
     wgs = [Waveguide.make_at_port(port).add_straight_segment(4) for port in [mmi.input_ports[0]] + mmi.output_ports]
 
     sim = Simulation(resolution=15, reduce_to_2d=True)
