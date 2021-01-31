@@ -11,4 +11,4 @@ if sys.version_info < (3, 6, 0):
 
 configuration = _Configuration()
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
