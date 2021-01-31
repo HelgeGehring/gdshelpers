@@ -292,7 +292,7 @@ class Cell:
         import gdspy
         gdspy.LayoutViewer(library=self.get_gdspy_lib(), depth=10)
 
-    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False):
+    def save(self, name=None, library=None, grid_steps_per_micron=1000, parallel=False, max_workers=None):
         """
         Exports the layout and creates an DLW-file, if DLW-features are used.
 
@@ -305,6 +305,8 @@ class Cell:
         :param parallel: Defines if parallelization is used (only supported in Python 3).
             Standard value will be changed to True in a future version.
             Deactivating can be useful for debugging reasons.
+        :param max_workers: If parallel is True, this can be used to limit the number of parallel processes.
+            This can be useful if you run into out-of-memory errors otherwise.
         """
 
         if library is not None:
@@ -317,8 +319,8 @@ class Cell:
         elif name.endswith('.gds'):
             name = name[:-4]
             library = library or 'gdshelpers'
-        elif name.endswith('.oasis'):
-            name = name[:-6]
+        elif name.endswith('.oas'):
+            name = name[:-4]
             library = library or 'fatamorgana'
         elif name.endswith('.dxf'):
             name = name[:-4]
@@ -331,7 +333,8 @@ class Cell:
             import shutil
 
             with NamedTemporaryFile('wb', delete=False) as tmp:
-                write_cell_to_gdsii_file(tmp, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel)
+                write_cell_to_gdsii_file(tmp, self, grid_steps_per_unit=grid_steps_per_micron, parallel=parallel,
+                                         max_workers=max_workers)
             shutil.move(tmp.name, name + '.gds')
 
         elif library == 'gdspy':
@@ -339,7 +342,7 @@ class Cell:
 
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
-                with ProcessPoolExecutor() as pool:
+                with ProcessPoolExecutor(max_workers=max_workers) as pool:
                     self.get_gdspy_cell(pool)
             else:
                 self.get_gdspy_cell()
@@ -348,7 +351,7 @@ class Cell:
             gdspy_cells = self.get_gdspy_lib().cell_dict.values()
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
-                with ProcessPoolExecutor() as pool:
+                with ProcessPoolExecutor(max_workers=max_workers) as pool:
                     binary_cells = pool.map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
             else:
                 binary_cells = map(gdspy.Cell.to_gds, gdspy_cells, [grid_steps_per_micron] * len(gdspy_cells))
@@ -360,30 +363,12 @@ class Cell:
 
             if parallel:
                 from concurrent.futures import ProcessPoolExecutor
-                with ProcessPoolExecutor() as pool:
+                with ProcessPoolExecutor(max_workers=max_workers) as pool:
                     cells = self.get_oasis_cells(grid_steps_per_micron, pool)
             else:
                 cells = self.get_oasis_cells(grid_steps_per_micron)
 
             layout.cells = [cells[0]] + list(set(cells[1:]))
-
-            # noinspection PyUnresolvedReferences
-            def replace_names_by_ids(oasis_layout):
-                name_id = {}
-                for cell_id, cell in enumerate(oasis_layout.cells):
-                    if cell.name.string in name_id:
-                        raise RuntimeError(
-                            'Each cell name should be unique, name "' + cell.name.string + '" is used multiple times')
-                    name_id[cell.name.string] = cell_id
-                    cell.name = cell_id
-                for cell in oasis_layout.cells:
-                    for placement in cell.placements:
-                        placement.name = name_id[placement.name.string]
-
-                oasis_layout.cellnames = {v: k for k, v in name_id.items()}
-
-            # improves performance for reading oasis file and workaround for fatamorgana-bug
-            replace_names_by_ids(layout)
 
             with open(name + '.oas', 'wb') as f:
                 layout.write(f)
@@ -407,7 +392,7 @@ class Cell:
         """
         if not filename.endswith('.desc'):
             filename += '.desc'
-        with open(filename + '.desc', 'w') as f:
+        with open(filename, 'w') as f:
             json.dump(self.get_desc(), f, indent=True)
 
     def get_reduced_layer(self, layer: int):
