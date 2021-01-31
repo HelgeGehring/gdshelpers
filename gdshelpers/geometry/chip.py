@@ -319,8 +319,8 @@ class Cell:
         elif name.endswith('.gds'):
             name = name[:-4]
             library = library or 'gdshelpers'
-        elif name.endswith('.oasis'):
-            name = name[:-6]
+        elif name.endswith('.oas'):
+            name = name[:-4]
             library = library or 'fatamorgana'
         elif name.endswith('.dxf'):
             name = name[:-4]
@@ -369,24 +369,6 @@ class Cell:
                 cells = self.get_oasis_cells(grid_steps_per_micron)
 
             layout.cells = [cells[0]] + list(set(cells[1:]))
-
-            # noinspection PyUnresolvedReferences
-            def replace_names_by_ids(oasis_layout):
-                name_id = {}
-                for cell_id, cell in enumerate(oasis_layout.cells):
-                    if cell.name.string in name_id:
-                        raise RuntimeError(
-                            'Each cell name should be unique, name "' + cell.name.string + '" is used multiple times')
-                    name_id[cell.name.string] = cell_id
-                    cell.name = cell_id
-                for cell in oasis_layout.cells:
-                    for placement in cell.placements:
-                        placement.name = name_id[placement.name.string]
-
-                oasis_layout.cellnames = {v: k for k, v in name_id.items()}
-
-            # improves performance for reading oasis file and workaround for fatamorgana-bug
-            replace_names_by_ids(layout)
 
             with open(name + '.oas', 'wb') as f:
                 layout.write(f)
