@@ -4,3 +4,4 @@ shapely
 scipy
 qrcode
 descartes
+m2r2
