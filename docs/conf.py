@@ -20,6 +20,7 @@ extensions = [
     'sphinx.ext.imgmath',
     'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.graphviz',
+    'm2r2'
 ]
 
 plot_rcparams = {'savefig.bbox': 'tight'}

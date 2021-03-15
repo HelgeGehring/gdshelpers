@@ -123,6 +123,7 @@ _________________
    parts/parts
    modifier/modifier
    api/modules
+   changelog/changelog
 
 
 .. only:: html
