@@ -280,7 +280,7 @@ class Waveguide:
             poly_path = np.concatenate([poly_path_1, poly_path_2[::-1, :]])
 
             assert shapely.geometry.LineString(poly_path).is_simple, \
-                'Outer lines of parameterized wg intersect. Try using lower bend radii or smaller a smaller wg'
+                'Outer lines of parameterized wg intersect. Try using larger bend radii or smaller a smaller wg'
 
             # Now add the shapely objects and do book keeping
             polygon = shapely.geometry.Polygon(poly_path)
