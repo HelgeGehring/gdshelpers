@@ -4,6 +4,7 @@ Changelog
 Unreleased
 ----------
 * GDSII-export: Added support for LineStrings
+* Added meep integration
 
 1.1.4
 -----
@@ -46,7 +47,6 @@ Unreleased
 * Added function for generating vortex traps
 * Improved shape generation performance of waveguide
 * Strip to slot mode converter added
-* Added meep integration
 * Bugfixes
 
 1.0.4
