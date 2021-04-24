@@ -9,7 +9,7 @@ from struct import pack
 from io import BytesIO
 import numpy as np
 
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, LineString
 
 
 def _real_to_8byte(value):
@@ -28,25 +28,31 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
         b.write(pack('>2H', 4 + len(name), 0x0606) + name.encode('ascii'))  # STRNAME STRING cell_name
 
         for layer, polygons in cell.get_fractured_layer_dict(max_points, max_line_points).items():
-            for polygon in polygons:
-                if not isinstance(polygon, Polygon):
+            for shapely_object in polygons:
+                if isinstance(shapely_object, Polygon):
+                    if shapely_object.interiors:
+                        raise AssertionError('GDSII only supports polygons without holes')
+                    coords = list(shapely_object.exterior.coords) + [shapely_object.exterior.coords[0]]
+                    b.write(pack('>8H', 4, 0x0800,  # BOUNDARY NO_DATA
+                                 6, 0x0D02, layer,  # LAYER INTEGER_2 layer
+                                 6, 0x0E02, layer))  # DATATYPE INTEGER_2 datatype
+                elif isinstance(shapely_object, LineString):
+                    coords = shapely_object.coords
+                    b.write(pack('>8H', 4, 0x0900,  # PATH NO_DATA
+                                 6, 0x0D02, layer,  # LAYER INTEGER_2 layer
+                                 6, 0x0E02, layer))  # DATATYPE INTEGER_2 datatype
+                else:
                     import warnings
                     warnings.warn(
-                        'Shapely object of type ' + str(type(polygon)) + ' not convertible to GDSII, skipping...')
+                        'Shapely object of type ' + str(
+                            type(shapely_object)) + ' not convertible to GDSII, skipping...')
                     continue
-                if polygon.interiors:
-                    raise AssertionError('GDSII only supports polygons without holes')
-                xy = np.round(
-                    np.array(
-                        list(polygon.exterior.coords) + [polygon.exterior.coords[0]]) * grid_steps_per_unit).astype(
-                    '>i4')
-                b.write(pack('>8H', 4, 0x0800,  # BOUNDARY NO_DATA
-                             6, 0x0D02, layer,  # LAYER INTEGER_2 layer
-                             6, 0x0E02, layer))  # DATATYPE INTEGER_2 datatype
+
+                xy = np.round(np.array(coords) * grid_steps_per_unit).astype('>i4')
                 for start in range(0, xy.shape[0], 8191):  # Split in Blocks of 8191 points
                     stop = min(start + 8191, xy.shape[0])
                     b.write(pack('>2H', 4 + 8 * (stop - start), 0x1003))  # XY INTEGER_4
-                    b.write(xy[start:stop].tobytes())  # coords of polygon
+                    b.write(xy[start:stop].tobytes())  # coords of shapely_object
                 b.write(pack('>2H', 4, 0x1100))  # ENDEL NO_DATA
 
         for ref in cell.cells:
@@ -140,6 +146,8 @@ if __name__ == '__main__':
 
     sub_cell = Cell('sub_cell')
     sub_cell.add_to_layer(1, waveguide)
+
+    sub_cell.add_to_layer(3, LineString(((0, 0), (100, 100))))
 
     device_cell.add_cell(sub_cell, origin=(10, 10), angle=np.pi / 2)
 

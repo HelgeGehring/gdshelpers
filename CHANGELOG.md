@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ----------
+* GDSII-export: Added support for LineStrings
 
 1.1.4
 -----
