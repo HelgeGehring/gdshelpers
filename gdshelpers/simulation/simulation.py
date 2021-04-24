@@ -71,10 +71,10 @@ class Simulation:
 
         bounds = geometric_union((geometric_union(x['structure']) for x in self.structures)).bounds
         size = np.array((bounds[2] - bounds[0], bounds[3] - bounds[1], (z_max - z_min)))
-        self.center = [(bounds[2] + bounds[0]) / 2, (bounds[3] + bounds[1]) / 2, (z_max + z_min) / 2]
-        self.size = size + self.padding + self.pml_thickness * 2
+        self.center = np.round([(bounds[2] + bounds[0]) / 2, (bounds[3] + bounds[1]) / 2, (z_max + z_min) / 2])
+        self.size = np.ceil(size + self.padding * 2 + self.pml_thickness * 2)
         if self.reduce_to_2d:
-            size[2] = self.center[2] = self.size[2] = 0
+            self.center[2] = self.size[2] = 0
 
         structures = []
         for structure in self.structures:
@@ -167,7 +167,7 @@ class Simulation:
                                             mp.FluxRegion(mp.Vector3(*port.origin, z), size=mp.Vector3(*size, height)))
         return monitor
 
-    def get_eigenmode_coeffs(self, monitor, bands):
+    def get_eigenmode_coefficients(self, monitor, bands):
         return self.sim.get_eigenmode_coefficients(monitor, bands)
 
 
@@ -208,17 +208,118 @@ def example_mmi():
 
     sim.plot(mp.Hz)
 
-    phase_difference = np.angle(sim.get_eigenmode_coeffs(monitors_out[0], [2]).alpha[0, 0, 0] /
-                                sim.get_eigenmode_coeffs(monitors_out[1], [2]).alpha[0, 0, 0]) / np.pi
+    phase_difference = np.angle(sim.get_eigenmode_coefficients(monitors_out[0], [2]).alpha[0, 0, 0] /
+                                sim.get_eigenmode_coefficients(monitors_out[1], [2]).alpha[0, 0, 0]) / np.pi
 
     transmissions = [
-        np.abs(sim.get_eigenmode_coeffs(monitors_out[i], [2]).alpha[0, 0, 0]) ** 2 / source.eig_power(1 / 1.55) for i in
+        np.abs(sim.get_eigenmode_coefficients(monitors_out[i], [2]).alpha[0, 0, 0]) ** 2 / source.eig_power(1 / 1.55)
+        for i in
         range(2)]
 
     print('phase difference between outputs: {:.3f}π'.format(phase_difference))
 
     print('transmission to monitor 1: {:.3f}'.format(transmissions[0]))
     print('transmission to monitor 2: {:.3f}'.format(transmissions[1]))
+
+
+def example_directional_coupler():
+    from gdshelpers.parts.splitter import DirectionalCoupler
+    from gdshelpers.parts.waveguide import Waveguide
+
+    # mp.quiet(True)
+
+    splitter = DirectionalCoupler((0, 0), 0, wg_width=1., length=20, gap=.33, bend_radius=20, bend_angle=np.pi / 10)
+    wgs = [Waveguide.make_at_port(port).add_straight_segment(4) for port in splitter.left_ports + splitter.right_ports]
+
+    sim = Simulation(resolution=25, reduce_to_2d=True, padding=2, pml_thickness=.5)
+    # Simplify splitter as the bend has quite a lot of points which slows subpixel averaging down
+    sim.add_structure([splitter.get_shapely_object().simplify(.05)], wgs, mp.Medium(index=1.666), z_min=0, z_max=.33)
+    # GaussianSource or ContinousSource
+    source = sim.add_eigenmode_source(mp.GaussianSource(wavelength=1.55, width=2),
+                                      splitter.left_ports[0].longitudinal_offset(1), z=0.33 / 2, height=1, eig_band=2)
+    sim.init_sim()
+
+    monitors_out = [
+        sim.add_eigenmode_monitor(splitter.right_ports[i].longitudinal_offset(1), 1.55, 2, 1, z=0.33 / 2, height=1) for
+        i in range(2)]
+
+    sim.plot(mp.Hz)
+
+    sim.run(until=200)
+
+    sim.plot(mp.Hz)
+
+    phase_difference = np.angle(sim.get_eigenmode_coefficients(monitors_out[0], [2]).alpha[0, 0, 0] /
+                                sim.get_eigenmode_coefficients(monitors_out[1], [2]).alpha[0, 0, 0]) / np.pi
+
+    transmissions = [
+        np.abs(sim.get_eigenmode_coefficients(monitors_out[i], [2]).alpha[0, 0, 0]) ** 2 / source.eig_power(1 / 1.55)
+        for i in range(2)]
+    print('phase difference between outputs: {:.3f}π'.format(phase_difference))
+    print('transmission to monitor 1: {:.3f}'.format(transmissions[0]))
+    print('transmission to monitor 2: {:.3f}'.format(transmissions[1]))
+
+
+def example_bend():
+    from gdshelpers.parts.waveguide import Waveguide
+
+    bend = Waveguide((0, 0), 0, width=1)
+    bend.add_bend(angle=np.pi / 2, radius=20, n_points=30)
+    wgs = [Waveguide.make_at_port(port).add_straight_segment(4) for port in [bend.in_port, bend.current_port]]
+
+    sim = Simulation(resolution=25, reduce_to_2d=True, padding=2, pml_thickness=.5)
+    sim.add_structure([bend], wgs, mp.Medium(index=1.666), z_min=0, z_max=.33)
+    # GaussianSource or ContinousSource
+    source = sim.add_eigenmode_source(mp.GaussianSource(wavelength=1.55, width=2),
+                                      bend.in_port.longitudinal_offset(1), z=0.33 / 2, height=1, eig_band=2)
+    sim.init_sim(subpixel_maxeval=0)  # subpixel_maxeval=0 for quick testing
+    monitor_out = sim.add_eigenmode_monitor(bend.current_port.longitudinal_offset(1), 1.55, 2, 1, z=0.33 / 2, height=1)
+
+    # sim.plot(mp.Hz)
+    sim.run(until=150)
+    sim.plot(mp.Hz)
+
+    transmission = np.abs(sim.get_eigenmode_coefficients(monitor_out, [2]).alpha[0, 0, 0]) ** 2 / source.eig_power(
+        1 / 1.55)
+    print('transmission to monitor 1: {:.3f}'.format(transmission))
+
+
+def example_bend_coupling():
+    from gdshelpers.parts.waveguide import Waveguide
+
+    waveguide_straight = Waveguide((0, 0), 0, width=1)
+    waveguide_straight.add_straight_segment(5)
+    bend_port = waveguide_straight.current_port.parallel_offset(1.1)
+    waveguides_bend_1 = Waveguide.make_at_port(bend_port)
+    waveguides_bend_1.add_bend(angle=np.pi / 2, radius=15, n_points=30)
+    waveguides_bend_2 = Waveguide.make_at_port(bend_port.inverted_direction)
+    waveguides_bend_2.add_bend(angle=-np.pi / 5, radius=15, n_points=20)
+    waveguide_straight.add_straight_segment(5)
+
+    wgs = [Waveguide.make_at_port(port).add_straight_segment(40) for port in
+           [waveguide_straight.in_port, waveguide_straight.current_port,
+            waveguides_bend_1.current_port, waveguides_bend_2.current_port]]
+
+    sim = Simulation(resolution=20, reduce_to_2d=True, padding=2, pml_thickness=.5)
+    sim.add_structure([waveguide_straight, waveguides_bend_1], wgs + [waveguides_bend_2],
+                      mp.Medium(index=1.666), z_min=0, z_max=.33)
+    # GaussianSource or ContinousSource
+    source = sim.add_eigenmode_source(mp.ContinuousSource(wavelength=1.55, width=2),
+                                      waveguide_straight.in_port.longitudinal_offset(1), z=0.33 / 2, height=1,
+                                      eig_band=2)
+    sim.init_sim(subpixel_maxeval=0)  # subpixel_maxeval=0 for quick testing
+    monitors_out = [sim.add_eigenmode_monitor(port, 1.55, 2, 1, z=0.33 / 2, height=1) for port in
+                    [waveguide_straight.current_port, waveguides_bend_1.current_port]]
+
+    # sim.plot(mp.Hz)
+    sim.run(until=150)
+    sim.plot(mp.Hz)
+
+    transmissions = [
+        np.abs(sim.get_eigenmode_coefficients(monitors_out[i], [2]).alpha[0, 0, 0]) ** 2 / source.eig_power(1 / 1.55)
+        for i in range(2)]
+    print('transmission in bus waveguide: {:.3f}'.format(transmissions[0]))
+    print('transmission to bent waveguide: {:.3f}'.format(transmissions[1]))
 
 
 def example_cavity():
@@ -249,7 +350,7 @@ def example_cavity():
     sim.plot(mp.Hz)
 
     frequencies = np.array(mp.get_eigenmode_freqs(monitors_out[0]))
-    transmissions = [np.abs(sim.get_eigenmode_coeffs(monitors_out[i], [2]).alpha[0, :, 0]) ** 2 for i in range(2)]
+    transmissions = [np.abs(sim.get_eigenmode_coefficients(monitors_out[i], [2]).alpha[0, :, 0]) ** 2 for i in range(2)]
 
     plt.plot(frequencies, transmissions[1] / transmissions[0])
     plt.show()
@@ -289,4 +390,4 @@ def example_cavity_harminv():
 
 
 if __name__ == '__main__':
-    example_mmi()
+    example_bend_coupling()
