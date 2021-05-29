@@ -172,7 +172,7 @@ class Simulation:
 
 
 def example_mmi():
-    from gdshelpers.parts.splitter import DirectionalCoupler, MMI, Splitter
+    from gdshelpers.parts.splitter import MMI
     from gdshelpers.parts.waveguide import Waveguide
 
     # mp.quiet(True)

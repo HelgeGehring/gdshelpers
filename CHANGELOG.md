@@ -3,7 +3,6 @@ Changelog
 
 1.2.0
 ----------
-
 * Added meep integration
 * GDSII-export: Added support for LineStrings
 
