@@ -190,10 +190,13 @@ class Cell:
         dlw_data = self.dlw_data.copy()
         for sub_cell in self.cells:
             cell, origin = sub_cell['cell'], sub_cell['origin']
-
+            angle = sub_cell['angle'] if sub_cell['angle'] is not None else None
             for dlw_type, dlw_type_data in cell.get_dlw_data().items():
                 for dlw_id, data in dlw_type_data.items():
                     data = data.copy()
+                    if angle is not None:
+                        c, s = np.cos(angle), np.sin(angle)
+                        data['origin'] = np.array([[c, -s], [s, c]]).dot(data['origin'])
                     data['origin'] = (np.array(origin) + data['origin']).tolist()
                     if dlw_type not in dlw_data:
                         dlw_data[dlw_type] = {}
