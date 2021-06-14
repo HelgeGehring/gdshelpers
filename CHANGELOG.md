@@ -1,13 +1,13 @@
 Changelog
 =========
 
-Unreleased
+1.2.0
 ----------
+* Added meep integration
 * GDSII-export: Added support for LineStrings
 
 1.1.4
 -----
-
 * Waveguide: added add_left_bend and add_right_bend to make code easier readable
 * added alphanumeric_to_id as an inverse of id_to_alphanumeric
 * allow to limit the numbers of workers for parallel export
@@ -15,7 +15,6 @@ Unreleased
 
 1.1.3
 -----
-
 * Grating coupler: make_traditional_coupler now allows to apodize the period of the grating
 * Port: added with_width function to generate a copy of the Port with a certain width
 * Increased precision in add_straight_segment by evaluating derivative
