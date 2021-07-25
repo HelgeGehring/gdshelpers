@@ -190,10 +190,13 @@ class Cell:
         dlw_data = self.dlw_data.copy()
         for sub_cell in self.cells:
             cell, origin = sub_cell['cell'], sub_cell['origin']
-
             for dlw_type, dlw_type_data in cell.get_dlw_data().items():
                 for dlw_id, data in dlw_type_data.items():
                     data = data.copy()
+                    if sub_cell['angle'] is not None:
+                        c, s = np.cos(sub_cell['angle']), np.sin(sub_cell['angle'])
+                        data['origin'] = np.array([[c, -s], [s, c]]).dot(data['origin'])
+                        data['angle'] += sub_cell['angle']
                     data['origin'] = (np.array(origin) + data['origin']).tolist()
                     if dlw_type not in dlw_data:
                         dlw_data[dlw_type] = {}
@@ -532,7 +535,7 @@ class Cell:
         self.add_to_layer(layer, DLWMarker(origin))
         self.add_to_layer(std_layers.parnamelayer1, Text(origin, 2, label, alignment='center-center'))
 
-        self.add_dlw_data('marker', label, {'origin': list(origin)})
+        self.add_dlw_data('marker', label, {'origin': list(origin), 'angle': 0})
 
     def add_dlw_taper_at_port(self, label: str, layer: int, port: Port, taper_length: float, tip_width=.01,
                               with_markers=True):
