@@ -145,3 +145,24 @@ class DeviceTestCase(unittest.TestCase):
 
         cell.add_frame(padding=10, line_width=1., frame_layer=99, bounds=(0, 0, 2, 3))
         self.assertEqual(cell.get_bounds(layers=[99]), (-11, -11, 13, 14))
+
+    def test_dlw(self):
+        # Make sure that cells with DLW data only exist once
+        top = Cell('parent_cell')
+        child = Cell('child1')
+
+        wg1 = Waveguide([0, 0], 0, 1)
+        wg1.add_straight_segment(10)
+        child.add_to_layer(1, wg1)
+
+        # This should be ok, as child contains no DLW data
+        top.add_cell(child, [0, 0])
+        top.add_cell(child, [100, 0])
+
+        child2 = Cell('child2')
+        child2.add_to_layer(1, wg1)
+        child2.add_dlw_taper_at_port("foo", 1, wg1.current_port, taper_length=40.)
+
+        top.add_cell(child2, [0, 0])
+        with self.assertRaises(ValueError):
+            top.add_cell(child2, [100, 0])

@@ -115,11 +115,13 @@ class Cell:
         :param rows: Number of rows
         :param spacing: Spacing between the cells, should be an array in the form [x_spacing, y_spacing]
         """
-        if cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
-            import warnings
-            warnings.warn(
+        if cell.get_dlw_data() and cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
+            raise ValueError(
                 'Cell name "{cell_name:s}" added multiple times to {self_name:s}.'
-                ' Can be problematic for desc/dlw-files'.format(cell_name=cell.name, self_name=self.name))
+                ' This is not allowed for cells containing DLW data.'.format(
+                    cell_name=cell.name, self_name=self.name
+                )
+            )
         self.cells.append(
             dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False, columns=columns,
                  rows=rows, spacing=spacing))
