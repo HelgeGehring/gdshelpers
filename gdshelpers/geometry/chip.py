@@ -104,7 +104,8 @@ class Cell:
             raise ValueError('ID "{:s}" already used'.format(dlw_id))
         self.dlw_data[dlw_type][dlw_id] = data
 
-    def add_cell(self, cell, origin=(0, 0), angle: Optional[float] = None, columns=1, rows=1, spacing=None):
+    def add_cell(self, cell, origin=(0, 0), angle: Optional[float] = None, columns=1, rows=1, spacing=None,
+                 exist_ok=False):
         """
         Adds a Cell to this cell
 
@@ -114,12 +115,13 @@ class Cell:
         :param columns: Number of columns
         :param rows: Number of rows
         :param spacing: Spacing between the cells, should be an array in the form [x_spacing, y_spacing]
+        :param exist_ok: Allow the existance of cells with the same name.
         """
-        if cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
-            import warnings
-            warnings.warn(
+        if not exist_ok and cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
+            raise ValueError(
                 'Cell name "{cell_name:s}" added multiple times to {self_name:s}.'
-                ' Can be problematic for desc/dlw-files'.format(cell_name=cell.name, self_name=self.name))
+                ' Can be problematic for desc/dlw-files. Pass exist_ok=True in order '
+                'to explicitly allow this.'.format(cell_name=cell.name, self_name=self.name))
         self.cells.append(
             dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False, columns=columns,
                  rows=rows, spacing=spacing))
