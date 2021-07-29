@@ -95,17 +95,22 @@ def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000,
     grid_step_unit = unit / grid_steps_per_unit
     timestamp = datetime.datetime.now() if timestamp is None else timestamp
 
-    cells = []
-    cell_names = []
+    cells = dict()
+
+    def cells_equivalent(cell_a, cell_b):
+        if cell_a._uuid is None:
+            return cell_a == cell_b
+        else:
+            return cell_a._uuid == cell_b._uuid
 
     def add_cells_to_unique_list(start_cell):
-        cells.append(start_cell)
-        cell_names.append(start_cell.name)
+        cells[start_cell.name] = start_cell
         for c in start_cell.cells:
-            if c['cell'] not in cells:
-                if c['cell'].name in cell_names:
+            if c['cell'].name in cells:
+                if not cells_equivalent(c['cell'], cells[c['cell'].name]):
                     raise AssertionError(
                         'Each cell name must be unique, "{}" is used more than once'.format(c['cell'].name))
+            else:
                 add_cells_to_unique_list(c['cell'])
 
     add_cells_to_unique_list(cell)
@@ -121,11 +126,11 @@ def write_cell_to_gdsii_file(outfile, cell, unit=1e-6, grid_steps_per_unit=1000,
         from concurrent.futures import ProcessPoolExecutor
         with ProcessPoolExecutor(max_workers=max_workers) as pool:
             num = len(cells)
-            for binary in pool.map(_cell_to_gdsii_binary, cells, (grid_steps_per_unit,) * num, (max_points,) * num,
-                                   (max_line_points,) * num, (timestamp,) * num):
+            for binary in pool.map(_cell_to_gdsii_binary, cells.values(), (grid_steps_per_unit,) * num,
+                                   (max_points,) * num, (max_line_points,) * num, (timestamp,) * num):
                 outfile.write(binary)
     else:
-        for c in cells:
+        for c in cells.values():
             outfile.write(_cell_to_gdsii_binary(c, grid_steps_per_unit, max_points, max_line_points, timestamp))
     outfile.write(pack('>2H', 4, 0x0400))  # ENDLIB N0_DATA
 

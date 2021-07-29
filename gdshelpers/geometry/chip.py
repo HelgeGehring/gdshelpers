@@ -10,6 +10,7 @@ from gdshelpers.export.gdsii_export import write_cell_to_gdsii_file
 from gdshelpers.geometry import geometric_union
 from gdshelpers.parts.port import Port
 import gdshelpers.helpers.layers as std_layers
+import uuid
 
 
 class Cell:
@@ -31,6 +32,10 @@ class Cell:
         # Children cells have to be queried each time, since there is no way of knowing when they got changed.
         # self._bounds is None if the bounds need to be recalculated or if the cell is empty (in which case
         # recalculating them is cheap and we don't need to cache them)
+
+        self._uuid = uuid.uuid4()
+        # assign a unique UUID for this cell such that we can identify cells which have been pickled or
+        # serialized.
 
     @property
     def bounds(self):
