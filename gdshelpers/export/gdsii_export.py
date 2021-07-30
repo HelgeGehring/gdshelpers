@@ -68,7 +68,7 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
                 if ref['magnification'] is not None:
                     b.write(pack('>2H', 12, 0x1B05) + _real_to_8byte(ref['magnification']))  # MAG REAL_8
                 if ref['angle'] is not None:
-                    b.write(pack('>2H', 12, 0x1C05) + _real_to_8byte(np.rad2deg(ref['angle'])))  # ANGLE REAL_8
+                    b.write(pack('>2H', 12, 0x1C05) + _real_to_8byte(np.rad2deg(ref['angle']) % 360.))  # ANGLE REAL_8
             if aref:
                 b.write(pack('>2H2h', 8, 0x1302, ref['columns'], ref['rows']))  # COLROW INTEGER_2 spacing
             b.write(pack('>2H', 28 if aref else 12, 0x1003) + np.round(
