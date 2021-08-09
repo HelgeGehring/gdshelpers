@@ -54,6 +54,20 @@ class DeviceTestCase(unittest.TestCase):
 
         # cell.save('test_cell_bounds')
 
+    def test_bounds_subcell(self):
+        cell = Cell('test_cell')
+
+        subcell = Cell('subcell')
+        subcell.add_to_layer(3, box(0, 0, 100, 100))
+        cell.add_cell(subcell, origin=(100, 100))
+        self.assertEqual(cell.bounds, (100, 100, 200, 200))
+
+        cell.add_cell(subcell, origin=(500, 100), angle=np.pi)
+
+        # cell.save('test_bounds_subcell')
+
+        self.assertEqual(cell.bounds, (100, 0, 500, 200))
+
     def test_empty_cell(self):
         # An empty cell should have 'None' as bounding box
         cell = Cell('test_cell')
