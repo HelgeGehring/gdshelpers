@@ -5,6 +5,7 @@ Unreleased
 -----
 
 * Allow explicit definition of datatype by passing a tuple (layer, datatype) as layer
+* Allow setting the width of LineStrings
 
 1.2.0
 -----
