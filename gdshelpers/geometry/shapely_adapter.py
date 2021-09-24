@@ -403,14 +403,14 @@ def transform_bounds(bounds, origin, rotation=0, scale=1.):
     """
     Transform a bounds tuple (xmin, ymin, xmax, ymax) by the given offset, rotation and scale.
     """
-    bounds = scale * np.array(bounds).reshape(2, 2) + origin
     if rotation != 0:
-        center = 0.5 * (bounds[0, :] + bounds[1, :])
-        size = np.abs(bounds[1, :] - bounds[0, :])
+        (xmin, ymin, xmax, ymax) = bounds
         c, s = np.cos(rotation), np.sin(rotation)
-        rot_matrix = np.array([[c, -s], [s, c]])  # rotation matrix
-        new_half_size = 0.5 * np.abs(rot_matrix).dot(size)
-        new_center = rot_matrix.dot(center)
-        bounds = np.array([new_center - new_half_size, new_center + new_half_size])
+        rot_matrix = scale * np.array([[c, -s], [s, c]])  # rotation matrix
+        corners = [(xmin, ymin), (xmin, ymax), (xmax, ymin), (xmax, ymax)]
+        corners = np.array([rot_matrix.dot(c) for c in corners]) + origin
 
-    return bounds.flatten()
+        bounds = np.min(corners[:, 0]), np.min(corners[:, 1]), np.max(corners[:, 0]), np.max(corners[:, 1])
+        return bounds
+    else:
+        return (scale * np.array(bounds).reshape(2, 2) + origin).flatten()

@@ -116,11 +116,13 @@ class Cell:
         :param rows: Number of rows
         :param spacing: Spacing between the cells, should be an array in the form [x_spacing, y_spacing]
         """
-        if cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
-            import warnings
-            warnings.warn(
+        if cell.get_dlw_data() and cell.name in [cell_dict['cell'].name for cell_dict in self.cells]:
+            raise ValueError(
                 'Cell name "{cell_name:s}" added multiple times to {self_name:s}.'
-                ' Can be problematic for desc/dlw-files'.format(cell_name=cell.name, self_name=self.name))
+                ' This is not allowed for cells containing DLW data.'.format(
+                    cell_name=cell.name, self_name=self.name
+                )
+            )
         self.cells.append(
             dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False, columns=columns,
                  rows=rows, spacing=spacing))
@@ -191,10 +193,13 @@ class Cell:
         dlw_data = self.dlw_data.copy()
         for sub_cell in self.cells:
             cell, origin = sub_cell['cell'], sub_cell['origin']
-
             for dlw_type, dlw_type_data in cell.get_dlw_data().items():
                 for dlw_id, data in dlw_type_data.items():
                     data = data.copy()
+                    if sub_cell['angle'] is not None:
+                        c, s = np.cos(sub_cell['angle']), np.sin(sub_cell['angle'])
+                        data['origin'] = np.array([[c, -s], [s, c]]).dot(data['origin'])
+                        data['angle'] += sub_cell['angle']
                     data['origin'] = (np.array(origin) + data['origin']).tolist()
                     if dlw_type not in dlw_data:
                         dlw_data[dlw_type] = {}
@@ -536,7 +541,7 @@ class Cell:
         self.add_to_layer(layer, DLWMarker(origin))
         self.add_to_layer(std_layers.parnamelayer1, Text(origin, 2, label, alignment='center-center'))
 
-        self.add_dlw_data('marker', label, {'origin': list(origin)})
+        self.add_dlw_data('marker', label, {'origin': list(origin), 'angle': 0})
 
     def add_dlw_taper_at_port(self, label: str, layer: int, port: Port, taper_length: float, tip_width=.01,
                               with_markers=True):
