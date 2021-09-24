@@ -1,13 +1,20 @@
 Changelog
 =========
 
+Unreleased
+-----
+
+* Allow explicit definition of datatype by passing a tuple (layer, datatype) as layer
+
 1.2.0
-----------
+-----
+
 * Added meep integration
 * GDSII-export: Added support for LineStrings
 
 1.1.4
 -----
+
 * Waveguide: added add_left_bend and add_right_bend to make code easier readable
 * added alphanumeric_to_id as an inverse of id_to_alphanumeric
 * allow to limit the numbers of workers for parallel export

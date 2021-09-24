@@ -34,8 +34,9 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
                         raise AssertionError('GDSII only supports polygons without holes')
                     coords = list(shapely_object.exterior.coords) + [shapely_object.exterior.coords[0]]
                     b.write(pack('>8H', 4, 0x0800,  # BOUNDARY NO_DATA
-                                 6, 0x0D02, layer,  # LAYER INTEGER_2 layer
-                                 6, 0x0E02, layer))  # DATATYPE INTEGER_2 datatype
+                                 6, 0x0D02, (layer if isinstance(layer, int) else layer[0]),  # LAYER INTEGER_2 layer
+                                 6, 0x0E02,
+                                 (layer if isinstance(layer, int) else layer[1])))  # DATATYPE INTEGER_2 datatype
                 elif isinstance(shapely_object, LineString):
                     coords = shapely_object.coords
                     b.write(pack('>8H', 4, 0x0900,  # PATH NO_DATA
@@ -148,6 +149,10 @@ if __name__ == '__main__':
     sub_cell.add_to_layer(1, waveguide)
 
     sub_cell.add_to_layer(3, LineString(((0, 0), (100, 100))))
+
+    line = LineString(((0, 0), (-100, 100)))
+    line.width = 3
+    sub_cell.add_to_layer(3, line)
 
     device_cell.add_cell(sub_cell, origin=(10, 10), angle=np.pi / 2)
 

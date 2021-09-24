@@ -82,9 +82,10 @@ class Cell:
         """
         Adds a shapely geometry to a the layer
 
-        :param layer: id of the layer
+        :param layer: id of the layer, a tuple (layer, datatype) can also be passed to define the datatype as well
         :param geometry: shapely geometry
         """
+
         self._bounds = None
         if layer not in self.layer_dict:
             self.layer_dict[layer] = []
@@ -271,7 +272,9 @@ class Cell:
             for layer, geometries in self.layer_dict.items():
                 for geometry in geometries:
                     if executor:
-                        executor.submit(convert_to_layout_objs, geometry, layer, library='oasis',
+                        executor.submit(convert_to_layout_objs, geometry,
+                                        (layer if isinstance(layer, int) else layer[0]),
+                                        datatype=(None if isinstance(layer, int) else layer[1]), library='oasis',
                                         grid_steps_per_micron=grid_steps_per_micron, max_points=np.inf,
                                         max_points_line=np.inf) \
                             .add_done_callback(lambda future: self.cell_oasis.geometry.extend(future.result()))
@@ -449,7 +452,8 @@ class Cell:
                 continue
             geometry = translate(rotate(geometry, angle_sum, use_radians=True, origin=(0, 0)), *origin)
             own_patches.append(
-                PolygonPatch(geometry, color=['red', 'green', 'blue', 'teal', 'pink'][(layer - 1) % 5], linewidth=0))
+                PolygonPatch(geometry, color=['red', 'green', 'blue', 'teal', 'pink'][(np.sum(layer) - 1) % 5],
+                             linewidth=0))
 
         sub_cells_patches = [p for cell_dict in self.cells for p in
                              cell_dict['cell'].get_patches(
@@ -580,16 +584,20 @@ if __name__ == '__main__':
         waveguide.add_bend(angle=np.pi, radius=60 + i_bend * 40)
     # Add direct laser writing taper and alignment marker for postprocessing with a dlw printer to the cell-like object.
     # The cell dlw files will be saved with the cell.
-    device_cell.add_dlw_taper_at_port('A0', 1, start_port.inverted_direction, 30)
-    device_cell.add_dlw_taper_at_port('A1', 1, waveguide.current_port, 30)
+    device_cell.add_dlw_taper_at_port('A0', (1, 2), start_port.inverted_direction, 30)
+    device_cell.add_dlw_taper_at_port('A1', (1, 2), waveguide.current_port, 30)
     device_cell.add_to_layer(1, waveguide)
     device_cell.show()
     device_cell.save_image('chip.pdf')
     # Creates the output file by using gdspy or fatamorgana. To use the implemented parallel processing, set
     # parallel=True.
+    print('gds')
     device_cell.save(name='my_design', parallel=True)
-    device_cell.export_mesh('my_design.stl', layer_defs={1: (0, 1)})
-
+    print('oas')
+    device_cell.save(name='my_design.oas', parallel=True)
+    print('stl')
+    device_cell.export_mesh('my_design.stl', layer_defs={(1, 2): (0, 1)})
+    print('array')
     array_cell = Cell('Array')
     array_cell.add_cell(device_cell, rows=2, columns=2, spacing=(1000, 1000))
     array_cell.save()
