@@ -44,8 +44,7 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
                                  6, 0x0E02,
                                  (layer if isinstance(layer, int) else layer[1])))  # DATATYPE INTEGER_2 datatype
                     if hasattr(shapely_object, 'width'):
-                        print(shapely_object.width)
-                        b.write(pack('>3H', 6, 0x0F03, shapely_object.width))
+                        b.write(pack('>2Hi', 8, 0x0F03, round(shapely_object.width * grid_steps_per_unit)))
                 else:
                     import warnings
                     warnings.warn(
