@@ -34,7 +34,7 @@ class GdsImage:
                 self.pixels.append(box)
 
     def get_shapely_object(self):
-        return shapely.ops.cascaded_union(self.pixels)
+        return shapely.ops.unary_union(self.pixels)
 
 
 def _example():

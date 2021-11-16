@@ -117,7 +117,7 @@ class Text:
 
             max_x = max(max_x, cursor_x + char_font['width'] / 2 * self.height)
 
-        merged_polygon = shapely.ops.cascaded_union(polygons)
+        merged_polygon = shapely.ops.unary_union(polygons)
 
         # Handle the alignment, translation and rotation
         if not self.true_bbox_alignment:

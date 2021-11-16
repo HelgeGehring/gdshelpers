@@ -1,5 +1,5 @@
 import numpy as np
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 from shapely.prepared import prep
 from shapely.geometry import Point, LineString, MultiPolygon
 
@@ -59,7 +59,7 @@ def fill_waveguide_with_holes_in_honeycomb_lattice(waveguide, spacing, padding, 
                 if area_for_holes.contains(point):
                     circles.append(point.buffer(hole_radius))
         offset += spacing
-    return cascaded_union(circles)
+    return unary_union(circles)
 
 
 if __name__ == '__main__':

@@ -79,13 +79,13 @@ class Waveguide:
         """
         Get a shapely object which forms this path.
         """
-        return shapely.ops.cascaded_union([obj for port, obj, outline, length, center_coordinates in self._segments])
+        return shapely.ops.unary_union([obj for port, obj, outline, length, center_coordinates in self._segments])
 
     def get_shapely_outline(self):
         """
         Get a shapely object which forms the outline of the path.
         """
-        return shapely.ops.cascaded_union(
+        return shapely.ops.unary_union(
             [outline for port, obj, outline, length, center_coordinates in self._segments])
 
     def get_segments(self):

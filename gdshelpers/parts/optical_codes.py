@@ -53,7 +53,7 @@ class ShapelyImageFactory(qrcode.image.base.BaseImage):
         self._idr.append(box)
 
     def get_shapely_object(self):
-        return shapely.ops.cascaded_union(self._idr)
+        return shapely.ops.unary_union(self._idr)
 
 
 class QRCode:

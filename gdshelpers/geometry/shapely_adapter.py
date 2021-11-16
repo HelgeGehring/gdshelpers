@@ -225,7 +225,7 @@ def geometric_union(objs):
     :rtype: shapely.base.BaseGeometry
     """
     objs = [obj.get_shapely_object() if hasattr(obj, 'get_shapely_object') else obj for obj in objs]
-    return shapely.ops.cascaded_union(objs)
+    return shapely.ops.unary_union(objs)
 
 
 def convert_to_gdscad(objs, layer=1, datatype=None, path_width=1.0, path_pathtype=0, max_points=None,

@@ -2,7 +2,7 @@ from math import sqrt
 import numpy as np
 from shapely.affinity import rotate, translate, scale
 from shapely.geometry import Polygon, box
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 
 
 class KITLogo:
@@ -50,7 +50,7 @@ class KITLogo:
             box(-d * (1 + t_overlap), self.height - 2 * d, d * (1 + t_overlap), self.height))
         polygons.append(translate(t, self.height * 2.05))
 
-        logo = cascaded_union(polygons)
+        logo = unary_union(polygons)
 
         return translate(logo, *self.origin)
 
@@ -118,7 +118,7 @@ class WWULogo:
             box(x6, y6, x6 + w6, y6 + h6)  # box6
         ]
 
-        logo_unscaled = cascaded_union(boxes)
+        logo_unscaled = unary_union(boxes)
 
         # write WWU
         # create W
@@ -154,7 +154,7 @@ class WWULogo:
         u_coord = zip(x, y)
         u_shape = Polygon(u_coord)
 
-        wwu_unscaled = cascaded_union([w_shape, translate(w_shape, 139), translate(u_shape, 261, 29)])
+        wwu_unscaled = unary_union([w_shape, translate(w_shape, 139), translate(u_shape, 261, 29)])
 
         # create whole logo
         if self.text == 0:
@@ -169,9 +169,9 @@ class WWULogo:
             m = self.height / h  # scaling factor
             m2 = (y3 + h3) * m / 114
 
-            logo_complete = cascaded_union([scale(logo_unscaled, m, m, origin=(0, 0)),
-                                            translate(scale(wwu_unscaled, m2, m2, origin=(0, 0)),
-                                                      (x1 + w) * m + 80 * m2)])
+            logo_complete = unary_union([scale(logo_unscaled, m, m, origin=(0, 0)),
+                                         translate(scale(wwu_unscaled, m2, m2, origin=(0, 0)),
+                                                   (x1 + w) * m + 80 * m2)])
         else:
             # text under logo
             # calculate scaling of logo and WWU with sum equal to set height
@@ -180,7 +180,7 @@ class WWULogo:
             m2 = w / 369.  # scale width of WWU to width of logo
             m = self.height / (h + 10 + 114)  # scaling factor height
 
-            logo_complete_unscaled = cascaded_union(
+            logo_complete_unscaled = unary_union(
                 [scale(translate(wwu_unscaled, 67, 0), m2, m2, origin=(0, 0)), translate(logo_unscaled, 0, (114 + 10))])
             logo_complete = scale(logo_complete_unscaled, m, m, origin=(0, 0))
 
