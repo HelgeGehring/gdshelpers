@@ -3,7 +3,7 @@ import numpy as np
 from gdshelpers.geometry import geometric_union
 
 
-def convert_to_positive_resist(parts, buffer_radius, outer_resolution=None):
+def convert_to_positive_resist(parts, buffer_radius, outer_resolution=None, clearance_features=None, exclude=None):
     """
     Convert a list of parts and shapely objects to a positive resist design by
     adding a buffer around the actual design.
@@ -11,6 +11,10 @@ def convert_to_positive_resist(parts, buffer_radius, outer_resolution=None):
     :param parts: List of parts and shapely objects.
     :param buffer_radius: Buffer radius
     :param outer_resolution: Outer buffer circumference resolution. Defaults to one 20th of the buffer radius.
+    :param clearance_features: List of additional features to include in the generated structure. Can be useful for
+                               providing clearance areas around couplers or other features.
+    :param exclude: List of features to subtract from the generated structure. Can be used for interconnects between
+                    structures from different cells, such that the end of a waveguide remains "open".
     :return: Converted Shapely geometry.
     :rtype: shapely.base.BaseGeometry
     """
@@ -34,7 +38,18 @@ def convert_to_positive_resist(parts, buffer_radius, outer_resolution=None):
     if outer_resolution:
         outer_poly = outer_poly.simplify(outer_resolution)
 
+    # Add clearance features (before subtracting the actual parts)
+    if clearance_features is not None:
+        clearance = (clearance_features,) if not isinstance(clearance_features, (tuple, list)) else clearance_features
+        outer_poly = geometric_union((outer_poly, *clearance))
+
     # Substract the original parts from outer poly
     inverted = outer_poly.difference(fixed_union)
+
+    # Exclude other exclusion features from the generated structure
+    if exclude is not None:
+        exclude = (exclude,) if not isinstance(exclude, (tuple, list)) else exclude
+        exclude = geometric_union(exclude)
+        inverted = inverted.difference(exclude)
 
     return inverted
