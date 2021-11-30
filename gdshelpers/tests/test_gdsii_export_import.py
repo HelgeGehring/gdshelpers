@@ -1,6 +1,5 @@
 import filecmp
 import unittest
-from freezegun import freeze_time
 
 import numpy as np
 from shapely.affinity import translate, rotate
@@ -47,7 +46,6 @@ class GdsTestCase(unittest.TestCase):
 
         self.assertTrue(GDSIIImport('test.gds', 'test', 1, 2).get_shapely_object().is_empty)
 
-    @freeze_time()
     def test_parallel_export(self):
         waveguide = Waveguide([0, 0], 0, 1)
         for i_bend in range(9):
