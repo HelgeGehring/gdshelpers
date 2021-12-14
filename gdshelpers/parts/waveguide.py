@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 
 import numpy as np
 import numpy.linalg as linalg
@@ -537,7 +537,7 @@ class Waveguide:
         :param line_kw:
         """
 
-        if isinstance(port, collections.Iterable):
+        if isinstance(port, collections.abc.Iterable):
             direction = (np.cos(self.angle), np.sin(self.angle))
             distances = np.array([np.dot(p.origin, direction) for p in port])
             furthest_port_idx = distances.argmax()
