@@ -132,20 +132,21 @@ class Simulation:
         self.sources.append(source)
         return source
 
-    def add_eigenmode_source(self, src, port, eig_band=1, z=None, height=None):
+    def add_eigenmode_source(self, src, port, eig_band=1, eig_parity=mp.NO_PARITY, z=None, height=None):
         """
         Adds an eigenmode source at the given port.
 
         :param src: Meep-Source (e.g. GaussianSource or ContinuousSource)
         :param port: Port at which the source is added
         :param eig_band: Number of the excited mode. The mode with the highest eigenvalue has the number 1
+        :param eig_parity: Parity of the eigenmodes
         :param z: Z-position of the source
         :param height: Height of the area for calculating the eigenmode
         :return: Added Meep-Source
         """
 
         size = [0, port.total_width * 2] if port.angle % np.pi < np.pi / 4 else [port.total_width * 2, 0]
-        source = mp.EigenModeSource(src, mp.Vector3(*port.origin, z), size=mp.Vector3(*size, height), eig_band=eig_band)
+        source = mp.EigenModeSource(src, mp.Vector3(*port.origin, z), size=mp.Vector3(*size, height), eig_band=eig_band, eig_parity=eig_parity)
         self.sources.append(source)
         return source
 
@@ -167,8 +168,8 @@ class Simulation:
                                             mp.FluxRegion(mp.Vector3(*port.origin, z), size=mp.Vector3(*size, height)))
         return monitor
 
-    def get_eigenmode_coefficients(self, monitor, bands):
-        return self.sim.get_eigenmode_coefficients(monitor, bands)
+    def get_eigenmode_coefficients(self, monitor, bands, eig_parity=mp.NO_PARITY):
+        return self.sim.get_eigenmode_coefficients(monitor, bands, eig_parity=eig_parity)
 
 
 def example_mmi():
