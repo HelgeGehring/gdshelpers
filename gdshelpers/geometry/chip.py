@@ -527,24 +527,25 @@ class Cell:
         ax.set_aspect(1)
         plt.show()
 
-    def add_dlw_marker(self, label: str, layer: int, origin):
+    def add_dlw_marker(self, label: str, layer: int, origin, box_size=2.5):
         """
         Adds a marker for 3D-hybrid integration
 
         :param label: Name of the marker, needs to be unique within the device
         :param layer: Layer at which the marker and markers should be written
         :param origin: Position of the marker
+        :param box_size: Size of the box of the marker
         """
         from gdshelpers.parts.marker import DLWMarker
         from gdshelpers.parts.text import Text
 
-        self.add_to_layer(layer, DLWMarker(origin))
+        self.add_to_layer(layer, DLWMarker(origin, box_size=box_size))
         self.add_to_layer(std_layers.parnamelayer1, Text(origin, 2, label, alignment='center-center'))
 
         self.add_dlw_data('marker', label, {'origin': list(origin), 'angle': 0})
 
     def add_dlw_taper_at_port(self, label: str, layer: int, port: Port, taper_length: float, tip_width=.01,
-                              with_markers=True):
+                              with_markers=True, box_size=2.5):
         """
         Adds a taper for 3D-hybrid-integration at a certain port
 
@@ -556,6 +557,7 @@ class Cell:
         :param with_markers: for recognizing the taper markers near to the taper are necessary.
             In certain designs the standard positions are not appropriate and
             can therefore be disabled and manually added
+        :param box_size: Size of the box of the markers
         """
         from gdshelpers.parts.text import Text
 
@@ -572,7 +574,7 @@ class Cell:
         if with_markers:
             for i, (v, l) in enumerate(itertools.product((-20, 20), (taper_length, 0))):
                 self.add_dlw_marker(str(label) + '-' + str(i), layer,
-                                    port.parallel_offset(v).longitudinal_offset(l).origin)
+                                    port.parallel_offset(v).longitudinal_offset(l).origin, box_size=box_size)
 
 
 if __name__ == '__main__':
