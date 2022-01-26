@@ -4,6 +4,8 @@ Changelog
 Unreleased
 -----
 
+* get_reduced_layer() now considers cell-arrays
+
 1.2.1
 -----
 

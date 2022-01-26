@@ -411,14 +411,22 @@ class Cell:
         :return: a single shapely-geometry
         """
 
-        def translate_and_rotate(geometry, offset, angle):
+        def translate_and_rotate(geometry, offset, angle, columns, rows, spacing):
             if not geometry:
                 return geometry
-            return translate(rotate(geometry, angle if angle else 0, use_radians=True, origin=(0, 0)), *offset)
+
+            if not spacing:
+                return translate(rotate(geometry, angle if angle else 0, use_radians=True, origin=(0, 0)), *offset)
+
+            return translate(
+                geometric_union(
+                    translate(rotate(geometry, angle if angle else 0, use_radians=True, origin=(0, 0)), spacing[0] * c,
+                              spacing[1] * r) for c in range(columns) for r in range(rows)), *offset)
 
         return geometric_union(
             (self.layer_dict[layer] if layer in self.layer_dict else []) +
-            [translate_and_rotate(cell['cell'].get_reduced_layer(layer), cell['origin'], cell['angle'])
+            [translate_and_rotate(cell['cell'].get_reduced_layer(layer), cell['origin'], cell['angle'], cell['columns'],
+                                  cell['rows'], cell['spacing'])
              for cell in self.cells])
 
     def export_mesh(self, filename: str, layer_defs):
@@ -606,5 +614,6 @@ if __name__ == '__main__':
     device_cell.export_mesh('my_design.stl', layer_defs={(1, 2): (0, 1)})
     print('array')
     array_cell = Cell('Array')
-    array_cell.add_cell(device_cell, rows=2, columns=2, spacing=(1000, 1000))
+    array_cell.add_cell(device_cell, rows=2, columns=2, spacing=(1000, 1000), angle=np.pi / 10, origin=(500, 500))
+    array_cell.add_to_layer(2, array_cell.get_reduced_layer(1))
     array_cell.save()
