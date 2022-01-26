@@ -4,8 +4,14 @@ Changelog
 Unreleased
 -----
 
+1.2.1
+-----
+
 * Allow explicit definition of datatype by passing a tuple (layer, datatype) as layer
 * Allow setting the width of LineStrings
+* Angle of sub-cells considered in DLW-data and boundaries
+* Fix GDSII-export: allow negative angles, correct rounding of spacing
+* Allow specifying clearance features and exlusion features for convert_to_positive_resist
 
 1.2.0
 -----
