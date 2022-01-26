@@ -79,11 +79,11 @@ def _cell_to_gdsii_binary(cell, grid_steps_per_unit, max_points, max_line_points
                 np.array(ref['origin']) * grid_steps_per_unit).astype(
                 '>i4').tobytes())  # XY INTEGER_8 origin
             if aref:
-                b.write((np.round(np.array((ref['spacing'][0] * ref['columns'], 0)) +
-                                  np.array(ref['origin'])) * grid_steps_per_unit).astype(
+                b.write((np.round((np.array((ref['spacing'][0] * ref['columns'], 0)) +
+                                   np.array(ref['origin'])) * grid_steps_per_unit)).astype(
                     '>i4').tobytes())  # XY INTEGER_8 edge_x
-                b.write((np.round(np.array((0, ref['spacing'][1] * ref['rows'])) +
-                                  np.array(ref['origin'])) * grid_steps_per_unit).astype(
+                b.write((np.round((np.array((0, ref['spacing'][1] * ref['rows'])) +
+                                   np.array(ref['origin'])) * grid_steps_per_unit)).astype(
                     '>i4').tobytes())  # XY INTEGER_8 edge_y
 
             b.write(pack('>2H', 4, 0x1100))  # ENDEL NO_DATA
