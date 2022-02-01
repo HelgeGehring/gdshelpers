@@ -105,7 +105,8 @@ class Cell:
             raise ValueError('ID "{:s}" already used'.format(dlw_id))
         self.dlw_data[dlw_type][dlw_id] = data
 
-    def add_cell(self, cell, origin=(0, 0), angle: Optional[float] = None, columns=1, rows=1, spacing=None):
+    def add_cell(self, cell, origin=(0, 0), angle: Optional[float] = None, magnification: Optional[float] = None,
+                 columns=1, rows=1, spacing=None):
         """
         Adds a Cell to this cell
 
@@ -124,8 +125,8 @@ class Cell:
                 )
             )
         self.cells.append(
-            dict(cell=cell, origin=origin, angle=angle, magnification=None, x_reflection=False, columns=columns,
-                 rows=rows, spacing=spacing))
+            dict(cell=cell, origin=origin, angle=angle, magnification=magnification, x_reflection=False,
+                 columns=columns, rows=rows, spacing=spacing))
 
     def add_region_layer(self, region_layer: int = std_layers.regionlayer, layers: Optional[List[int]] = None):
         """
