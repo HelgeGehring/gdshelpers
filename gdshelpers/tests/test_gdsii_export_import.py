@@ -6,7 +6,19 @@ from shapely.affinity import translate, rotate
 
 from gdshelpers.parts.waveguide import Waveguide
 from gdshelpers.geometry.chip import Cell
+from gdshelpers.parts.coupler import GratingCoupler
+from gdshelpers.parts.port import Port
 from gdshelpers.parts.pattern_import import GDSIIImport
+
+
+def make_test_cell(args):
+    # Helper function for the test case 'test_parallel'.
+    # Needs to be global so that it can be pickled for parallel execution
+    i, gc_cell, port = args
+    cell = Cell('complex_cell_{}'.format(i))
+    cell.add_to_layer(1, Waveguide.make_at_port(port).add_straight_segment(10))
+    cell.add_cell(gc_cell, [0, 0])
+    return i, cell
 
 
 class GdsTestCase(unittest.TestCase):
@@ -61,3 +73,36 @@ class GdsTestCase(unittest.TestCase):
         cells[0].save('parallel.gds', parallel=True)
 
         self.assertTrue(filecmp.cmp('serial.gds', 'parallel.gds'))
+
+    def test_parallel_cell_reuse(self):
+        """
+        This test case tests if it is possible to generate Cells in parallel when they
+        reuse a common sub cell.
+        This can be useful when creating a cell is an expensive operation and should
+        be parallelized, but some components (such as grating couplers) can be reused.
+        """
+        from concurrent.futures import ProcessPoolExecutor
+        port = Port([0, 0], 0, 1.)
+
+        # Create a common cell for grating couplers, which is reused
+        gc_cell = Cell("gc")
+        gc = GratingCoupler.make_traditional_coupler_at_port(port.inverted_direction,
+                                                             full_opening_angle=np.deg2rad(40),
+                                                             grating_period=1.13,
+                                                             grating_ff=0.85,
+                                                             n_gratings=20)
+        gc_cell.add_to_layer(1, gc)
+
+        top_cell = Cell("top")
+        with ProcessPoolExecutor(max_workers=4) as executor:
+            for i, cell in executor.map(make_test_cell, [(i, gc_cell, port) for i in range(8)]):
+                top_cell.add_cell(cell, origin=[i*100, 0])
+
+        top_cell.save("test_parallel.gds")
+
+        # However, adding two different cells with the same name should still be prohibited
+        top_cell.add_cell(Cell("foo"))
+        top_cell.add_cell(Cell("foo"))
+
+        with self.assertRaises(AssertionError):
+            top_cell.save("test_parallel.gds")
