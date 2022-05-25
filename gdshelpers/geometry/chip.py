@@ -208,9 +208,31 @@ class Cell:
         return dlw_data
 
     def get_desc(self):
-        desc = self.desc.copy()
-        desc['cells'] = {cell['cell'].name: dict(offset=tuple(cell['origin']), angle=cell['angle'] or 0,
-                                                 **cell['cell'].get_desc()) for cell in self.cells}
+        """
+        Creates and returns a dictionary containing all the 'desc' data of this cell and all children.
+        The returned dictionary contains two keys:
+
+        * `root`: The name of the root cell (the cell from which `get_desc` was called)
+        * `cells`: Dictionary mapping cell names to the desc data of each cell as well as cell references to other cells
+                   (with origin and angle).
+
+        :return: Dictionary containing the `desc` data for this cell and all cells referenced by this cell
+        """
+        def walk_cells(cell, out_dict):
+            if cell.name not in out_dict:
+                cellrefs = []
+                for child in cell.cells:
+                    child_dict = child.copy()
+                    child_dict['cell'] = child_dict['cell'].name
+                    cellrefs.append(child_dict)
+
+                out_dict[cell.name] = {'cells': cellrefs, **cell.desc}
+
+                for child in cell.cells:
+                    walk_cells(child['cell'], out_dict)
+
+        desc = dict(root=self.name, cells=dict())
+        walk_cells(self, desc['cells'])
         return desc
 
     def get_fractured_layer_dict(self, max_points=4000, max_line_points=4000):
